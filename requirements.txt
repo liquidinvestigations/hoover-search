@@ -5,3 +5,4 @@
 #    pip-compile requirements.in
 #
 django==1.8.6
+pyyaml==3.11
