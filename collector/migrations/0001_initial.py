@@ -18,6 +18,8 @@ class Migration(migrations.Migration):
                 ('url', models.URLField(max_length=2048)),
                 ('indexed', models.BooleanField(default=False)),
                 ('index_time', models.DateTimeField(null=True, blank=True)),
+                ('title', models.CharField(max_length=2048, blank=True)),
+                ('slug', models.CharField(unique=True, max_length=256)),
             ],
         ),
     ]

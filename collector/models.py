@@ -8,6 +8,8 @@ class Document(models.Model):
     url = models.URLField(max_length=2048)
     indexed = models.BooleanField(default=False)
     index_time = models.DateTimeField(null=True, blank=True)
+    title = models.CharField(max_length=2048, blank=True)
+    slug = models.CharField(max_length=256, unique=True)
 
     @classmethod
     def add_url(cls, url):
@@ -15,4 +17,4 @@ class Document(models.Model):
         cls.objects.get_or_create(hash=hash, defaults={'url': url})
 
     def __unicode__(self):
-        return self.url
+        return self.slug
