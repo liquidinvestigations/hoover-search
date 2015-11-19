@@ -16,10 +16,12 @@ class Command(BaseCommand):
             config = yaml.load(f)
             for collection in config['collections']:
                 loader_cls = import_string(collection['loader'])
-                loader = loader_cls(**config)
+                loader = loader_cls(**collection)
 
                 for data in loader.documents():
-                    Document.objects.get_or_create(
+                    (_, created) = Document.objects.get_or_create(
                         slug=data.pop('slug'),
                         defaults=data,
                     )
+                    if created:
+                        print data
