@@ -7,4 +7,4 @@ class Command(BaseCommand):
     help = "Run an indexing worker"
 
     def handle(self, verbosity, **options):
-        index.work()
+        index.work_loop()

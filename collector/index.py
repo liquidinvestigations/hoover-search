@@ -18,13 +18,18 @@ def index(doc):
     doc.save()
 
 
-def work():
-    with transaction.atomic():
-        doc = (
-            Document.objects
-            .select_for_update()
-            .filter(indexed=False)
-            .order_by('id')
-            .first()
-        )
-        index(doc)
+def work_loop():
+    while True:
+        with transaction.atomic():
+            doc = (
+                Document.objects
+                .select_for_update()
+                .filter(indexed=False)
+                .order_by('id')
+                .first()
+            )
+
+            if doc is None:
+                return
+
+            index(doc)
