@@ -4,12 +4,11 @@ from django.db import models
 
 class Document(models.Model):
 
-    hash = models.CharField(max_length=300)
+    slug = models.CharField(max_length=256, unique=True)
+    title = models.CharField(max_length=2048, blank=True)
     url = models.URLField(max_length=2048)
     indexed = models.BooleanField(default=False)
     index_time = models.DateTimeField(null=True, blank=True)
-    title = models.CharField(max_length=2048, blank=True)
-    slug = models.CharField(max_length=256, unique=True)
 
     @classmethod
     def add_url(cls, url):
