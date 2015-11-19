@@ -15,7 +15,11 @@ def index(doc):
 
     text = subprocess.check_output(['pdftotext', file_path, '-'])
 
-    es.index(doc.hash, text)
+    es.index(doc.slug, {
+        'text': text,
+        'title': doc.title,
+        'url': doc.url,
+    })
 
     doc.indexed = True
     doc.index_time = now()

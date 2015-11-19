@@ -18,5 +18,8 @@ class Command(BaseCommand):
                 loader_cls = import_string(collection['loader'])
                 loader = loader_cls(**config)
 
-                for url in loader.documents():
-                    Document.add_url(url)
+                for data in loader.documents():
+                    Document.objects.get_or_create(
+                        slug=data.pop('slug'),
+                        defaults=data,
+                    )
