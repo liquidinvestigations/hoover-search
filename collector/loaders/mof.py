@@ -13,7 +13,7 @@ class MofLoader(object):
                      r'_(?P<number>\d+)\.pdf$', filename)
         fields = {k: int(v) for k, v in m.groupdict().items()}
 
-        yield {
+        return {
             'url': self.repo + '/' + filename,
             'slug': "mof{part}-{year}-{number}".format(**fields),
             'title': "Monitorul Oficial partea {part}, {number}/{year}"
