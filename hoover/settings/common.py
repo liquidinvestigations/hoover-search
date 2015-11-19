@@ -37,6 +37,42 @@ TEMPLATES = [
     },
 ]
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'formatters': {
+        'logfile': {
+            'format': ('%(asctime)s %(process)d '
+                       '%(levelname)s %(name)s %(message)s'),
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+        },
+    },
+    'loggers': {
+        'django.request': {
+            'level': 'WARNING',
+            'propagate': False,
+            'handlers': ['stderr'],
+        },
+        'collector': {
+            'level': 'INFO',
+            'propagate': False,
+            'handlers': ['stderr'],
+        },
+        '': {
+            'level': 'WARNING',
+            'propagate': True,
+            'handlers': ['stderr'],
+        },
+    },
+    'handlers': {
+        'stderr': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'logfile',
+        },
+    },
+}
+
 WSGI_APPLICATION = 'hoover.wsgi.application'
 
 LANGUAGE_CODE = 'en-us'

@@ -13,3 +13,6 @@ class Document(models.Model):
     def add_url(cls, url):
         hash = hashlib.sha1(url).hexdigest()
         cls.objects.get_or_create(hash=hash, defaults={'url': url})
+
+    def __unicode__(self):
+        return self.url
