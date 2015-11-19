@@ -1,5 +1,7 @@
 import logging
 import subprocess
+import urllib
+from contextlib import contextmanager
 from django.db import transaction
 from .models import Document
 from . import es
@@ -8,12 +10,20 @@ from .utils import now
 logger = logging.getLogger(__name__)
 
 
+@contextmanager
+def open_url(doc):
+    f = urllib.urlopen(doc.url)
+    try:
+        yield f
+    finally:
+        f.close()
+
+
 def index(doc):
     logger.info('indexing %s', doc)
-    assert doc.url.startswith('file:///')
-    file_path = doc.url[len('file://'):]
 
-    text = subprocess.check_output(['pdftotext', file_path, '-'])
+    with open_url(doc) as f:
+        text = subprocess.check_output(['pdftotext', '-', '-'], stdin=f)
 
     es.index(doc.slug, {
         'text': text,
