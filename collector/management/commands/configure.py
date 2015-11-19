@@ -1,6 +1,7 @@
 import yaml
 from django.core.management.base import BaseCommand
 from django.utils.module_loading import import_string
+from ...models import Document
 
 
 class Command(BaseCommand):
@@ -16,3 +17,6 @@ class Command(BaseCommand):
             for collection in config['collections']:
                 loader_cls = import_string(collection['loader'])
                 loader = loader_cls(**config)
+
+                for url in loader.documents():
+                    Document.add_url(url)
