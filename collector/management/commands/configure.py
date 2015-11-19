@@ -19,9 +19,9 @@ class Command(BaseCommand):
                 loader = loader_cls(**collection)
 
                 for data in loader.documents():
-                    (_, created) = Document.objects.get_or_create(
+                    (doc, created) = Document.objects.get_or_create(
                         slug=data.pop('slug'),
                         defaults=data,
                     )
                     if created:
-                        print data
+                        print doc.slug
