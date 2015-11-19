@@ -29,7 +29,7 @@ def work_loop():
                 Document.objects
                 .select_for_update()
                 .filter(indexed=False)
-                .order_by('id')
+                .order_by('?')
                 .first()
             )
 
