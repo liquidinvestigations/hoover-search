@@ -24,4 +24,12 @@ class Command(BaseCommand):
                         defaults=data,
                     )
                     if created:
-                        print doc.slug
+                        print '+++', doc.slug
+                    else:
+                        changed = False
+                        for k in data:
+                            if getattr(doc, k) != data[k]:
+                                setattr(doc, k, data[k])
+                                changed = True
+                        if changed:
+                            print '%%%', doc.slug
