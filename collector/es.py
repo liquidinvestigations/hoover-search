@@ -9,3 +9,16 @@ def index(hash, text):
     }
     resp = es.index(index='hoover', doc_type='doc', id=hash, body=doc)
     assert resp['_id'] == hash
+
+
+def search(q):
+    body = {
+        'query': {
+            'query_string': {
+                'default_field': 'text',
+                'query': q,
+            }
+        },
+        'highlight': {'fields': {'text': {}}},
+    }
+    return es.search(index='hoover', body=body)
