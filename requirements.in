@@ -1,5 +1,6 @@
 Django
 elasticsearch
+pip-tools
 psycopg2
 pyyaml
 requests
