@@ -1,20 +1,29 @@
 import logging
 from django.db import transaction
+import requests
 from .models import Document
 from . import es
-from .utils import now, open_url
+from .utils import now
 
 logger = logging.getLogger(__name__)
+
+
+class TextMissing(RuntimeError):
+    pass
 
 
 def index(doc):
     logger.info('indexing %s', doc)
 
-    with open_url(doc.url) as f:
-        text = f.read()
+    resp = requests.get(doc.text_url)
+    if resp.status_code == 404:
+        raise TextMissing(str(doc))
+
+    if resp.status_code != 200:
+        raise RuntimeError("failed to get text for %s: %r" % (doc, resp))
 
     es.index(doc.slug, {
-        'text': text,
+        'text': resp.text,
         'title': doc.title,
         'url': doc.url,
     })
@@ -38,4 +47,7 @@ def work_loop():
             if doc is None:
                 return
 
-            index(doc)
+            try:
+                index(doc)
+            except TextMissing:
+                logger.warn('text missing for document %s', doc)
