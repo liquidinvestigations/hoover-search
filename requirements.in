@@ -2,3 +2,4 @@ Django
 elasticsearch
 psycopg2
 pyyaml
+requests
