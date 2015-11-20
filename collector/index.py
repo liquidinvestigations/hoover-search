@@ -22,7 +22,7 @@ def index(doc):
     if resp.status_code != 200:
         raise RuntimeError("failed to get text for %s: %r" % (doc, resp))
 
-    es.index(doc.slug, {
+    es.index('mof/' + doc.slug, {
         'text': resp.text,
         'title': doc.title,
         'url': doc.url,
