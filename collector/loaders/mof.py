@@ -21,9 +21,11 @@ class MofLoader(object):
             raise self.ParseError(filename)
 
         fields = {k: int(v) for k, v in m.groupdict().items()}
+        filename_txt = filename.rstrip('.pdf') + '.txt'
 
         return {
             'url': self.repo + '/' + filename,
+            'text_url': self.repo + '/' + filename_txt,
             'slug': "mof{part}-{year}-{number}".format(**fields),
             'title': "Monitorul Oficial partea {part}, {number}/{year}"
                 .format(**fields),

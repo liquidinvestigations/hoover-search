@@ -1,5 +1,4 @@
 import logging
-import subprocess
 from django.db import transaction
 from .models import Document
 from . import es
@@ -12,7 +11,7 @@ def index(doc):
     logger.info('indexing %s', doc)
 
     with open_url(doc.url) as f:
-        text = subprocess.check_output(['pdftotext', '-', '-'], stdin=f)
+        text = f.read()
 
     es.index(doc.slug, {
         'text': text,
