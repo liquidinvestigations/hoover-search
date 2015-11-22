@@ -61,6 +61,11 @@ var SearchResults = React.createClass({
       <ul>
         {this.props.hits.map(function(hit) { return (
           <li>
+            <h3>
+              <a href={hit._source.text.url}>
+                {hit._source.text.title}
+              </a>
+            </h3>
             <ul>
             {hit.highlight.text.map(function(hi) {
               return <li className="highlight" dangerouslySetInnerHTML={ {__html: hi} } />
