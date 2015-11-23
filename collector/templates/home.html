@@ -22,6 +22,9 @@
 
       {{ request.user }}
       <a href="{% url 'logout' %}?next={% url 'home' %}">logout</a>
+      {% if request.user.is_superuser %}
+        <a href="{% url 'admin:index' %}">admin</a>
+      {% endif %}
 
     {% else %}
 
