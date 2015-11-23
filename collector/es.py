@@ -12,20 +12,22 @@ def index(hash, text):
 
 
 def search(q, collections):
-    if not collections:
-        # we must return no search results
-        raise NotImplementedError
+    if collections:
+        filter = {
+            'or': [
+                {'term': {'collection': col}}
+                for col in collections
+            ],
+        }
+
+    else:
+        filter = {'bool': {'must_not': {'match_all': {}}}}
 
     body = {
         'query': {
             'filtered': {
 
-                'filter': {
-                    'or': [
-                        {'term': {'collection': col}}
-                        for col in collections
-                    ],
-                },
+                'filter': filter,
 
                 'query': {
                     'query_string': {

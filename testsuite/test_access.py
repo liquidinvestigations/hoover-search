@@ -4,6 +4,10 @@ pytestmark = pytest.mark.django_db
 
 
 def collections(body):
+    if not body['query']['filtered']['filter']['or']:
+        assert body['query']['filtered']['filter'] == {
+            'bool': {'must_not': {'match_all': {}}},
+        }
     return sorted(
         item['term']['collection']
         for item in body['query']['filtered']['filter']['or']
@@ -23,7 +27,7 @@ def test_access(monkeypatch, client):
     monkeypatch.setattr(es, 'es', MockEs())
 
     Collection.objects.all().delete()
-    c1 = Collection.objects.create(slug='c1', public=True)
+    c1 = Collection.objects.create(slug='c1')
     c2 = Collection.objects.create(slug='c2')
     c3 = Collection.objects.create(slug='c3')
     u = User.objects.create_user(username='u', password='p')
@@ -33,7 +37,12 @@ def test_access(monkeypatch, client):
     def search(q):
         return json.loads(client.post('/search', {'q': q}).content)
 
+    # no login; should not search in any collection
+    assert collections(search('foo')) == []
+
     # no login; should search in c1 only
+    c1.public = True
+    c1.save()
     assert collections(search('foo')) == ['c1']
 
     # logged in; should search in c1 and c2
