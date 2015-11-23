@@ -7,6 +7,11 @@ shift
 
 case "$COMMAND" in
 
+  'tests')
+    export DJANGO_SETTINGS_MODULE=testsuite.settings
+    exec py.test
+    ;;
+
   'devserver')
     #@ localhost:8000
     set -x
