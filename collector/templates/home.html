@@ -4,6 +4,10 @@
 <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.4/css/bootstrap.css">
 <style>
 
+#auth {
+  float: right;
+}
+
 .highlight em {
   background: #aff;
 }
@@ -12,6 +16,31 @@
 <body>
 
 <div class="container">
+
+  <div id="auth">
+    {% if request.user.is_authenticated %}
+
+      {{ request.user }}
+      <a href="{% url 'logout' %}?next={% url 'home' %}">logout</a>
+
+    {% else %}
+
+      <a href="#" id="login-button">login</a>
+      <form action="{% url 'login' %}?next={% url 'home' %}"
+            id="login" method="post"
+            class="form-inline" style="display: none">
+        {% csrf_token %}
+        <div class="form-group">
+          <input name="username"
+            class="form-control" placeholder="user ...">
+          <input name="password" type="password"
+            class="form-control" placeholder="user ...">
+          <button type="submit" class="btn btn-default">login</button>
+        </div>
+      </form>
+
+    {% endif %}
+  </div>
 
   <h1>hoover</h1>
 
@@ -31,6 +60,12 @@
 
 <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
 <script>
+
+$('#login-button').click(function(e) {
+  e.preventDefault()
+  $('#login').toggle()
+  console.log('login')
+})
 
 function search(q, callback) {
   $.ajax({
