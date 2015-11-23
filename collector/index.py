@@ -14,6 +14,7 @@ class TextMissing(RuntimeError):
 
 def index(doc):
     logger.info('indexing %s', doc)
+    collection = doc.collection
 
     resp = requests.get(doc.text_url)
     if resp.status_code == 404:
@@ -22,7 +23,9 @@ def index(doc):
     if resp.status_code != 200:
         raise RuntimeError("failed to get text for %s: %r" % (doc, resp))
 
-    es.index('mof/' + doc.slug, {
+    es.index(collection.slug + '/' + doc.slug, {
+        'collection': collection.slug,
+        'slug': doc.slug,
         'text': resp.text,
         'title': doc.title,
         'url': doc.url,
