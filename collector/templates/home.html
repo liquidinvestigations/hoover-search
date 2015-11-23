@@ -83,7 +83,8 @@
 
 $('#login-button').click(function(e) {
   e.preventDefault()
-  $('#login').toggle()
+  $(this).hide()
+  $('#login').show()
   console.log('login')
 })
 
