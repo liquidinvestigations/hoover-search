@@ -4,3 +4,4 @@ pip-tools
 psycopg2
 pyyaml
 requests
+waitress
