@@ -9,7 +9,7 @@ class Collection(models.Model):
     title = models.CharField(max_length=2048, blank=True)
     public = models.BooleanField(default=False)
 
-    users = models.ManyToManyField(settings.AUTH_USER_MODEL)
+    users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True)
 
     def __unicode__(self):
         return self.slug
