@@ -12,125 +12,61 @@
 <body>
 
 <div class="container">
+
   <h1>hoover</h1>
-  <div id="search"></div>
+
+  <div id="search">
+    <form>
+      <input name="q" value="{{ request.GET.q }}" placeholder="query ...">
+      <button type="submit">search</button>
+    </form>
+  </div>
+
+  <div id="results"></div>
+
 </div>
 
 <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/react/0.13.3/react.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.23/browser.min.js"></script>
+<script>
 
-<script type="text/babel">
-
-var searchUrl = '{% url "search" %}';
-
-// Stackoverflow4life
-var queryString = (function () {
-  var query_string = {};
-  var query = window.location.search.substring(1);
-  var vars = query.split("&");
-  for (var i=0;i<vars.length;i++) {
-    var pair = vars[i].split("=");
-    // If first entry with this name
-    if (typeof query_string[pair[0]] === "undefined") {
-      query_string[pair[0]] = pair[1];
-      // If second entry with this name
-    } else if (typeof query_string[pair[0]] === "string") {
-      var arr = [ query_string[pair[0]], pair[1] ];
-      query_string[pair[0]] = arr;
-      // If third or later entry with this name
-    } else {
-      query_string[pair[0]].push(pair[1]);
-    }
-  }
-  return query_string;
-})();
-
-var search = function(q, callback) {
+function search(q, callback) {
   $.ajax({
-    url: searchUrl,
+    url: '{% url "search" %}',
     method: 'POST',
     data: {q: q},
-    success: callback
-  });
-};
+    success: callback,
+  })
+}
 
-var SearchResults = React.createClass({
-  render: function() {
-    return (
-      <ul>
-        {this.props.hits.map(function(hit) { return (
-          <li>
-            <h3>
-              <a href={hit._source.text.url}>
-                {hit._source.text.title}
-              </a>
-            </h3>
-            <ul>
-            {hit.highlight.text.map(function(hi) {
-              return <li className="highlight" dangerouslySetInnerHTML={ {__html: hi} } />
-            })}
-            </ul>
-          </li>
-        )})}
-      </ul>
-    );
-  }
-});
+var q = document.querySelector('[name=q]').value
+if(q) {
 
-var Search = React.createClass({
-  getInitialState: function() {
-    return {hits: [], searching: false};
-  },
+  $('#results').text('searching ...')
+  search(q, function(resp) {
 
-
-  componentDidMount: function() {
-    if (queryString.q != null && queryString.q != "") {
-      this.handleSubmit();
-    }
-  },
-
-  render: function() {
-    var results = null;
-
-    if(this.state.searching) {
-      results = "searching ...";
-    } else {
-      results = <SearchResults hits={this.state.hits} />;
+    $('#results').empty()
+    if(! resp.hits.hits.length) {
+      $('#results').text('-- no results --')
     }
 
-    return (
-      <div>
-        <form onSubmit={this.handleSubmit} className="form-inline">
-          <div className="form-group">
-            <input
-              type="search"
-              className="form-control"
-              ref="q"
-              defaultValue={queryString.q}
-              autoFocus={true}
-              />
-          </div>
-          <button type="submit" className="btn btn-default">search</button>
-        </form>
-        {results}
-      </div>
-    );
-  },
+    resp.hits.hits.forEach(function(hit) {
 
-  handleSubmit: function(evt) {
-    if (evt != null) {
-      evt.preventDefault();
-    }
-    var q = React.findDOMNode(this.refs.q).value;
-    this.setState({searching: true});
-    search(q, function(resp) {
-      this.setState({hits: resp.hits.hits, searching: false});
-      history.replaceState(null, null, '?q=' + encodeURI(q));
-    }.bind(this));
-  }
-});
+      var item = $('<div>').appendTo('#results')
+      var i = hit._source.text
 
-React.render(<Search />, document.querySelector('#search'));
+      $('<h3>').append(
+        $('<a>', {href: i.url}).text(i.title)
+      ).appendTo(item)
+
+      var highlights = $('<ul>').appendTo(item)
+      hit.highlight.text.forEach(function(hi) {
+        $('<li class="highlight">').html(hi).appendTo(highlights)
+      })
+
+    })
+
+  })
+
+}
 
 </script>
