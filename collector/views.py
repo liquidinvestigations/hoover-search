@@ -3,6 +3,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from . import es
+from .models import Collection
 
 
 class JsonResponse(HttpResponse):
@@ -21,5 +22,11 @@ def home(request):
 @csrf_exempt
 def search(request):
     q = request.POST['q']
-    r = es.search(q)
+
+    cols = set(Collection.objects.filter(public=True))
+    if request.user.id is not None:
+        cols.update(Collection.objects.filter(users__id=request.user.id))
+
+    collections = [col.slug for col in cols]
+    r = es.search(q, collections)
     return JsonResponse(r)

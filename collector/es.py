@@ -11,14 +11,32 @@ def index(hash, text):
     assert resp['_id'] == hash
 
 
-def search(q):
+def search(q, collections):
+    if not collections:
+        # we must return no search results
+        raise NotImplementedError
+
     body = {
         'query': {
-            'query_string': {
-                'default_field': 'text',
-                'query': q,
-            }
+            'filtered': {
+
+                'filter': {
+                    'or': [
+                        {'term': {'collection': col}}
+                        for col in collections
+                    ],
+                },
+
+                'query': {
+                    'query_string': {
+                        'default_field': 'text',
+                        'query': q,
+                    }
+                },
+
+            },
         },
+
         'highlight': {'fields': {'text': {}}},
     }
     return es.search(index='hoover', body=body)
