@@ -16,9 +16,12 @@
   <h1>hoover</h1>
 
   <div id="search">
-    <form>
-      <input name="q" value="{{ request.GET.q }}" placeholder="query ...">
-      <button type="submit">search</button>
+    <form class="form-inline">
+      <div class="form-group">
+        <input name="q" value="{{ request.GET.q }}"
+          class="form-control" placeholder="query ...">
+        <button type="submit" class="btn btn-default">search</button>
+      </div>
     </form>
   </div>
 
