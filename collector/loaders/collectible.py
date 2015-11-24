@@ -33,6 +33,9 @@ class Loader(object):
                 doc_url = index_url.join(doc)
                 with doc_url.open() as d:
                     for item in yaml.load_all(d):
+                        if self.match:
+                            if not re.search(self.match, item['slug']):
+                                continue
                         item['url'] = doc_url.join(item['url']).url
                         item['text_url'] = doc_url.join(item['text_url']).url
                         yield item
