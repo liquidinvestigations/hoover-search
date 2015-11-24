@@ -1,7 +1,7 @@
 import yaml
 from django.core.management.base import BaseCommand
 from django.utils.module_loading import import_string
-from ...models import Document
+from ...models import Collection, Document
 
 
 class Command(BaseCommand):
@@ -18,7 +18,11 @@ class Command(BaseCommand):
                 loader_cls = import_string(collection['loader'])
                 loader = loader_cls(**collection)
 
+                (collection, _) = Collection.objects.get_or_create(
+                    slug=collection['slug'])
+
                 for data in loader.documents():
+                    data['collection'] = collection
                     (doc, created) = Document.objects.get_or_create(
                         slug=data.pop('slug'),
                         defaults=data,
