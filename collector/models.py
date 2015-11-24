@@ -5,14 +5,15 @@ from django.conf import settings
 
 class Collection(models.Model):
 
-    slug = models.CharField(max_length=256, unique=True)
     title = models.CharField(max_length=2048, blank=True)
+    slug = models.CharField(max_length=256, unique=True)
+
     public = models.BooleanField(default=False)
+    users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True)
+
     loader = models.CharField(max_length=2048,
         default='collector.loaders.collectible.Loader')
     options = models.TextField(default='{}')
-
-    users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True)
 
     def __unicode__(self):
         return self.slug
