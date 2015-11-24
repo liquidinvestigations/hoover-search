@@ -1,4 +1,5 @@
 import yaml
+import json
 from django.core.management.base import BaseCommand
 from django.utils.module_loading import import_string
 from ...models import Collection, Document
@@ -14,12 +15,16 @@ class Command(BaseCommand):
     def handle(self, verbosity, config_path, **options):
         with open(config_path) as f:
             config = yaml.load(f)
-            for collection in config['collections']:
-                loader_cls = import_string(collection['loader'])
-                loader = loader_cls(**collection)
+            for options in config['collections']:
+                loader_cls = import_string(options.pop('loader'))
+                loader = loader_cls(**options)
+                slug = options.pop('slug')
+                options_json = json.dumps(options, sort_keys=True, indent=2)
 
                 (collection, _) = Collection.objects.get_or_create(
-                    slug=collection['slug'])
+                    slug=slug,
+                    defaults={'options': options_json},
+                )
 
                 for data in loader.documents():
                     data['collection'] = collection
