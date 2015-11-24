@@ -8,6 +8,9 @@ class Collection(models.Model):
     slug = models.CharField(max_length=256, unique=True)
     title = models.CharField(max_length=2048, blank=True)
     public = models.BooleanField(default=False)
+    loader = models.CharField(max_length=2048,
+        default='collector.loaders.collectible.Loader')
+    options = models.TextField(default='{}')
 
     users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True)
 
