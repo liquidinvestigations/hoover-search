@@ -19,3 +19,4 @@ requests==2.8.1
 six==1.10.0               # via pip-tools
 urllib3==1.12             # via elasticsearch
 waitress==0.8.10
+whitenoise==2.0.6
