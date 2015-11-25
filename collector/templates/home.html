@@ -72,8 +72,7 @@
       {% empty %}
         <em>none available</em>
       {% endfor %}
-      <input name="collections" value="{{ request.GET.collections }}"
-        type="hidden" disabled>
+      <input id="collections-input" type="hidden">
     </div>
 
     <div class="form-inline">
@@ -101,7 +100,7 @@ checkboxes.change(function(evt) {
 saveCollections()
 
 function saveCollections() {
-  var collectionsInput = $('#collections input[name=collections]')
+  var collectionsInput = $('#collections-input')
   if(checkboxes.filter(':not(:checked)').length > 0) {
 
     var selected = ''+(
@@ -111,12 +110,12 @@ function saveCollections() {
       .map(function(c) { return c.value })
       .join(' ')
     )
-    collectionsInput.attr('disabled', false).val(selected)
+    collectionsInput.attr('name', 'collections').val(selected)
 
   }
   else {
 
-    collectionsInput.attr('disabled', true).val('')
+    collectionsInput.attr('name', null).val('')
 
   }
 }
