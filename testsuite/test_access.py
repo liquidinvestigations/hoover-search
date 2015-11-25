@@ -4,14 +4,17 @@ pytestmark = pytest.mark.django_db
 
 
 def collections(body):
-    if not body['query']['filtered']['filter']['or']:
+    if 'or' in body['query']['filtered']['filter']:
+        return sorted(
+            item['term']['collection']
+            for item in body['query']['filtered']['filter']['or']
+        )
+
+    else:
         assert body['query']['filtered']['filter'] == {
             'bool': {'must_not': {'match_all': {}}},
         }
-    return sorted(
-        item['term']['collection']
-        for item in body['query']['filtered']['filter']['or']
-    )
+        return []
 
 
 def test_access(monkeypatch, client):
