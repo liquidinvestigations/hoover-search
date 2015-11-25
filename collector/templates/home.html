@@ -56,7 +56,7 @@
 <h1>hoover</h1>
 
 <div id="search">
-  <form class="form-inline">
+  <form>
 
     <div id="collections">
       <h2>Collections</h2>
@@ -71,12 +71,16 @@
       {% empty %}
         <em>none available</em>
       {% endfor %}
+      <input name="collections" value="{{ request.GET.collections }}"
+        type="hidden" disabled>
     </div>
 
-    <div class="form-group">
-      <input name="q" value="{{ request.GET.q }}"
-        class="form-control" placeholder="query ...">
-      <button type="submit" class="btn btn-primary">search</button>
+    <div class="form-inline">
+      <div class="form-group">
+        <input name="q" value="{{ request.GET.q }}"
+          class="form-control" placeholder="query ...">
+        <button type="submit" class="btn btn-primary">search</button>
+      </div>
     </div>
 
   </form>
@@ -88,6 +92,30 @@
 <script src="//cdn.rawgit.com/twbs/bootstrap/v4-dev/dist/js/bootstrap.js"></script>
 
 <script>
+
+var checkboxes = $('#collections input[type=checkbox]')
+checkboxes.change(function(evt) {
+
+  var collectionsInput = $('#collections input[name=collections]')
+  if(checkboxes.filter(':not(:checked)').length > 0) {
+
+    var selected = ''+(
+      checkboxes
+      .filter(':checked')
+      .get()
+      .map(function(c) { return c.value })
+      .join(' ')
+    )
+    collectionsInput.attr('disabled', false).val(selected)
+
+  }
+  else {
+
+    collectionsInput.attr('disabled', true).val('')
+
+  }
+
+})
 
 function search(q, callback) {
   $.ajax({
