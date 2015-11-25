@@ -1,80 +1,64 @@
-<!doctype html>
-<meta charset="utf-8">
-<title>hoover</title>
-<link rel="stylesheet" href="//cdn.rawgit.com/twbs/bootstrap/v4-dev/dist/css/bootstrap.css">
-<style>
-
-#auth {
-  float: right;
-}
-
-.highlight em {
-  background: #aff;
-}
-
-</style>
-<body>
-
-<div class="container">
-
-  <div id="auth">
-    {% if request.user.is_authenticated %}
+{% extends 'base.html' %}
 
 
-      <div class="btn-group" role="group">
-        <button id="loggedin-btngroup" type="button"
-                class="btn btn-secondary dropdown-toggle"
-                data-toggle="dropdown"
-                aria-haspopup="true" aria-expanded="false">
-          {{ request.user }}
-        </button>
-        <div class="dropdown-menu" aria-labelledby="loggedin-btngroup">
+{% block content %}
+
+<div id="auth">
+  {% if request.user.is_authenticated %}
+
+
+    <div class="btn-group" role="group">
+      <button id="loggedin-btngroup" type="button"
+              class="btn btn-secondary dropdown-toggle"
+              data-toggle="dropdown"
+              aria-haspopup="true" aria-expanded="false">
+        {{ request.user }}
+      </button>
+      <div class="dropdown-menu" aria-labelledby="loggedin-btngroup">
+        <a class="dropdown-item"
+           href="{% url 'logout' %}?next={% url 'home' %}"
+           >logout</a>
+        {% if request.user.is_superuser %}
           <a class="dropdown-item"
-             href="{% url 'logout' %}?next={% url 'home' %}"
-             >logout</a>
-          {% if request.user.is_superuser %}
-            <a class="dropdown-item"
-               href="{% url 'admin:index' %}"
-               >admin</a>
-          {% endif %}
-        </div>
+             href="{% url 'admin:index' %}"
+             >admin</a>
+        {% endif %}
       </div>
+    </div>
 
 
-    {% else %}
+  {% else %}
 
-      <a href="#" id="login-button" class="btn btn-primary-outline">login</a>
-      <form action="{% url 'login' %}?next={% url 'home' %}"
-            id="login" method="post"
-            class="form-inline" style="display: none">
-        {% csrf_token %}
-        <div class="form-group">
-          <input name="username"
-            class="form-control" placeholder="username">
-          <input name="password" type="password"
-            class="form-control" placeholder="password">
-          <button type="submit" class="btn btn-primary">login</button>
-        </div>
-      </form>
-
-    {% endif %}
-  </div>
-
-  <h1>hoover</h1>
-
-  <div id="search">
-    <form class="form-inline">
+    <a href="#" id="login-button" class="btn btn-primary-outline">login</a>
+    <form action="{% url 'login' %}?next={% url 'home' %}"
+          id="login" method="post"
+          class="form-inline" style="display: none">
+      {% csrf_token %}
       <div class="form-group">
-        <input name="q" value="{{ request.GET.q }}"
-          class="form-control" placeholder="query ...">
-        <button type="submit" class="btn btn-primary">search</button>
+        <input name="username"
+          class="form-control" placeholder="username">
+        <input name="password" type="password"
+          class="form-control" placeholder="password">
+        <button type="submit" class="btn btn-primary">login</button>
       </div>
     </form>
-  </div>
+
+  {% endif %}
+</div>
+
+<h1>hoover</h1>
+
+<div id="search">
+  <form class="form-inline">
+    <div class="form-group">
+      <input name="q" value="{{ request.GET.q }}"
+        class="form-control" placeholder="query ...">
+      <button type="submit" class="btn btn-primary">search</button>
+    </div>
+  </form>
+</div>
 
   <div id="results"></div>
-
-</div>
 
 <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
 <script src="//cdn.rawgit.com/twbs/bootstrap/v4-dev/dist/js/bootstrap.js"></script>
@@ -129,3 +113,5 @@ if(q) {
 }
 
 </script>
+
+{% endblock %}
