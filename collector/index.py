@@ -1,11 +1,12 @@
 import logging
 import json
+import threading
 from django.db import transaction
 from django.utils.module_loading import import_string
 import requests
 from .models import Document
 from . import es
-from .utils import now
+from .utils import now, threadsafe
 
 logger = logging.getLogger(__name__)
 
@@ -28,9 +29,8 @@ def documents_to_index(collection):
         yield doc
 
 
-def update_collection(collection):
-    logger.info('updating %r', collection)
-    for doc in documents_to_index(collection):
+def index_from_queue(queue, collection):
+    for doc in queue:
         resp = requests.get(doc['text_url'])
         if resp.status_code == 404:
             raise TextMissing(doc['slug'])
@@ -46,45 +46,17 @@ def update_collection(collection):
         logger.debug('%s ok', doc['slug'])
 
 
-def index(doc):
-    logger.info('indexing %s', doc)
-    collection = doc.collection
+def update_collection(collection, threads=1):
+    logger.info('updating %r', collection)
+    queue = threadsafe(documents_to_index(collection))
 
-    resp = requests.get(doc.text_url)
-    if resp.status_code == 404:
-        raise TextMissing(str(doc))
+    thread_list = [
+        threading.Thread(target=index_from_queue, args=(queue, collection))
+        for _ in range(threads)
+    ]
 
-    if resp.status_code != 200:
-        raise RuntimeError("failed to get text for %s: %r" % (doc, resp))
+    for thread in thread_list:
+        thread.start()
 
-    es.index(collection.slug + '/' + doc.slug, {
-        'collection': collection.slug,
-        'slug': doc.slug,
-        'text': resp.text,
-        'title': doc.title,
-        'url': doc.url,
-    })
-
-    doc.indexed = True
-    doc.index_time = now()
-    doc.save()
-
-
-def work_loop():
-    while True:
-        with transaction.atomic():
-            doc = (
-                Document.objects
-                .select_for_update()
-                .filter(indexed=False)
-                .order_by('?')
-                .first()
-            )
-
-            if doc is None:
-                return
-
-            try:
-                index(doc)
-            except TextMissing:
-                logger.warn('text missing for document %s', doc)
+    for thread in thread_list:
+        thread.join()

@@ -10,7 +10,8 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('collection')
+        parser.add_argument('--threads', default=1, type=int)
 
-    def handle(self, verbosity, collection, **options):
+    def handle(self, verbosity, collection, threads, **options):
         logger.setLevel(LOG_LEVEL[verbosity])
-        update_collection(Collection.objects.get(slug=collection))
+        update_collection(Collection.objects.get(slug=collection), threads)
