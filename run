@@ -9,7 +9,7 @@ case "$COMMAND" in
 
   'tests')
     export DJANGO_SETTINGS_MODULE=testsuite.settings
-    exec py.test
+    exec py.test "$@"
     ;;
 
   'devserver')
