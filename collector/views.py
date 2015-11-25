@@ -33,5 +33,7 @@ def home(request):
 
 @csrf_exempt
 def search(request):
-    res = es.search(request.POST['q'], list(collection_slugs(request.user, None)))
+    collections_arg = request.POST.get('collections')
+    selected = list(collection_slugs(request.user, collections_arg))
+    res = es.search(request.POST['q'], selected)
     return JsonResponse(res)
