@@ -35,6 +35,8 @@ def search(q, collections):
             },
         },
 
+        'fields': ['title', 'url'],
+
         'highlight': {'fields': {'text': {}}},
     }
     return es.search(index='hoover', body=body)

@@ -144,7 +144,7 @@ if(q) {
     resp.hits.hits.forEach(function(hit) {
 
       var item = $('<div>').appendTo('#results')
-      var i = hit._source
+      var i = hit.fields
 
       $('<h3>').append(
         $('<a>', {href: i.url}).text(i.title)
