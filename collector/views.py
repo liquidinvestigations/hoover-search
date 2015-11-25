@@ -15,14 +15,15 @@ class JsonResponse(HttpResponse):
         )
 
 
+def collection_slugs(request):
+    return [c.slug for c in Collection.objects_for_user(request.user)]
+
+
 def home(request):
     return render(request, 'home.html')
 
 
 @csrf_exempt
 def search(request):
-    res = es.search(
-        request.POST['q'],
-        [c.slug for c in Collection.objects_for_user(request.user)],
-    )
+    res = es.search(request.POST['q'], collection_slugs(request))
     return JsonResponse(res)
