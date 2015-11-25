@@ -6,7 +6,6 @@
 <div id="auth">
   {% if request.user.is_authenticated %}
 
-
     <div class="btn-group" role="group">
       <button id="loggedin-btngroup" type="button"
               class="btn btn-secondary dropdown-toggle"
@@ -29,19 +28,7 @@
 
   {% else %}
 
-    <a href="#" id="login-button" class="btn btn-primary-outline">login</a>
-    <form action="{% url 'login' %}?next={% url 'home' %}"
-          id="login" method="post"
-          class="form-inline" style="display: none">
-      {% csrf_token %}
-      <div class="form-group">
-        <input name="username"
-          class="form-control" placeholder="username">
-        <input name="password" type="password"
-          class="form-control" placeholder="password">
-        <button type="submit" class="btn btn-primary">login</button>
-      </div>
-    </form>
+    <a href="{% url 'login' %}" class="btn btn-primary-outline">login</a>
 
   {% endif %}
 </div>
@@ -64,13 +51,6 @@
 <script src="//cdn.rawgit.com/twbs/bootstrap/v4-dev/dist/js/bootstrap.js"></script>
 
 <script>
-
-$('#login-button').click(function(e) {
-  e.preventDefault()
-  $(this).hide()
-  $('#login').show()
-  console.log('login')
-})
 
 function search(q, callback) {
   $.ajax({
