@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+
+{% block scripts %}
+
+<script>
+  (function() {
+    function queryEach(selector, callback) {
+      [].forEach.call(document.querySelectorAll(selector), callback);
+    }
+
+    queryEach('.form-group label', function(e) {
+      e.className = 'form-control-label col-sm-2';
+    });
+
+    queryEach('.form-group input', function(e) {
+      e.className = 'form-control';
+    });
+  })();
+</script>
+
+{% endblock %}
