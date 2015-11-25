@@ -4,13 +4,13 @@
 #
 #    pip-compile requirements.in
 #
-click==5.1                # via pip-tools
-django==1.8.6
+click==6.0                # via pip-tools
+django==1.8.7
 elasticsearch==2.1.0
 first==2.0.1              # via pip-tools
 pip-tools==1.1.6
 psycopg2==2.6.1
-py==1.4.30                # via pytest, pytest-capturelog
+py==1.4.30                # via pytest
 pytest-django==2.9.1
 pytest==2.8.3
 pyyaml==3.11
