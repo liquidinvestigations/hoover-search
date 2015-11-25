@@ -16,16 +16,21 @@ class JsonResponse(HttpResponse):
 
 
 def collection_slugs(request):
-    return [c.slug for c in Collection.objects_for_user(request.user)]
+    rv = (c.slug for c in Collection.objects_for_user(request.user))
+    if 'collections' in request.GET:
+        collections = set(request.GET['collections'].split())
+        rv = (slug for slug in rv if slug in collections)
+    return rv
 
 
 def home(request):
     return render(request, 'home.html', {
         'collections': Collection.objects_for_user(request.user),
+        'selected': set(collection_slugs(request)),
     })
 
 
 @csrf_exempt
 def search(request):
-    res = es.search(request.POST['q'], collection_slugs(request))
+    res = es.search(request.POST['q'], list(collection_slugs(request)))
     return JsonResponse(res)

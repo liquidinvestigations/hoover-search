@@ -64,7 +64,8 @@
       {% for collection in collections %}
         <div class="checkbox">
           <label>
-            <input type="checkbox" value="{{ collection.slug }}">
+            <input type="checkbox" value="{{ collection.slug }}"
+              {% if collection.slug in selected %}checked{% endif %}>
             {{ collection.label }}
           </label>
         </div>
@@ -95,7 +96,11 @@
 
 var checkboxes = $('#collections input[type=checkbox]')
 checkboxes.change(function(evt) {
+  saveCollections()
+})
+saveCollections()
 
+function saveCollections() {
   var collectionsInput = $('#collections input[name=collections]')
   if(checkboxes.filter(':not(:checked)').length > 0) {
 
@@ -114,8 +119,7 @@ checkboxes.change(function(evt) {
     collectionsInput.attr('disabled', true).val('')
 
   }
-
-})
+}
 
 function search(q, callback) {
   $.ajax({
