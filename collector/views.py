@@ -21,12 +21,8 @@ def home(request):
 
 @csrf_exempt
 def search(request):
-    q = request.POST['q']
-
-    cols = set(Collection.objects.filter(public=True))
-    if request.user.id is not None:
-        cols.update(Collection.objects.filter(users__id=request.user.id))
-
-    collections = [col.slug for col in cols]
-    r = es.search(q, collections)
-    return JsonResponse(r)
+    res = es.search(
+        request.POST['q'],
+        [c.slug for c in Collection.objects_for_user(request.user)],
+    )
+    return JsonResponse(res)

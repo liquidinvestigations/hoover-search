@@ -18,6 +18,13 @@ class Collection(models.Model):
     def __unicode__(self):
         return self.slug
 
+    @classmethod
+    def objects_for_user(cls, user):
+        rv = set(cls.objects.filter(public=True))
+        if user.id is not None:
+            rv.update(cls.objects.filter(users__id=user.id))
+        return rv
+
 
 class Document(models.Model):
 
