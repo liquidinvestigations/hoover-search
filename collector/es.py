@@ -50,3 +50,7 @@ def get_slugs(collection):
             'fields': ['slug'],
         })
     )
+
+
+def flush():
+    es.indices.delete(index='hoover', ignore=[400, 404])
