@@ -3,9 +3,8 @@ from elasticsearch import Elasticsearch, helpers
 
 es = Elasticsearch(settings.ELASTICSEARCH_URL)
 
-def index(hash, doc):
-    resp = es.index(index='hoover', doc_type='doc', id=hash, body=doc)
-    assert resp['_id'] == hash
+def index(doc):
+    resp = es.index(index='hoover', doc_type='doc', body=doc)
 
 
 def search(q, collections):

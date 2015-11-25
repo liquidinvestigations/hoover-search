@@ -38,10 +38,9 @@ def index_from_queue(queue, collection):
             msg = "failed to get text %s: %r" % (doc['slug'], resp)
             raise RuntimeError(msg)
 
-        doc_id = collection.slug + '/' + doc['slug']
         doc['collection'] = collection.slug
         doc['text'] = resp.text
-        es.index(doc_id, doc)
+        es.index(doc)
         logger.debug('%s ok', doc['slug'])
 
 
