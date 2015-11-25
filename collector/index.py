@@ -4,7 +4,6 @@ import threading
 from django.db import transaction
 from django.utils.module_loading import import_string
 import requests
-from .models import Document
 from . import es
 from .utils import now, threadsafe
 
