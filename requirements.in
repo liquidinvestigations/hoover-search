@@ -4,7 +4,6 @@ elasticsearch
 pip-tools
 psycopg2
 pytest
-pytest-capturelog
 pytest-django
 pyyaml
 requests
