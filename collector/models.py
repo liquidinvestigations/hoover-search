@@ -18,6 +18,9 @@ class Collection(models.Model):
     def __unicode__(self):
         return self.slug
 
+    def label(self):
+        return self.title or self.slug
+
     @classmethod
     def objects_for_user(cls, user):
         rv = set(cls.objects.filter(public=True))

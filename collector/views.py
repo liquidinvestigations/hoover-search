@@ -20,7 +20,9 @@ def collection_slugs(request):
 
 
 def home(request):
-    return render(request, 'home.html')
+    return render(request, 'home.html', {
+        'collections': Collection.objects_for_user(request.user),
+    })
 
 
 @csrf_exempt
