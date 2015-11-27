@@ -4,8 +4,13 @@
 {% block headstyles %}
 <style>
 
-#auth {
+#navbar {
   float: right;
+}
+
+#navbar > p, #navbar > .btn-group {
+  display: inline-block;
+  margin: 0 0 0 1em;
 }
 
 #collections {
@@ -23,7 +28,15 @@
 
 {% block content %}
 
-<div id="auth">
+<div id="navbar">
+  <p>
+    <a href="https://github.com/mgax/hoover">about</a>
+  </p>
+
+  <p>
+    <a href="#">terms</a>
+  </p>
+
   {% if request.user.is_authenticated %}
 
     <div class="btn-group" role="group">
