@@ -47,14 +47,14 @@
         {{ request.user }}
       </button>
       <div class="dropdown-menu" aria-labelledby="loggedin-btngroup">
-        <a class="dropdown-item"
-           href="{% url 'logout' %}?next={% url 'home' %}"
-           >logout</a>
         {% if request.user.is_superuser %}
           <a class="dropdown-item"
              href="{% url 'admin:index' %}"
              >admin</a>
         {% endif %}
+        <a class="dropdown-item"
+           href="{% url 'logout' %}?next={% url 'home' %}"
+           >logout</a>
       </div>
     </div>
 
