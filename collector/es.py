@@ -55,3 +55,20 @@ def get_slugs(collection):
 
 def flush():
     es.indices.delete(index='hoover', ignore=[400, 404])
+
+
+def stats():
+    body = {
+        'aggregations': {
+            'collections': {
+                'terms': {
+                    'field': 'collection',
+                },
+            },
+        },
+    }
+    res = es.search(index='hoover', search_type='count', body=body)
+    return {
+        bucket['key']: bucket['doc_count']
+        for bucket in res['aggregations']['collections']['buckets']
+    }
