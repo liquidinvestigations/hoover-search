@@ -7,7 +7,14 @@
 <ul>
   {% for name, size in stats.iteritems %}
 
-    <li><b>{{ name }}</b>: {{ size }}</li>
+    <li>
+      <b>{{ name }}</b>: {{ size }}
+      <form style="display: inline" action="delete" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="collection" value="{{ name }}">
+        <button type="submit">✘</button>
+      </form>
+    </li>
 
   {% endfor %}
 </ul>

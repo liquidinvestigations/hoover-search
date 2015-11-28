@@ -55,6 +55,21 @@ def get_slugs(collection):
     )
 
 
+def delete(collection):
+    docs = (
+        r['_id'] for r in
+        helpers.scan(es, {
+            'query': {'term': {'collection': collection}},
+            'fields': ['_id'],
+        })
+    )
+    actions = [
+        {'_op_type': 'delete', '_index': INDEX, '_type': DOCTYPE, '_id': d}
+        for d in docs
+    ]
+    helpers.bulk(es, actions)
+
+
 def flush():
     es.indices.delete(index=INDEX, ignore=[400, 404])
 
