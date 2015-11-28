@@ -31,3 +31,6 @@ class Collection(models.Model):
     def count(self):
         from . import es
         return es.stats().get(self.slug, 0)
+
+    def access_list(self):
+        return [u.username for u in self.users.all()]

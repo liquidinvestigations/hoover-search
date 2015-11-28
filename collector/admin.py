@@ -27,7 +27,7 @@ admin_site = HooverAdminSite(name='hoover-admin')
 
 class CollectionAdmin(admin.ModelAdmin):
 
-    list_display = ['__unicode__', 'count']
+    list_display = ['__unicode__', 'count', 'public', 'access_list']
 
 admin_site.register(models.Collection, CollectionAdmin)
 
