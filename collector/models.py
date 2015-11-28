@@ -27,3 +27,7 @@ class Collection(models.Model):
         if user.id is not None:
             rv.update(cls.objects.filter(users__id=user.id))
         return rv
+
+    def count(self):
+        from . import es
+        return es.stats().get(self.slug, 0)

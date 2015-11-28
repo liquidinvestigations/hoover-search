@@ -1,11 +1,11 @@
 from django.conf.urls import url
-from django.contrib.admin import AdminSite
+from django.contrib import admin
 from django.shortcuts import render, redirect
 from . import models
 from . import es
 
 
-class HooverAdminSite(AdminSite):
+class HooverAdminSite(admin.AdminSite):
 
     index_template = 'admin-index.html'
 
@@ -23,7 +23,13 @@ class HooverAdminSite(AdminSite):
         return redirect('.')
 
 admin_site = HooverAdminSite(name='hoover-admin')
-admin_site.register(models.Collection)
+
+
+class CollectionAdmin(admin.ModelAdmin):
+
+    list_display = ['__unicode__', 'count']
+
+admin_site.register(models.Collection, CollectionAdmin)
 
 
 from django.contrib.auth.admin import User, Group, UserAdmin, GroupAdmin
