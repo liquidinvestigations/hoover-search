@@ -2,9 +2,11 @@ from django.conf import settings
 from elasticsearch import Elasticsearch, helpers
 
 es = Elasticsearch(settings.ELASTICSEARCH_URL)
+DOCTYPE = 'doc'
+INDEX = 'hoover'
 
 def index(doc):
-    resp = es.index(index='hoover', doc_type='doc', body=doc)
+    resp = es.index(index=INDEX, doc_type=DOCTYPE, body=doc)
 
 
 def search(q, collections):
@@ -39,7 +41,7 @@ def search(q, collections):
 
         'highlight': {'fields': {'text': {}}},
     }
-    return es.search(index='hoover', body=body)
+    return es.search(index=INDEX, body=body)
 
 
 def get_slugs(collection):
@@ -54,7 +56,7 @@ def get_slugs(collection):
 
 
 def flush():
-    es.indices.delete(index='hoover', ignore=[400, 404])
+    es.indices.delete(index=INDEX, ignore=[400, 404])
 
 
 def stats():
@@ -67,7 +69,7 @@ def stats():
             },
         },
     }
-    res = es.search(index='hoover', search_type='count', body=body)
+    res = es.search(index=INDEX, search_type='count', body=body)
     return {
         bucket['key']: bucket['doc_count']
         for bucket in res['aggregations']['collections']['buckets']
