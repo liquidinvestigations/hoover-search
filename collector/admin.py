@@ -2,6 +2,7 @@ from django.conf.urls import url
 from django.contrib.admin import AdminSite
 from django.shortcuts import render
 from . import models
+from . import es
 
 
 class HooverAdminSite(AdminSite):
@@ -14,7 +15,7 @@ class HooverAdminSite(AdminSite):
         ] + super(HooverAdminSite, self).get_urls()
 
     def es_index(self, request):
-        return render(request, 'admin-es-index.html')
+        return render(request, 'admin-es-index.html', {'stats': es.stats()})
 
 admin_site = HooverAdminSite(name='hoover-admin')
 admin_site.register(models.Collection)
