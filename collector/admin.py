@@ -1,10 +1,20 @@
+from django.conf.urls import url
 from django.contrib.admin import AdminSite
+from django.shortcuts import render
 from . import models
 
 
 class HooverAdminSite(AdminSite):
 
     index_template = 'admin-index.html'
+
+    def get_urls(self):
+        return [
+            url(r'^es/$', self.es_index),
+        ] + super(HooverAdminSite, self).get_urls()
+
+    def es_index(self, request):
+        return render(request, 'admin-es-index.html')
 
 admin_site = HooverAdminSite(name='hoover-admin')
 admin_site.register(models.Collection)
