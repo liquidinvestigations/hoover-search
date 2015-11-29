@@ -1,8 +1,6 @@
 import logging
-import json
 import threading
 from django.db import transaction
-from django.utils.module_loading import import_string
 import requests
 from . import es
 from .utils import now, threadsafe
@@ -15,12 +13,9 @@ class TextMissing(RuntimeError):
 
 
 def documents_to_index(collection):
-    loader_cls = import_string(collection.loader)
-    loader = loader_cls(**json.loads(collection.options))
-
     indexed = es.get_slugs(collection.slug)
 
-    for doc in loader.documents():
+    for doc in collection.get_loader().documents():
         if doc['slug'] in indexed:
             logger.debug('%s skipped', doc['slug'])
             continue

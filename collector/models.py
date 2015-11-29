@@ -1,6 +1,8 @@
 import hashlib
+import json
 from django.db import models
 from django.conf import settings
+from django.utils.module_loading import import_string
 
 
 class Collection(models.Model):
@@ -17,6 +19,10 @@ class Collection(models.Model):
 
     def __unicode__(self):
         return self.slug
+
+    def get_loader(self):
+        cls = import_string(self.loader)
+        return cls(**json.loads(self.options))
 
     def label(self):
         return self.title or self.slug
