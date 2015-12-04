@@ -137,7 +137,12 @@ function search(q, collections, callback) {
   $.ajax({
     url: '{% url "search" %}',
     method: 'POST',
-    data: {q: q, collections: collections},
+    data: JSON.stringify({
+      collections: collections,
+      query: {query_string: {default_field: 'text', query: q}},
+      fields: ['title', 'url'],
+      highlight: {fields: {text: {}}},
+    }),
     success: callback,
   })
 }

@@ -9,7 +9,7 @@ def index(doc):
     resp = es.index(index=INDEX, doc_type=DOCTYPE, body=doc)
 
 
-def search(q, collections):
+def search(query, fields, highlight, collections):
     if collections:
         filter = {
             'or': [
@@ -24,22 +24,12 @@ def search(q, collections):
     body = {
         'query': {
             'filtered': {
-
                 'filter': filter,
-
-                'query': {
-                    'query_string': {
-                        'default_field': 'text',
-                        'query': q,
-                    }
-                },
-
+                'query': query,
             },
         },
-
-        'fields': ['title', 'url'],
-
-        'highlight': {'fields': {'text': {}}},
+        'fields': fields,
+        'highlight': highlight,
     }
     return es.search(index=INDEX, body=body)
 
