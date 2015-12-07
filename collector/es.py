@@ -31,8 +31,11 @@ def search(query, fields, highlight, collections, from_, size):
             },
         },
         'fields': fields,
-        'highlight': highlight,
     }
+
+    if highlight:
+        body['highlight'] = highlight
+
     return es.search(index=INDEX, body=body)
 
 
