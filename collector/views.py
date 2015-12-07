@@ -36,6 +36,8 @@ def search(request):
     body = json.loads(request.body)
     collections = list(collection_slugs(request.user, body.get('collections')))
     res = es.search(
+        from_=body.get('from', 1),
+        size=body.get('size', 10),
         query=body['query'],
         fields=body.get('fields'),
         highlight=body.get('highlight'),
