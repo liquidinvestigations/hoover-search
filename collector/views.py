@@ -2,6 +2,7 @@ import json
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.core.urlresolvers import reverse
 from . import es
 from .models import Collection
 
@@ -49,4 +50,9 @@ def search(request):
 def whoami(request):
     return JsonResponse({
         'username': request.user.username,
+        'urls': {
+            'login': reverse('login'),
+            'admin': reverse('admin:index'),
+            'logout': reverse('logout') + '?next=' + reverse('home'),
+        },
     })
