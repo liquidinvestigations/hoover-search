@@ -44,3 +44,9 @@ def search(request):
         collections=collections,
     )
     return JsonResponse(res)
+
+
+def whoami(request):
+    return JsonResponse({
+        'username': request.user.username,
+    })
