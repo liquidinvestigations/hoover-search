@@ -33,6 +33,14 @@ def home(request):
 
 
 @csrf_exempt
+def collections(request):
+    return JsonResponse([
+        {'slug': col.slug, 'title': col.title}
+        for col in Collection.objects_for_user(request.user)
+    ])
+
+
+@csrf_exempt
 def search(request):
     body = json.loads(request.body)
     collections = list(collection_slugs(request.user, body.get('collections')))
