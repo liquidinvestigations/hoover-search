@@ -50,6 +50,7 @@ def search(request):
 def whoami(request):
     return JsonResponse({
         'username': request.user.username,
+        'admin': request.user.is_superuser,
         'urls': {
             'login': reverse('login'),
             'admin': reverse('admin:index'),
