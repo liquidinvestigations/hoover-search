@@ -19,13 +19,15 @@ class JsonResponse(HttpResponse):
 def collection_slugs(user, collections_arg):
     rv = (c.slug for c in Collection.objects_for_user(user))
     if collections_arg is not None:
-        collections = set(collections_arg.split())
+        collections = set(collections_arg)
         rv = (slug for slug in rv if slug in collections)
     return rv
 
 
 def home(request):
     collections_arg = request.GET.get('collections')
+    if collections_arg is not None:
+        collections_arg = collections_arg.split()
     return render(request, 'home.html', {
         'collections': Collection.objects_for_user(request.user),
         'selected': set(collection_slugs(request.user, collections_arg)),
