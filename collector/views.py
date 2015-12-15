@@ -64,6 +64,7 @@ def whoami(request):
         'urls': {
             'login': reverse('login'),
             'admin': reverse('admin:index'),
+            'password_change': reverse('password_change'),
             'logout': reverse('logout') + '?next=' + reverse('home'),
         },
     })
