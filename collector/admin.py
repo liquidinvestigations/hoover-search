@@ -1,3 +1,5 @@
+from django import forms
+from django.core.mail import send_mail
 from django.conf.urls import url
 from django.contrib import admin
 from django.contrib.auth.admin import User, Group, UserAdmin, GroupAdmin
@@ -32,9 +34,30 @@ class CollectionAdmin(admin.ModelAdmin):
 
 class HooverUserCreateForm(UserCreationForm):
 
+    send_email = forms.BooleanField()
+    email = forms.EmailField(label="Email", required=True, max_length=254)
+
+    def save(self, *args, **kwargs):
+        user = super(HooverUserCreateForm, self).save(*args, **kwargs)
+        print self.cleaned_data
+
+        if self.cleaned_data['send_email']:
+            message = (
+                "Your username is '{}' and the password is '{}'."
+                .format(user.username, self.cleaned_data['password1'])
+            )
+            send_mail(
+                subject="Welcome to Hoover",
+                message=message,
+                from_email=None,
+                recipient_list=[user.email],
+            )
+
+        return user
+
     class Meta:
         model = User
-        fields = ['username', 'first_name', 'last_name']
+        fields = ['username', 'first_name', 'last_name', 'send_email']
 
 
 class HooverUserAdmin(UserAdmin):
@@ -48,8 +71,10 @@ class HooverUserAdmin(UserAdmin):
                 'first_name',
                 'last_name',
                 'username',
+                'email',
                 'password1',
                 'password2',
+                'send_email',
             ],
         }),
     ]
