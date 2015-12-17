@@ -1,5 +1,7 @@
 from django import forms
 from django.core.mail import send_mail
+from django.core.urlresolvers import reverse
+from django.shortcuts import get_object_or_404
 from django.conf.urls import url
 from django.contrib import admin
 from django.contrib.auth.admin import User, Group, UserAdmin, GroupAdmin
@@ -7,6 +9,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import render, redirect
 from . import models
 from . import es
+from . import uploads
 
 
 class HooverAdminSite(admin.AdminSite):
@@ -29,13 +32,32 @@ class HooverAdminSite(admin.AdminSite):
 
 class CollectionAdmin(admin.ModelAdmin):
 
-    list_display = ['__unicode__', 'count', 'public', 'access_list']
+    list_display = ['__unicode__', 'count', 'public', 'access_list', 'upload']
 
     def get_prepopulated_fields(self, request, obj=None):
         return {} if obj else {'slug': ['title']}
 
     def get_readonly_fields(self, request, obj=None):
         return ['slug'] if obj else []
+
+    def upload(self, obj):
+        return '<a href="%s/upload">upload</a>' % obj.pk
+
+    upload.allow_tags = True
+
+    def upload_view(self, request, pk):
+        collection = get_object_or_404(models.Collection, pk=pk)
+
+        if request.method == 'POST':
+            uploads.handle_zipfile(request, collection, request.FILES['file'])
+            from django.http import HttpResponse; return HttpResponse('yay')
+
+        return render(request, 'admin-upload.html', {'collection': collection})
+
+    def get_urls(self):
+        return [
+            url(r'^(.+)/upload$', self.admin_site.admin_view(self.upload_view)),
+        ] + super(CollectionAdmin, self).get_urls()
 
 class HooverUserCreateForm(UserCreationForm):
 
