@@ -31,6 +31,11 @@ class CollectionAdmin(admin.ModelAdmin):
 
     list_display = ['__unicode__', 'count', 'public', 'access_list']
 
+    def get_prepopulated_fields(self, request, obj=None):
+        return {} if obj else {'slug': ['title']}
+
+    def get_readonly_fields(self, request, obj=None):
+        return ['slug'] if obj else []
 
 class HooverUserCreateForm(UserCreationForm):
 
