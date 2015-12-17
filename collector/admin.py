@@ -15,8 +15,8 @@ class HooverAdminSite(admin.AdminSite):
 
     def get_urls(self):
         return [
-            url(r'^es/$', self.es_index, name='esindex'),
-            url(r'^es/delete$', self.es_delete),
+            url(r'^es/$', self.admin_view(self.es_index), name='esindex'),
+            url(r'^es/delete$', self.admin_view(self.es_delete)),
         ] + super(HooverAdminSite, self).get_urls()
 
     def es_index(self, request):
