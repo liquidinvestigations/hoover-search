@@ -49,8 +49,15 @@ class CollectionAdmin(admin.ModelAdmin):
         collection = get_object_or_404(models.Collection, pk=pk)
 
         if request.method == 'POST':
-            uploads.handle_zipfile(request, collection, request.FILES['file'])
-            from django.http import HttpResponse; return HttpResponse('yay')
+            results = uploads.handle_zipfile(
+                request,
+                collection,
+                request.FILES['file'],
+            )
+            return render(request, 'admin-upload-results.html', {
+                'collection': collection,
+                'results': results
+            })
 
         return render(request, 'admin-upload.html', {'collection': collection})
 

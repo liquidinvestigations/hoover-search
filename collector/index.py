@@ -1,5 +1,6 @@
 import logging
 import threading
+import subprocess
 from django.db import transaction
 import requests
 from . import es
@@ -37,6 +38,20 @@ def index_from_queue(queue, collection):
         doc['text'] = resp.text
         es.index(doc)
         logger.debug('%s ok', doc['slug'])
+
+
+def index_local_file(collection, local_path, slug, url):
+    if local_path.endswith('.pdf'):
+        text = subprocess.check_output(['pdftotext', local_path, '-'])
+        es.index({
+            'text': text,
+            'url': url,
+            'slug': slug,
+            'collection': collection.slug,
+        })
+
+    else:
+        raise RuntimeError("Unknown file type %r" % local_path)
 
 
 def update_collection(collection, threads=1):

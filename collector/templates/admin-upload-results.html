@@ -1,0 +1,19 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+
+<h2>Upload results</h2>
+
+<table>
+  {% for item in results %}
+    <tr>
+      <td>{{ item.0 }}</td>
+      <td>{{ item.1 }}</td>
+      <td>{{ item.2 }}</td>
+    </tr>
+  {% endfor %}
+</table>
+
+<a href="..">back</a>
+
+{% endblock %}
