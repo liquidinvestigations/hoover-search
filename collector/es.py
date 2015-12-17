@@ -6,7 +6,8 @@ DOCTYPE = 'doc'
 INDEX = 'hoover'
 
 def index(doc):
-    resp = es.index(index=INDEX, doc_type=DOCTYPE, body=doc)
+    id = doc['collection'] + '/' + doc['slug']
+    resp = es.index(id=id, index=INDEX, doc_type=DOCTYPE, body=doc)
 
 
 def search(query, fields, highlight, collections, from_, size):
