@@ -22,7 +22,6 @@ def handle_zipfile(request, collection, uploaded_file):
         if os.path.isdir(local_path):
             continue
 
-        print [local_path, uploads_root]
         assert local_path.startswith(collection_path)
         relative_path = local_path[len(uploads_root):]
         local_url = settings.HOOVER_UPLOADS_URL + relative_path

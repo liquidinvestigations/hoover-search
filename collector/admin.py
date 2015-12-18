@@ -73,7 +73,6 @@ class HooverUserCreateForm(UserCreationForm):
 
     def save(self, *args, **kwargs):
         user = super(HooverUserCreateForm, self).save(*args, **kwargs)
-        print self.cleaned_data
 
         if self.cleaned_data['send_email']:
             message = (
