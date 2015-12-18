@@ -26,11 +26,13 @@ def handle_zipfile(request, collection, uploaded_file):
         assert local_path.startswith(collection_path)
         relative_path = local_path[len(uploads_root):]
         local_url = settings.HOOVER_UPLOADS_URL + relative_path
-
-        if not local_path.endswith('.pdf'):
-            yield ('fail', relative_path, "unknown file type")
-            continue
-
         url = request.build_absolute_uri(local_url)
-        index.index_local_file(collection, local_path, relative_path, url)
-        yield ('success', relative_path)
+
+        try:
+            index.index_local_file(collection, local_path, relative_path, url)
+
+        except Exception as e:
+            yield ('fail', relative_path, str(e))
+
+        else:
+            yield ('success', relative_path)
