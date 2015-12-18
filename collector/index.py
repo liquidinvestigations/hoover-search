@@ -41,19 +41,18 @@ def index_from_queue(queue, collection):
 
 
 def index_local_file(collection, local_path, slug, url):
-    text = subprocess.check_output([
-        'unoconv',
-        '-f', 'text',
-        '--stdout',
-        local_path,
-    ])
-    es.index({
-        'title': slug,
-        'text': text,
-        'url': url,
-        'slug': slug,
-        'collection': collection.slug,
-    })
+    if local_path.endswith('.pdf'):
+        text = subprocess.check_output(['pdftotext', local_path, '-'])
+        es.index({
+            'title': slug,
+            'text': text,
+            'url': url,
+            'slug': slug,
+            'collection': collection.slug,
+        })
+
+    else:
+        raise RuntimeError("Unknown file type %r" % local_path)
 
 
 def update_collection(collection, threads=1):
