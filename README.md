@@ -43,6 +43,11 @@
 
 6.  Create a database named `hoover`, and make sure set proper permissions; see `hoover/settings/local.py`
 
+7.  Prepare the database:
+    ```bash
+    ./manage.py migrate
+    ```
+
 7.  Run the application:
     ```bash
     ./run devserver
