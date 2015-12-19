@@ -14,7 +14,6 @@ DATABASES = {
         # Database info.
         # see: https://docs.djangoproject.com/en/1.9/ref/settings/#std:setting-DATABASES
         'NAME': 'hoover',
-        'USER': 'postgres',
     },
 }
 
