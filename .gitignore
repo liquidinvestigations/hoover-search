@@ -1,2 +1,14 @@
+
+# Ignore IDE specific files.
+.idea
+
+# Ignore binary files.
+__pycache__
+*.py[cod]
+
+# Ignore virtual environment files.
+/.venv/
+
+# Ignore local files.
 /hoover/settings/local.py
-/static
+/static/
