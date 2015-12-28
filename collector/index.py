@@ -2,7 +2,6 @@ import logging
 import threading
 import subprocess
 from django.db import transaction
-import requests
 from . import es
 from .utils import now, threadsafe
 
@@ -17,27 +16,27 @@ def documents_to_index(collection):
     indexed = es.get_slugs(collection.slug)
 
     for doc in collection.get_loader().documents():
-        if doc['slug'] in indexed:
-            logger.debug('%s skipped', doc['slug'])
+        slug = doc.metadata['slug']
+        if slug in indexed:
+            logger.debug('%s skipped', slug)
             continue
 
         yield doc
 
 
+def index(collection, doc):
+    data = dict(
+        doc.metadata,
+        text=doc.text(),
+        collection=collection.slug,
+    )
+    es.index(data)
+    logger.debug('%s ok', data['slug'])
+
+
 def index_from_queue(queue, collection):
     for doc in queue:
-        resp = requests.get(doc['text_url'])
-        if resp.status_code == 404:
-            raise TextMissing(doc['slug'])
-
-        if resp.status_code != 200:
-            msg = "failed to get text %s: %r" % (doc['slug'], resp)
-            raise RuntimeError(msg)
-
-        doc['collection'] = collection.slug
-        doc['text'] = resp.text
-        es.index(doc)
-        logger.debug('%s ok', doc['slug'])
+        index(collection, doc)
 
 
 def index_local_file(collection, local_path, slug, url):

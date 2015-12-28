@@ -1,5 +1,6 @@
 import re
 import yaml
+import requests
 from ..utils import open_url
 
 
@@ -17,6 +18,21 @@ class Url(object):
 
         else:
             return Url(self.url.rsplit('/', 1)[0] + '/' + value)
+
+
+class Document(object):
+
+    def __init__(self, metadata):
+        self.metadata = metadata
+
+    def text(self):
+        resp = requests.get(self.metadata['text_url'])
+
+        if resp.status_code == 200:
+            return resp.text
+
+        msg = "failed to get text %s: %r" % (self.metadata['slug'], resp)
+        raise RuntimeError(msg)
 
 
 class Loader(object):
@@ -38,4 +54,4 @@ class Loader(object):
                                 continue
                         item['url'] = doc_url.join(item['url']).url
                         item['text_url'] = doc_url.join(item['text_url']).url
-                        yield item
+                        yield Document(item)
