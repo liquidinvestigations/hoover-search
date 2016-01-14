@@ -1,3 +1,4 @@
 /hoover/settings/local.py
 /static
+/uploads
 *.pyc
