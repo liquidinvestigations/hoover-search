@@ -1,4 +1,5 @@
 import re
+import json
 import yaml
 import requests
 from ..utils import open_url
@@ -22,8 +23,24 @@ class Url(object):
 
 class Document(object):
 
-    def __init__(self, metadata):
-        self.metadata = metadata
+    _NOT_PARSED = object()
+    _parsed = _NOT_PARSED
+
+    def __init__(self, raw, base_url):
+        self._raw = raw
+        self.base_url = base_url
+
+    def _expand_urls(self, data):
+        return dict(data,
+            url=self.base_url.join(data['url']).url,
+            text_url=self.base_url.join(data['text_url']).url,
+        )
+
+    @property
+    def metadata(self):
+        if self._parsed is Document._NOT_PARSED:
+            self._parsed = self._expand_urls(json.loads(self._raw.decode('utf-8')))
+        return self._parsed
 
     def text(self):
         resp = requests.get(self.metadata['text_url'])
@@ -48,10 +65,5 @@ class Loader(object):
             for doc in index['documents']:
                 doc_url = index_url.join(doc)
                 with doc_url.open() as d:
-                    for item in yaml.safe_load_all(d):
-                        if self.match:
-                            if not re.search(self.match, item['slug']):
-                                continue
-                        item['url'] = doc_url.join(item['url']).url
-                        item['text_url'] = doc_url.join(item['text_url']).url
-                        yield Document(item)
+                    for line in d:
+                        yield Document(line, doc_url)
