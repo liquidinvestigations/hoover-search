@@ -12,18 +12,6 @@ class TextMissing(RuntimeError):
     pass
 
 
-def documents_to_index(collection):
-    indexed = es.get_slugs(collection.slug)
-
-    for doc in collection.get_loader().documents():
-        slug = doc.metadata['slug']
-        if slug in indexed:
-            logger.debug('%s skipped', slug)
-            continue
-
-        yield doc
-
-
 def index(collection, doc):
     data = dict(
         doc.metadata,
@@ -36,6 +24,10 @@ def index(collection, doc):
 
 def index_from_queue(queue, collection):
     for doc in queue:
+        doc_slug = doc.metadata['slug']
+        if es.exists(collection.slug, doc_slug):
+            logger.debug('%s skipped', doc_slug)
+            continue
         index(collection, doc)
 
 
@@ -56,7 +48,7 @@ def index_local_file(collection, local_path, slug, url):
 
 def update_collection(collection, threads=1):
     logger.info('updating %r', collection)
-    queue = threadsafe(documents_to_index(collection))
+    queue = threadsafe(collection.get_loader().documents())
 
     thread_list = [
         threading.Thread(target=index_from_queue, args=(queue, collection))

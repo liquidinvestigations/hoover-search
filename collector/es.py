@@ -1,5 +1,6 @@
 from django.conf import settings
 from elasticsearch import Elasticsearch, helpers
+from elasticsearch.client.utils import _make_path
 
 es = Elasticsearch(settings.ELASTICSEARCH_URL)
 DOCTYPE = 'doc'
@@ -8,6 +9,12 @@ INDEX = 'hoover'
 def index(doc):
     id = doc['collection'] + '/' + doc['slug']
     resp = es.index(id=id, index=INDEX, doc_type=DOCTYPE, body=doc)
+
+
+def exists(collection, slug):
+    path = _make_path(INDEX, DOCTYPE, '%s/%s' % (collection, slug))
+    (status, _) = es.transport.perform_request('HEAD', path, {'ignore': 404})
+    return status == 200
 
 
 def search(query, fields, highlight, collections, from_, size):
@@ -38,17 +45,6 @@ def search(query, fields, highlight, collections, from_, size):
         body['highlight'] = highlight
 
     return es.search(index=INDEX, body=body)
-
-
-def get_slugs(collection):
-    return set(
-        r['fields']['slug'][0]
-        for r in
-        helpers.scan(es, {
-            'query': {'term': {'collection': collection}},
-            'fields': ['slug'],
-        })
-    )
 
 
 def delete(collection):
