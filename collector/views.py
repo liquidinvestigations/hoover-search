@@ -44,7 +44,7 @@ def collections(request):
 
 @csrf_exempt
 def search(request):
-    body = json.loads(request.body)
+    body = json.loads(request.body.decode('utf-8'))
     collections = list(collection_slugs(request.user, body.get('collections')))
     res = es.search(
         from_=body.get('from'),

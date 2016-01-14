@@ -1,5 +1,5 @@
 from datetime import datetime
-import urllib
+import urllib.request
 from contextlib import contextmanager
 import logging
 import threading
@@ -19,7 +19,7 @@ def now():
 
 @contextmanager
 def open_url(url):
-    f = urllib.urlopen(url)
+    f = urllib.request.urlopen(url)
     try:
         yield f
     finally:
@@ -36,6 +36,6 @@ class threadsafe(object):
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         with self.lock:
             return next(self.iter)
