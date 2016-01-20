@@ -36,7 +36,7 @@ def index_local_file(collection, local_path, slug, url):
         text = subprocess.check_output(['pdftotext', local_path, '-'])
         es.index({
             'title': slug,
-            'text': text,
+            'text': text.decode('utf-8'),
             'url': url,
             'slug': slug,
             'collection': collection.slug,
