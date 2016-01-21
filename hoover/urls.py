@@ -9,4 +9,5 @@ urlpatterns = [
     url(r'^whoami$', 'collector.views.whoami'),
     url(r'^collections$', 'collector.views.collections', name='collections'),
     url(r'^accounts/', include('django.contrib.auth.urls')),
+    url(r'^uploads/(?P<filename>.+)$', 'collector.uploads.serve_file'),
 ]

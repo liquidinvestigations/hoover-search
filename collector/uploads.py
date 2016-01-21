@@ -1,8 +1,13 @@
 import os
 import re
 import zipfile
+import mimetypes
+from pathlib import Path
 from django.conf import settings
+from django.http import FileResponse, Http404
 from . import index
+
+UPLOADS_ROOT = Path(settings.HOOVER_UPLOADS_ROOT)
 
 
 def save_zipfile(out_dir, uploaded_file):
@@ -33,3 +38,13 @@ def handle_zipfile(request, collection, uploaded_file):
         url = request.build_absolute_uri(local_url)
         index.index_local_file(collection, local_path, relative_path, url)
         yield ('success', relative_path)
+
+
+def serve_file(request, filename):
+    file_path = UPLOADS_ROOT / filename
+    print(file_path)
+    if not (UPLOADS_ROOT in file_path.parents and file_path.is_file()):
+        raise Http404()
+    content_type = (mimetypes.guess_type(str(file_path))[0]
+        or 'application/octet-stream')
+    return FileResponse(file_path.open('rb'), content_type=content_type)
