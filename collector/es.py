@@ -66,6 +66,10 @@ def flush():
     es.indices.delete(index=INDEX, ignore=[400, 404])
 
 
+def refresh():
+    es.indices.refresh(index=INDEX)
+
+
 def stats():
     body = {
         'aggregations': {
