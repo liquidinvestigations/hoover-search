@@ -16,8 +16,8 @@ class Api:
             content_type='application/json',
         )
 
-    def search_ids(self, query):
-        res = self.post('/search', {'query': query}).json()
+    def search_ids(self, **data):
+        res = self.post('/search', data).json()
         return set(hit['_id'] for hit in res['hits']['hits'])
 
 @pytest.fixture
@@ -58,17 +58,21 @@ def collection_fixture(name, **kwargs):
 @clean_es
 def test_collect(api):
     collection_fixture('discworld', public=True)
-    hits = api.search_ids({'query_string': {'query': 'rincewind'}})
+    hits = api.search_ids(query={'query_string': {'query': 'rincewind'}})
     assert hits == {'discworld/power_of_magic'}
 
 @clean_es
-def test_private_collection(api):
+def test_select_collections(api):
     discworld = collection_fixture('discworld', public=True)
     longearth = collection_fixture('longearth', public=True)
-    hits = api.search_ids({'query_string': {'query': 'drum'}})
+    hits = api.search_ids(query={'query_string': {'query': 'drum'}})
     assert hits == {'discworld/power_of_magic', 'longearth/long_war'}
+
+    hits = api.search_ids(query={'query_string': {'query': 'drum'}},
+        collections=['longearth'])
+    assert hits == {'longearth/long_war'}
 
     longearth.public = False
     longearth.save()
-    hits = api.search_ids({'query_string': {'query': 'drum'}})
+    hits = api.search_ids(query={'query_string': {'query': 'drum'}})
     assert hits == {'discworld/power_of_magic'}
