@@ -41,43 +41,30 @@ def clean_es(func):
             except: pass
     return wrapper
 
-@clean_es
-def test_collect(api):
-    from collector import models, index, es
+def collection_fixture(name, **kwargs):
     from django.conf import settings
+    from collector import models, index, es
     col = models.Collection.objects.create(
-        slug='discworld',
+        slug=name,
         options=json.dumps({
-            'index': settings.FIXTURES_URL + '/discworld/collection.yaml',
+            'index': settings.FIXTURES_URL + '/' + name + '/collection.yaml',
         }),
-        public=True,
+        **kwargs
     )
     index.update_collection(col)
     es.refresh()
+    return col
+
+@clean_es
+def test_collect(api):
+    collection_fixture('discworld', public=True)
     hits = api.search_ids({'query_string': {'query': 'rincewind'}})
     assert hits == {'discworld/power_of_magic'}
 
 @clean_es
 def test_private_collection(api):
-    from collector import models, index, es
-    from django.conf import settings
-    discworld = models.Collection.objects.create(
-        slug='discworld',
-        options=json.dumps({
-            'index': settings.FIXTURES_URL + '/discworld/collection.yaml',
-        }),
-        public=True,
-    )
-    index.update_collection(discworld)
-    longearth = models.Collection.objects.create(
-        slug='longearth',
-        options=json.dumps({
-            'index': settings.FIXTURES_URL + '/longearth/collection.yaml',
-        }),
-        public=True,
-    )
-    index.update_collection(longearth)
-    es.refresh()
+    discworld = collection_fixture('discworld', public=True)
+    longearth = collection_fixture('longearth', public=True)
     hits = api.search_ids({'query_string': {'query': 'drum'}})
     assert hits == {'discworld/power_of_magic', 'longearth/long_war'}
 
