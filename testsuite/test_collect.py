@@ -1,4 +1,5 @@
 import json
+import functools
 import pytest
 
 pytestmark = pytest.mark.django_db
@@ -19,10 +20,26 @@ class Api:
 def api(client):
     return Api(client)
 
+def delete_test_collections():
+    from collector import es
+    es.delete('discworld')
+    es.refresh()
+
+def clean_es(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        delete_test_collections()
+        try:
+            return func(*args, **kwargs)
+        finally:
+            try: delete_test_collections()
+            except: pass
+    return wrapper
+
+@clean_es
 def test_collect(api):
     from collector import models, index, es
     from django.conf import settings
-    es.delete('discworld')
     col = models.Collection.objects.create(
         slug='discworld',
         options=json.dumps({
