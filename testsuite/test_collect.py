@@ -16,6 +16,10 @@ class Api:
             content_type='application/json',
         )
 
+    def search_ids(self, query):
+        res = self.post('/search', {'query': query}).json()
+        return set(hit['_id'] for hit in res['hits']['hits'])
+
 @pytest.fixture
 def api(client):
     return Api(client)
@@ -23,6 +27,7 @@ def api(client):
 def delete_test_collections():
     from collector import es
     es.delete('discworld')
+    es.delete('longearth')
     es.refresh()
 
 def clean_es(func):
@@ -49,8 +54,34 @@ def test_collect(api):
     )
     index.update_collection(col)
     es.refresh()
-    res = api.post('/search', {
-        'query': {'query_string': {'query': 'rincewind'}},
-    }).json()
-    [hit] = res['hits']['hits']
-    assert hit['_id'] == 'discworld/power_of_magic'
+    hits = api.search_ids({'query_string': {'query': 'rincewind'}})
+    assert hits == {'discworld/power_of_magic'}
+
+@clean_es
+def test_private_collection(api):
+    from collector import models, index, es
+    from django.conf import settings
+    discworld = models.Collection.objects.create(
+        slug='discworld',
+        options=json.dumps({
+            'index': settings.FIXTURES_URL + '/discworld/collection.yaml',
+        }),
+        public=True,
+    )
+    index.update_collection(discworld)
+    longearth = models.Collection.objects.create(
+        slug='longearth',
+        options=json.dumps({
+            'index': settings.FIXTURES_URL + '/longearth/collection.yaml',
+        }),
+        public=True,
+    )
+    index.update_collection(longearth)
+    es.refresh()
+    hits = api.search_ids({'query_string': {'query': 'drum'}})
+    assert hits == {'discworld/power_of_magic', 'longearth/long_war'}
+
+    longearth.public = False
+    longearth.save()
+    hits = api.search_ids({'query_string': {'query': 'drum'}})
+    assert hits == {'discworld/power_of_magic'}
