@@ -14,20 +14,7 @@ from . import uploads
 
 class HooverAdminSite(admin.AdminSite):
 
-    index_template = 'admin-index.html'
-
-    def get_urls(self):
-        return [
-            url(r'^es/$', self.admin_view(self.es_index), name='esindex'),
-            url(r'^es/delete$', self.admin_view(self.es_delete)),
-        ] + super(HooverAdminSite, self).get_urls()
-
-    def es_index(self, request):
-        return render(request, 'admin-es-index.html', {'stats': es.stats()})
-
-    def es_delete(self, request):
-        es.delete(request.POST['collection'])
-        return redirect('.')
+    pass
 
 
 class CollectionAdmin(admin.ModelAdmin):
