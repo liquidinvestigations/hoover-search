@@ -73,3 +73,14 @@ def stats():
         }
         for index, amap in es.indices.get_aliases().items()
     }
+
+
+def list_indices():
+    for index in es.indices.get(index='*'):
+        if index.startswith(settings.ELASTICSEARCH_INDEX_PREFIX):
+            slug = index[len(settings.ELASTICSEARCH_INDEX_PREFIX):]
+            try:
+                collection_id = int(slug)
+            except ValueError:
+                continue
+            yield collection_id
