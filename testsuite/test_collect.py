@@ -26,8 +26,7 @@ def api(client):
 
 def delete_test_collections():
     from collector import es
-    es.delete('discworld')
-    es.delete('longearth')
+    es.delete_all()
     es.refresh()
 
 def clean_es(func):
@@ -57,22 +56,27 @@ def collection_fixture(name, **kwargs):
 
 @clean_es
 def test_collect(api):
-    collection_fixture('discworld', public=True)
+    discworld = collection_fixture('discworld', public=True)
     hits = api.search_ids(query={'query_string': {'query': 'rincewind'}})
-    assert hits == {'discworld/power_of_magic'}
+    assert hits == {'power_of_magic'}
+
+    discworld.public = False
+    discworld.save()
+    hits = api.search_ids(query={'query_string': {'query': 'rincewind'}})
+    assert hits == set()
 
 @clean_es
 def test_select_collections(api):
     discworld = collection_fixture('discworld', public=True)
     longearth = collection_fixture('longearth', public=True)
     hits = api.search_ids(query={'query_string': {'query': 'drum'}})
-    assert hits == {'discworld/power_of_magic', 'longearth/long_war'}
+    assert hits == {'power_of_magic', 'long_war'}
 
     hits = api.search_ids(query={'query_string': {'query': 'drum'}},
         collections=['longearth'])
-    assert hits == {'longearth/long_war'}
+    assert hits == {'long_war'}
 
     longearth.public = False
     longearth.save()
     hits = api.search_ids(query={'query_string': {'query': 'drum'}})
-    assert hits == {'discworld/power_of_magic'}
+    assert hits == {'power_of_magic'}

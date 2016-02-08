@@ -84,5 +84,6 @@ STATIC_URL = '/static/'
 LOGIN_REDIRECT_URL = 'home'
 
 ELASTICSEARCH_URL = 'http://localhost:9200'
+ELASTICSEARCH_INDEX_PREFIX = 'hoover-'
 
 HOOVER_UPLOADS_URL = '/uploads/'

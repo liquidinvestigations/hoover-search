@@ -4,84 +4,72 @@ from elasticsearch.client.utils import _make_path
 
 es = Elasticsearch(settings.ELASTICSEARCH_URL)
 DOCTYPE = 'doc'
-INDEX = 'hoover'
 
-def index(doc):
-    id = doc['collection'] + '/' + doc['slug']
-    resp = es.index(id=id, index=INDEX, doc_type=DOCTYPE, body=doc)
+def create_index(collection_id, name):
+    es.indices.create(index=_index_id(collection_id))
+    es.indices.put_alias(index=_index_id(collection_id), name=name)
+
+def _index_id(collection_id):
+    return settings.ELASTICSEARCH_INDEX_PREFIX + str(collection_id)
+
+def index(collection_id, doc):
+    resp = es.index(
+        index=_index_id(collection_id),
+        doc_type=DOCTYPE,
+        id=doc['slug'],
+        body=doc,
+    )
 
 
-def exists(collection, slug):
-    path = _make_path(INDEX, DOCTYPE, '%s/%s' % (collection, slug))
+def exists(collection_id, slug):
+    path = _make_path(_index_id(collection_id), DOCTYPE, slug)
     (status, _) = es.transport.perform_request('HEAD', path, {'ignore': 404})
     return status == 200
 
 
 def search(query, fields, highlight, collections, from_, size):
-    if collections:
-        filter = {
-            'or': [
-                {'term': {'collection': col}}
-                for col in collections
-            ],
-        }
-
-    else:
-        filter = {'bool': {'must_not': {'match_all': {}}}}
+    if not collections:
+        # if index='', elasticsearch will search in all indices, so we make
+        # sure to return an empty result set
+        empty_query = {'query': {'bool': {'must_not': {'match_all': {}}}}}
+        return es.search(body=empty_query)
 
     body = {
         'from': from_,
         'size': size,
-        'query': {
-            'filtered': {
-                'filter': filter,
-                'query': query,
-            },
-        },
+        'query': query,
         'fields': fields,
     }
 
     if highlight:
         body['highlight'] = highlight
 
-    return es.search(index=INDEX, body=body)
+    return es.search(index=','.join(collections), body=body)
 
 
-def delete(collection):
-    docs = (
-        r['_id'] for r in
-        helpers.scan(es, {
-            'query': {'term': {'collection': collection}},
-            'fields': ['_id'],
-        })
-    )
-    actions = [
-        {'_op_type': 'delete', '_index': INDEX, '_type': DOCTYPE, '_id': d}
-        for d in docs
-    ]
-    helpers.bulk(es, actions)
+def delete(collection_id):
+    es.indices.delete(index=_index_id(collection_id))
 
 
-def flush():
-    es.indices.delete(index=INDEX, ignore=[400, 404])
+def delete_all():
+    for index in es.indices.get(index='*'):
+        if index.startswith(settings.ELASTICSEARCH_INDEX_PREFIX):
+            es.indices.delete(index=index)
 
 
 def refresh():
-    es.indices.refresh(index=INDEX)
+    es.indices.refresh()
+
+
+def count(collection_id):
+    return es.count(index=_index_id(collection_id))['count']
 
 
 def stats():
-    body = {
-        'aggregations': {
-            'collections': {
-                'terms': {
-                    'field': 'collection',
-                },
-            },
-        },
-    }
-    res = es.search(index=INDEX, search_type='count', body=body)
     return {
-        bucket['key']: bucket['doc_count']
-        for bucket in res['aggregations']['collections']['buckets']
+        index: {
+            'aliases': list(amap['aliases']),
+            'documents': es.count(index=index)['count'],
+        }
+        for index, amap in es.indices.get_aliases().items()
     }

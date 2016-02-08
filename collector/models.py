@@ -1,8 +1,10 @@
 import hashlib
 import json
 from django.db import models
+from django.dispatch import receiver
 from django.conf import settings
 from django.utils.module_loading import import_string
+from . import es
 
 
 class Collection(models.Model):
@@ -35,8 +37,13 @@ class Collection(models.Model):
         return rv
 
     def count(self):
-        from . import es
-        return es.stats().get(self.slug, 0)
+        return es.count(self.id)
 
     def access_list(self):
         return ', '.join(u.username for u in self.users.all())
+
+
+@receiver(models.signals.post_save, sender=Collection)
+def create_es_index(instance, created, **kwargs):
+    if created:
+        es.create_index(instance.id, instance.slug)

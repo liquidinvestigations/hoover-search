@@ -18,14 +18,14 @@ def index(collection, doc):
         text=doc.text(),
         collection=collection.slug,
     )
-    es.index(data)
+    es.index(collection.id, data)
     logger.debug('%s ok', data['slug'])
 
 
 def index_from_queue(queue, collection):
     for doc in queue:
         doc_slug = doc.metadata['slug']
-        if es.exists(collection.slug, doc_slug):
+        if es.exists(collection.id, doc_slug):
             logger.debug('%s skipped', doc_slug)
             continue
         index(collection, doc)
@@ -34,7 +34,7 @@ def index_from_queue(queue, collection):
 def index_local_file(collection, local_path, slug, url):
     if local_path.endswith('.pdf'):
         text = subprocess.check_output(['pdftotext', local_path, '-'])
-        es.index({
+        es.index(collection.id, {
             'title': slug,
             'text': text.decode('utf-8'),
             'url': url,
