@@ -22,7 +22,7 @@ def save_zipfile(out_dir, uploaded_file):
 
 def handle_zipfile(request, collection, uploaded_file):
     uploads_root = settings.HOOVER_UPLOADS_ROOT + '/'
-    collection_path = uploads_root + collection.slug + '/'
+    collection_path = uploads_root + collection.name + '/'
     for local_path in save_zipfile(collection_path, uploaded_file):
         if os.path.isdir(local_path):
             continue

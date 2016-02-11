@@ -16,11 +16,11 @@ class JsonResponse(HttpResponse):
         )
 
 
-def collection_slugs(user, collections_arg):
-    rv = (c.slug for c in Collection.objects_for_user(user))
+def collection_names(user, collections_arg):
+    rv = (c.name for c in Collection.objects_for_user(user))
     if collections_arg is not None:
         collections = set(collections_arg)
-        rv = (slug for slug in rv if slug in collections)
+        rv = (name for name in rv if name in collections)
     return rv
 
 
@@ -30,14 +30,14 @@ def home(request):
         collections_arg = collections_arg.split()
     return render(request, 'home.html', {
         'collections': Collection.objects_for_user(request.user),
-        'selected': set(collection_slugs(request.user, collections_arg)),
+        'selected': set(collection_names(request.user, collections_arg)),
     })
 
 
 @csrf_exempt
 def collections(request):
     return JsonResponse([
-        {'slug': col.slug, 'title': col.title}
+        {'name': col.name, 'title': col.title}
         for col in Collection.objects_for_user(request.user)
     ])
 
@@ -45,7 +45,7 @@ def collections(request):
 @csrf_exempt
 def search(request):
     body = json.loads(request.body.decode('utf-8'))
-    collections = list(collection_slugs(request.user, body.get('collections')))
+    collections = list(collection_names(request.user, body.get('collections')))
     res = es.search(
         from_=body.get('from'),
         size=body.get('size'),

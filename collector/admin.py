@@ -23,10 +23,10 @@ class CollectionAdmin(admin.ModelAdmin):
         'access_list', 'public', 'upload']
 
     def get_prepopulated_fields(self, request, obj=None):
-        return {} if obj else {'slug': ['title']}
+        return {} if obj else {'name': ['title']}
 
     def get_readonly_fields(self, request, obj=None):
-        return ['slug'] if obj else []
+        return ['name'] if obj else []
 
     def upload(self, obj):
         return '<a href="%s/upload">upload</a>' % obj.pk

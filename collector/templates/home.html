@@ -77,8 +77,8 @@
       {% for collection in collections %}
         <div class="checkbox">
           <label>
-            <input type="checkbox" value="{{ collection.slug }}"
-              {% if collection.slug in selected %}checked{% endif %}>
+            <input type="checkbox" value="{{ collection.name }}"
+              {% if collection.name in selected %}checked{% endif %}>
             {{ collection.label }}
           </label>
         </div>

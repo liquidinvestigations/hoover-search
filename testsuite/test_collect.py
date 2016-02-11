@@ -44,7 +44,7 @@ def collection_fixture(name, **kwargs):
     from django.conf import settings
     from collector import models, index, es
     col = models.Collection.objects.create(
-        slug=name,
+        name=name,
         options=json.dumps({
             'index': settings.FIXTURES_URL + '/' + name + '/collection.yaml',
         }),

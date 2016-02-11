@@ -16,4 +16,4 @@ class Command(BaseCommand):
     def handle(self, verbosity, collection, threads, **options):
         index_logger.setLevel(LOG_LEVEL[verbosity])
         collectible_logger.setLevel(LOG_LEVEL[verbosity])
-        update_collection(Collection.objects.get(slug=collection), threads)
+        update_collection(Collection.objects.get(name=collection), threads)

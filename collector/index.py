@@ -16,7 +16,7 @@ def index(collection, doc):
     data = dict(
         doc.metadata,
         text=doc.text(),
-        collection=collection.slug,
+        collection=collection.name,
     )
     es.index(collection.id, data)
     logger.debug('%s ok', data['id'])
@@ -39,7 +39,7 @@ def index_local_file(collection, local_path, id, url):
             'text': text.decode('utf-8'),
             'url': url,
             'id': id,
-            'collection': collection.slug,
+            'collection': collection.name,
         })
 
     else:
