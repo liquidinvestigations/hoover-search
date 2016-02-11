@@ -21,9 +21,9 @@ relative or absolute, to document lists.
 
 ```yaml
 ---
-{"slug": "one", "title": "One", "url": "one.pdf", "text_url": "one.txt"}
+{"id": "one", "title": "One", "url": "one.pdf", "text_url": "one.txt"}
 ---
-slug: "two"
+id: "two"
 title: "Two"
 url: "http://example.com/two.pdf"
 text_url: "http://example.com/two.txt"
@@ -35,7 +35,7 @@ a final `---` because it will generate a final blank document. You can use a
 JSON library to generate yaml because any JSON document is a valid yaml
 document.
 
-* `slug` - unique identifier of the document.
+* `id` - unique identifier of the document.
 * `title` - document title, presented to the user in the search results list.
 * `url` - link to the main representation of the document; this will be
   presented to the user when they click on the search result.
