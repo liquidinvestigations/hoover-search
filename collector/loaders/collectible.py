@@ -1,14 +1,20 @@
 import re
 import json
+import logging
 import yaml
 import requests
 from ..utils import open_url
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 class Url(object):
 
     def __init__(self, url):
         self.url = url
+
+    def __str__(self):
+        return self.url
 
     def open(self):
         return open_url(self.url)
@@ -60,10 +66,12 @@ class Loader(object):
 
     def documents(self):
         index_url = Url(self.index)
+        logger.info("loading collection %s", index_url)
         with index_url.open() as i:
             index = yaml.safe_load(i)
             for doc in index['documents']:
                 doc_url = index_url.join(doc)
+                logger.info("loading document list %s", doc_url)
                 with doc_url.open() as d:
                     for line in d:
                         yield Document(line, doc_url)
