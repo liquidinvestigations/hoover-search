@@ -44,7 +44,11 @@ def search(query, fields, highlight, collections, from_, size):
     if highlight:
         body['highlight'] = highlight
 
-    return es.search(index=','.join(collections), body=body)
+    return es.search(
+        index=','.join(collections),
+        ignore_unavailable=True,
+        body=body,
+    )
 
 
 def delete(collection_id):
