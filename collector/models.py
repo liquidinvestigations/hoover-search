@@ -39,6 +39,15 @@ class Collection(models.Model):
     def count(self):
         return es.count(self.id)
 
+    def is_active(self):
+        return self.slug in es.aliases(self.id)
+
+    def activate(self):
+        es.create_alias(self.id, self.slug)
+
+    def deactivate(self):
+        es.delete_aliases(self.id)
+
     def access_list(self):
         return ', '.join(u.username for u in self.users.all())
 

@@ -19,7 +19,8 @@ class HooverAdminSite(admin.AdminSite):
 
 class CollectionAdmin(admin.ModelAdmin):
 
-    list_display = ['__unicode__', 'count', 'public', 'access_list', 'upload']
+    list_display = ['__unicode__', 'is_active', 'count',
+        'access_list', 'public', 'upload']
 
     def get_prepopulated_fields(self, request, obj=None):
         return {} if obj else {'slug': ['title']}

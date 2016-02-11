@@ -65,6 +65,19 @@ def count(collection_id):
     return es.count(index=_index_id(collection_id))['count']
 
 
+def aliases(collection_id):
+    name = _index_id(collection_id)
+    return set(es.indices.get_aliases(index=name)[name]['aliases'])
+
+
+def create_alias(collection_id, name):
+    es.indices.put_alias(index=_index_id(collection_id), name=name)
+
+
+def delete_aliases(collection_id):
+    es.indices.delete_alias(index=_index_id(collection_id), name='*')
+
+
 def stats():
     return {
         index: {
