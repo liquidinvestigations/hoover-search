@@ -48,7 +48,7 @@ class Document(object):
         if resp.status_code == 200:
             return resp.text
 
-        msg = "failed to get text %s: %r" % (self.metadata['slug'], resp)
+        msg = "failed to get text %s: %r" % (self.metadata['id'], resp)
         raise RuntimeError(msg)
 
 

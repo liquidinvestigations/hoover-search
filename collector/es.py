@@ -16,13 +16,13 @@ def index(collection_id, doc):
     resp = es.index(
         index=_index_id(collection_id),
         doc_type=DOCTYPE,
-        id=doc['slug'],
+        id=doc['id'],
         body=doc,
     )
 
 
-def exists(collection_id, slug):
-    path = _make_path(_index_id(collection_id), DOCTYPE, slug)
+def exists(collection_id, doc_id):
+    path = _make_path(_index_id(collection_id), DOCTYPE, doc_id)
     (status, _) = es.transport.perform_request('HEAD', path, {'ignore': 404})
     return status == 200
 
