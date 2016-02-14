@@ -85,6 +85,14 @@ def delete_aliases(collection_id):
     es.indices.delete_alias(index=_index_id(collection_id), name='*')
 
 
+def set_mapping(collection_id, properties):
+    es.indices.put_mapping(
+        index=_index_id(collection_id),
+        doc_type=DOCTYPE,
+        body={'properties': properties},
+    )
+
+
 def status():
     return {
         index: {

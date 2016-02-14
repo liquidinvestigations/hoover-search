@@ -53,12 +53,19 @@ class Collection(models.Model):
     def access_list(self):
         return ', '.join(u.username for u in self.users.all())
 
+    def set_mapping(self):
+        loader = self.get_loader()
+        fields = loader.get_metadata().get('fields', {})
+        fields.setdefault('id', {'type': 'string', 'not_analyzed': True})
+        es.set_mapping(self.id, fields)
+
     def reset(self):
         active = self.is_active()
         es.delete_index(self.id, ok_missing=True)
         es.create_index(self.id, self.name)
+        self.set_mapping()
         if active:
-            self.active()
+            self.activate()
 
 
 @receiver(models.signals.post_save, sender=Collection)

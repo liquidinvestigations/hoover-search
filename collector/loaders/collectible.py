@@ -61,17 +61,18 @@ class Document(object):
 class Loader(object):
 
     def __init__(self, index, match='', **config):
-        self.index = index
+        self.index = Url(index)
         self.match = match
 
+    def get_metadata(self):
+        logger.info("loading collection %s", self.index)
+        with self.index.open() as i:
+            return yaml.safe_load(i)
+
     def documents(self):
-        index_url = Url(self.index)
-        logger.info("loading collection %s", index_url)
-        with index_url.open() as i:
-            index = yaml.safe_load(i)
-            for doc in index['documents']:
-                doc_url = index_url.join(doc)
-                logger.info("loading document list %s", doc_url)
-                with doc_url.open() as d:
-                    for line in d:
-                        yield Document(line, doc_url)
+        for doc in self.get_metadata()['documents']:
+            doc_url = self.index.join(doc)
+            logger.info("loading document list %s", doc_url)
+            with doc_url.open() as d:
+                for line in d:
+                    yield Document(line, doc_url)
