@@ -58,7 +58,7 @@ def collection_fixture(name, **kwargs):
 def test_collect(api):
     discworld = collection_fixture('discworld', public=True)
     hits = api.search_ids(query={'query_string': {'query': 'rincewind'}})
-    assert hits == {'power_of_magic'}
+    assert hits == {'colour_of_magic'}
 
     discworld.public = False
     discworld.save()
@@ -70,7 +70,7 @@ def test_select_collections(api):
     discworld = collection_fixture('discworld', public=True)
     longearth = collection_fixture('longearth', public=True)
     hits = api.search_ids(query={'query_string': {'query': 'drum'}})
-    assert hits == {'power_of_magic', 'long_war'}
+    assert hits == {'colour_of_magic', 'long_war'}
 
     hits = api.search_ids(query={'query_string': {'query': 'drum'}},
         collections=['longearth'])
@@ -79,4 +79,4 @@ def test_select_collections(api):
     longearth.public = False
     longearth.save()
     hits = api.search_ids(query={'query_string': {'query': 'drum'}})
-    assert hits == {'power_of_magic'}
+    assert hits == {'colour_of_magic'}
