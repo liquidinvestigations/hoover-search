@@ -1,6 +1,5 @@
 import logging
 import threading
-import subprocess
 from django.db import transaction
 from . import es
 from .utils import now, threadsafe
@@ -29,21 +28,6 @@ def index_from_queue(queue, collection):
             logger.debug('%s skipped', doc_slug)
             continue
         index(collection, doc)
-
-
-def index_local_file(collection, local_path, id, url):
-    if local_path.endswith('.pdf'):
-        text = subprocess.check_output(['pdftotext', local_path, '-'])
-        es.index(collection.id, {
-            'title': id,
-            'text': text.decode('utf-8'),
-            'url': url,
-            'id': id,
-            'collection': collection.name,
-        })
-
-    else:
-        raise RuntimeError("Unknown file type %r" % local_path)
 
 
 def update_collection(collection, threads=1):

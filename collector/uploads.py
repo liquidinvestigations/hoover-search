@@ -6,6 +6,7 @@ from pathlib import Path
 from django.conf import settings
 from django.http import FileResponse, Http404
 from . import index
+from .loaders.upload import Document
 
 UPLOADS_ROOT = Path(settings.HOOVER_UPLOADS_ROOT)
 
@@ -21,22 +22,21 @@ def save_zipfile(out_dir, uploaded_file):
 
 
 def handle_zipfile(request, collection, uploaded_file):
-    uploads_root = settings.HOOVER_UPLOADS_ROOT + '/'
-    collection_path = uploads_root + collection.name + '/'
-    for local_path in save_zipfile(collection_path, uploaded_file):
-        if os.path.isdir(local_path):
+    collection_path = UPLOADS_ROOT / collection.name
+    zip_files = save_zipfile(str(collection_path), uploaded_file)
+    for local_path in (Path(p) for p in zip_files):
+        if local_path.is_dir():
             continue
 
-        assert local_path.startswith(collection_path)
-        relative_path = local_path[len(uploads_root):]
-        local_url = settings.HOOVER_UPLOADS_URL + relative_path
+        assert collection_path in local_path.parents
+        relative_path = local_path.relative_to(UPLOADS_ROOT)
 
-        if not local_path.endswith('.pdf'):
+        if local_path.suffix != '.pdf':
             yield ('fail', relative_path, "unknown file type")
             continue
 
-        url = request.build_absolute_uri(local_url)
-        index.index_local_file(collection, local_path, relative_path, url)
+        print(local_path)
+        index.index(collection, Document(local_path))
         yield ('success', relative_path)
 
 
