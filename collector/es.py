@@ -85,7 +85,7 @@ def delete_aliases(collection_id):
     es.indices.delete_alias(index=_index_id(collection_id), name='*')
 
 
-def stats():
+def status():
     return {
         index: {
             'aliases': list(amap['aliases']),

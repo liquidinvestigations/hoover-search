@@ -1,11 +1,11 @@
 from django.core.management.base import BaseCommand
-from ...es import stats
+from ...es import status
 
 
 class Command(BaseCommand):
 
-    help = "Show elasticsearch stats"
+    help = "Show elasticsearch status"
 
     def handle(self, **options):
         from pprint import pprint
-        pprint(stats())
+        pprint(status())
