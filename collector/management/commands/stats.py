@@ -4,7 +4,7 @@ from ...es import stats
 
 class Command(BaseCommand):
 
-    help = "Imprt configuration file"
+    help = "Show elasticsearch stats"
 
     def handle(self, **options):
         from pprint import pprint

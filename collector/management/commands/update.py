@@ -7,7 +7,7 @@ from ...utils import LOG_LEVEL
 
 class Command(BaseCommand):
 
-    help = "Imprt configuration file"
+    help = "Import a collection"
 
     def add_arguments(self, parser):
         parser.add_argument('collection')
