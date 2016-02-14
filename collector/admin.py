@@ -41,7 +41,8 @@ class CollectionAdmin(admin.ModelAdmin):
         return ['name'] if obj else []
 
     def upload(self, obj):
-        return '<a href="%s/upload">upload</a>' % obj.pk
+        if obj.loader == 'collector.loaders.upload.Loader':
+            return '<a href="%s/upload">upload</a>' % obj.pk
 
     upload.allow_tags = True
 
