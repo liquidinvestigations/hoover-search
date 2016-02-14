@@ -51,8 +51,11 @@ def search(query, fields, highlight, collections, from_, size):
     )
 
 
-def delete(collection_id):
-    es.indices.delete(index=_index_id(collection_id))
+def delete_index(collection_id, ok_missing=False):
+    es.indices.delete(
+        index=_index_id(collection_id),
+        ignore=[404] if ok_missing else [],
+    )
 
 
 def delete_all():
@@ -71,7 +74,8 @@ def count(collection_id):
 
 def aliases(collection_id):
     name = _index_id(collection_id)
-    return set(es.indices.get_aliases(index=name)[name]['aliases'])
+    alias_map = es.indices.get_aliases(index=name)
+    return set(alias_map.get(name, {}).get('aliases', {}))
 
 
 def create_alias(collection_id, name):

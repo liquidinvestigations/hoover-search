@@ -53,6 +53,13 @@ class Collection(models.Model):
     def access_list(self):
         return ', '.join(u.username for u in self.users.all())
 
+    def reset(self):
+        active = self.is_active()
+        es.delete_index(self.id, ok_missing=True)
+        es.create_index(self.id, self.name)
+        if active:
+            self.active()
+
 
 @receiver(models.signals.post_save, sender=Collection)
 def create_es_index(instance, created, **kwargs):
