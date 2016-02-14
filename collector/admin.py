@@ -3,9 +3,11 @@ from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404
 from django.conf.urls import url
+from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth.admin import User, Group, UserAdmin, GroupAdmin
 from django.contrib.auth.forms import UserCreationForm
+from django.utils.module_loading import import_string
 from django.shortcuts import render, redirect
 from . import models
 from . import es
@@ -17,10 +19,20 @@ class HooverAdminSite(admin.AdminSite):
     pass
 
 
+class CollectionAdminForm(forms.ModelForm):
+
+    loader = forms.ChoiceField(choices=[
+        (import_name, import_string(import_name).label)
+        for import_name in settings.HOOVER_LOADERS
+    ])
+
+
 class CollectionAdmin(admin.ModelAdmin):
 
     list_display = ['__unicode__', 'is_active', 'count',
         'access_list', 'public', 'upload']
+
+    form = CollectionAdminForm
 
     def get_prepopulated_fields(self, request, obj=None):
         return {} if obj else {'name': ['title']}

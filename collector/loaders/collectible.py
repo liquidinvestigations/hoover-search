@@ -60,6 +60,8 @@ class Document(object):
 
 class Loader(object):
 
+    label = "Collectible"
+
     def __init__(self, index, match='', **config):
         self.index = Url(index)
         self.match = match
