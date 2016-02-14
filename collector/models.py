@@ -64,4 +64,5 @@ class Collection(models.Model):
 @receiver(models.signals.post_save, sender=Collection)
 def create_es_index(instance, created, **kwargs):
     if created:
-        es.create_index(instance.id, instance.name)
+        instance.reset()
+        instance.activate()

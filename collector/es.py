@@ -7,7 +7,6 @@ DOCTYPE = 'doc'
 
 def create_index(collection_id, name):
     es.indices.create(index=_index_id(collection_id))
-    es.indices.put_alias(index=_index_id(collection_id), name=name)
 
 def _index_id(collection_id):
     return settings.ELASTICSEARCH_INDEX_PREFIX + str(collection_id)
