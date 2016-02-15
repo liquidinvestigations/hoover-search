@@ -50,4 +50,5 @@ class Loader:
 
     def documents(self):
         for item in walk(UPLOADS_ROOT / self.config['name']):
-            yield Document(item)
+            if item.suffix == '.pdf':
+                yield Document(item)
