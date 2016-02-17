@@ -35,14 +35,12 @@ def handle_zipfile(request, collection, uploaded_file):
             yield ('fail', relative_path, "unknown file type")
             continue
 
-        print(local_path)
         index.index(collection, Document(local_path))
         yield ('success', relative_path)
 
 
 def serve_file(request, filename):
     file_path = UPLOADS_ROOT / filename
-    print(file_path)
     if not (UPLOADS_ROOT in file_path.parents and file_path.is_file()):
         raise Http404()
     content_type = (mimetypes.guess_type(str(file_path))[0]
