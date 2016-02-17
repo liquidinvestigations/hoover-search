@@ -92,3 +92,5 @@ HOOVER_LOADERS = [
     'collector.loaders.collectible.Loader',
     'collector.loaders.upload.Loader',
 ]
+
+HOOVER_PDFJS_URL = 'http://pdfjs.hoover.grep.ro'

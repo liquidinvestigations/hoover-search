@@ -45,4 +45,9 @@ def serve_file(request, filename):
         raise Http404()
     content_type = (mimetypes.guess_type(str(file_path))[0]
         or 'application/octet-stream')
-    return FileResponse(file_path.open('rb'), content_type=content_type)
+    resp = FileResponse(
+        file_path.open('rb'),
+        content_type=content_type,
+    )
+    resp['Access-Control-Allow-Origin'] = settings.HOOVER_PDFJS_URL
+    return resp
