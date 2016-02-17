@@ -11,6 +11,11 @@ def create_index(collection_id, name):
 def _index_name(collection_id):
     return settings.ELASTICSEARCH_INDEX_PREFIX + str(collection_id)
 
+def _index_id(name):
+    prefix = settings.ELASTICSEARCH_INDEX_PREFIX
+    if name.startswith(prefix):
+        return name[len(prefix):]
+
 def index(collection_id, doc):
     resp = es.index(
         index=_index_name(collection_id),
@@ -38,16 +43,28 @@ def search(query, fields, highlight, collections, from_, size):
         'size': size,
         'query': query,
         'fields': fields,
+        'aggs': {
+            'count_by_index': {
+                'terms': {
+                    'field': '_index',
+                },
+            },
+        },
     }
 
     if highlight:
         body['highlight'] = highlight
 
-    return es.search(
+    rv = es.search(
         index=','.join(collections),
         ignore_unavailable=True,
         body=body,
     )
+    count_by_index = {
+        _index_id(b['key']): b['doc_count']
+        for b in rv['aggregations']['count_by_index']['buckets']
+    }
+    return (rv, count_by_index)
 
 
 def delete_index(collection_id, ok_missing=False):

@@ -46,7 +46,7 @@ def collections(request):
 def search(request):
     body = json.loads(request.body.decode('utf-8'))
     collections = list(collection_names(request.user, body.get('collections')))
-    res = es.search(
+    res, counts = es.search(
         from_=body.get('from'),
         size=body.get('size'),
         query=body['query'],
@@ -54,6 +54,10 @@ def search(request):
         highlight=body.get('highlight'),
         collections=collections,
     )
+    res['count_by_index'] = {
+        Collection.objects.get(id=i).name: counts[i]
+        for i in counts
+    }
     return JsonResponse(res)
 
 
