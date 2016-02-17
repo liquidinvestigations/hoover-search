@@ -19,11 +19,14 @@ class Document:
 
     @property
     def metadata(self):
-        return {
+        rv = {
             'id': self.id,
             'title': self.id,
             'url': self.url,
         }
+        if self.local_path.suffix == '.pdf':
+            rv['mime_type'] = 'application/pdf'
+        return rv
 
     def text(self):
         args = ['pdftotext', str(self.local_path), '-']
