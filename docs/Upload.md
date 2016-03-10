@@ -1,8 +1,8 @@
 # Upload a collection
 
 Hoover is designed to ingest large collections automatically from a
-[Collectible](Collectible) source, but it's also possible to upload documents
-manually.
+[Collectible](Collectible.md) source, but it's also possible to upload
+documents manually.
 
 1. From the admin pages, in "Collections", click on "Add Collection".
 
