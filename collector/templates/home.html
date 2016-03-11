@@ -148,8 +148,9 @@ var q = document.querySelector('[name=q]').value
 if(q) {
 
   var collections = (document.querySelector('[name=collections]') || {}).value
+  if(collections) collections = collections.split(' ')
   $('#results').text('searching ...')
-  search(q, collections.split(' '), function(resp) {
+  search(q, collections, function(resp) {
 
     $('#results').empty()
     if(! resp.hits.hits.length) {
