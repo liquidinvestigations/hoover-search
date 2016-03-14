@@ -1,6 +1,7 @@
 from django.conf import settings
 from elasticsearch import Elasticsearch, helpers
 from elasticsearch.client.utils import _make_path
+from elasticsearch.exceptions import NotFoundError
 
 es = Elasticsearch(settings.ELASTICSEARCH_URL)
 DOCTYPE = 'doc'
@@ -85,7 +86,10 @@ def refresh():
 
 
 def count(collection_id):
-    return es.count(index=_index_name(collection_id))['count']
+    try:
+        return es.count(index=_index_name(collection_id))['count']
+    except NotFoundError:
+        return None
 
 
 def aliases(collection_id):
@@ -95,7 +99,11 @@ def aliases(collection_id):
 
 
 def create_alias(collection_id, name):
-    es.indices.put_alias(index=_index_name(collection_id), name=name)
+    try:
+        es.indices.put_alias(index=_index_name(collection_id), name=name)
+    except NotFoundError:
+        es.indices.create(index=_index_name(collection_id))
+        es.indices.put_alias(index=_index_name(collection_id), name=name)
 
 
 def delete_aliases(collection_id):
