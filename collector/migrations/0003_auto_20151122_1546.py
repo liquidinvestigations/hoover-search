@@ -7,6 +7,8 @@ from django.db import migrations, models
 def create_collection(apps, schema_editor):
     Collection = apps.get_model('collector', 'Collection')
     Document = apps.get_model('collector', 'Document')
+    if len(Document.objects.all()) == 0:
+        return
     col = Collection.objects.create(slug='mof')
     for doc in Document.objects.all():
         doc.collection = col
