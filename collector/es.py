@@ -37,7 +37,7 @@ def search(query, fields, highlight, collections, from_, size):
         # if index='', elasticsearch will search in all indices, so we make
         # sure to return an empty result set
         empty_query = {'query': {'bool': {'must_not': {'match_all': {}}}}}
-        return es.search(body=empty_query)
+        return (es.search(body=empty_query), {})
 
     body = {
         'from': from_,
