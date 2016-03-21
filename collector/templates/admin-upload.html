@@ -6,6 +6,7 @@
 
 <form method="post" enctype="multipart/form-data">
   {% csrf_token %}
+  <p>Please upload a ZIP archive containing PDF files.</p>
   <input type="file" name="file"><br>
   <button type="submit">upload</button>
 </form>
