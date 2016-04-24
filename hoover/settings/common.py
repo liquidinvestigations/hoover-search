@@ -89,8 +89,11 @@ ELASTICSEARCH_INDEX_PREFIX = 'hoover-'
 HOOVER_UPLOADS_URL = '/uploads/'
 
 HOOVER_LOADERS = [
+    'collector.loaders.webdav.Loader',
     'collector.loaders.collectible.Loader',
     'collector.loaders.upload.Loader',
 ]
 
 HOOVER_PDFJS_URL = 'http://pdfjs.hoover.grep.ro'
+
+TIKA_URL = 'http://localhost:9998'
