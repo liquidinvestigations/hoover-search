@@ -7,6 +7,7 @@
 
 click==6.6                # via pip-tools
 django==1.9.5
+easywebdav==1.2.0
 elasticsearch==2.3.0
 first==2.0.1              # via pip-tools
 pip-tools==1.6.1
