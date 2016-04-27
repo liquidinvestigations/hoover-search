@@ -64,7 +64,9 @@ def search(request):
 def doc(request, collection_name, id):
     # TODO make sure user can access collection
     collection = Collection.objects.get(name=collection_name)
-    return HttpResponse(collection.get_loader().get_html(id))
+    es_doc = collection.get_document(id)
+    doc = collection.get_loader().get_document(es_doc)
+    return HttpResponse(doc.html())
 
 
 def whoami(request):

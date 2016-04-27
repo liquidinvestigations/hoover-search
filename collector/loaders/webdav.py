@@ -14,17 +14,17 @@ logger.setLevel(logging.INFO)
 
 class Document(object):
 
-    def __init__(self, dav, filename, file_obj):
+    def __init__(self, dav, filename, mime_type):
         self.dav = dav
         self.filename = filename
-        self.file_obj = file_obj
+        self.mime_type = mime_type
 
     @property
     def metadata(self):
         rv = {
             'id': self.filename,
             'title': unquote(self.filename),
-            'mime_type': self.file_obj.contenttype.split(';')[0],
+            'mime_type': self.mime_type,
         }
         return rv
 
@@ -77,8 +77,11 @@ class Loader(object):
                     yield (filename, f)
 
         for filename, file_obj in _files(''):
-            yield Document(dav, filename, file_obj)
+            mime_type = file_obj.contenttype.split(';')[0]
+            yield Document(dav, filename, mime_type)
 
-    def get_html(self, id):
+    def get_document(self, es_doc):
+        id = es_doc['_id']
+        mime_type = es_doc['_source']['mime_type']
         dav = self._dav()
-        return Document(dav, id, None).html()
+        return Document(dav, id, mime_type)

@@ -67,6 +67,9 @@ class Collection(models.Model):
         if active:
             self.activate()
 
+    def get_document(self, doc_id):
+        return es.get(self.id, doc_id)
+
 
 @receiver(models.signals.post_save, sender=Collection)
 def create_es_index(instance, created, **kwargs):

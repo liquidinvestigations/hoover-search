@@ -32,6 +32,14 @@ def exists(collection_id, doc_id):
     return status == 200
 
 
+def get(collection_id, doc_id):
+    return es.get(
+        index=_index_name(collection_id),
+        doc_type=DOCTYPE,
+        id=doc_id,
+    )
+
+
 def search(query, fields, highlight, collections, from_, size):
     if not collections:
         # if index='', elasticsearch will search in all indices, so we make
