@@ -41,26 +41,29 @@ class Loader(object):
 
     def __init__(self, **config):
         self.config = config
+        self.source_url = urlparse(self.config['source'])
+        self.base_path = '/' + self.source_url.path.strip('/') + '/'
 
     def get_metadata(self):
         return self.config
 
-    def documents(self):
-        source_url = urlparse(self.config['source'])
-        base_path = '/' + source_url.path.strip('/') + '/'
-        dav = easywebdav.connect(
-            protocol=source_url.scheme,
-            host=source_url.hostname,
-            username=source_url.username,
-            password=source_url.password,
-            path=base_path.strip('/'),
+    def _dav(self):
+        return easywebdav.connect(
+            protocol=self.source_url.scheme,
+            host=self.source_url.hostname,
+            username=self.source_url.username,
+            password=self.source_url.password,
+            path=self.base_path.strip('/'),
         )
+
+    def documents(self):
+        dav = self._dav()
 
         def _files(parent):
             logger.debug('listing %r', parent)
             for f in dav.ls(parent):
-                assert f.name.startswith(base_path)
-                filename = f.name[len(base_path):]
+                assert f.name.startswith(self.base_path)
+                filename = f.name[len(self.base_path):]
                 if filename == parent: continue
                 if filename.endswith('/'):
                     yield from _files(filename)
