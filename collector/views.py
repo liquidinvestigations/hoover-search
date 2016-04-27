@@ -56,8 +56,15 @@ def search(request):
         highlight=body.get('highlight'),
         collections=collections,
     )
+
+    from .es import _index_id
+    def col_name(id):
+        return Collection.objects.get(id=id).name
+
+    for item in res['hits']['hits']:
+        item['_collection'] = col_name(_index_id(item['_index']))
     res['count_by_index'] = {
-        Collection.objects.get(id=i).name: counts[i]
+        col_name(i): counts[i]
         for i in counts
     }
     return JsonResponse(res)

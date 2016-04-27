@@ -15,7 +15,7 @@ def _index_name(collection_id):
 def _index_id(name):
     prefix = settings.ELASTICSEARCH_INDEX_PREFIX
     if name.startswith(prefix):
-        return name[len(prefix):]
+        return int(name[len(prefix):])
 
 def index(collection_id, doc):
     resp = es.index(
@@ -69,6 +69,7 @@ def search(query, fields, highlight, collections, from_, size):
         ignore_unavailable=True,
         body=body,
     )
+
     count_by_index = {
         _index_id(b['key']): b['doc_count']
         for b in rv['aggregations']['count_by_index']['buckets']
