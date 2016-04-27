@@ -94,6 +94,6 @@ HOOVER_LOADERS = [
     'collector.loaders.upload.Loader',
 ]
 
-HOOVER_PDFJS_URL = 'http://pdfjs.hoover.grep.ro'
+HOOVER_PDFJS_URL = '/pdfjs/web/'
 
 TIKA_URL = 'http://localhost:9998'

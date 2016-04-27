@@ -1,8 +1,10 @@
 import json
+from urllib.parse import quote
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.views.decorators.csrf import csrf_exempt
 from django.core.urlresolvers import reverse
+from django.conf import settings
 from . import es
 from .models import Collection
 
@@ -73,7 +75,13 @@ def doc(request, collection_name, id):
             return HttpResponse(tmp.read(), content_type=mime_type)
 
     else:
-        return HttpResponse(doc.html())
+        if mime_type == 'application/pdf':
+            raw = request.build_absolute_uri() + '?raw=on'
+            url = settings.HOOVER_PDFJS_URL + 'viewer.html?file=' + quote(raw)
+            return HttpResponseRedirect(url)
+
+        else:
+            return HttpResponse(doc.html())
 
 
 def whoami(request):
