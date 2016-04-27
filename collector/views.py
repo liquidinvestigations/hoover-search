@@ -65,8 +65,15 @@ def doc(request, collection_name, id):
     # TODO make sure user can access collection
     collection = Collection.objects.get(name=collection_name)
     es_doc = collection.get_document(id)
+    mime_type = es_doc['_source'].get('mime_type')
     doc = collection.get_loader().get_document(es_doc)
-    return HttpResponse(doc.html())
+
+    if request.GET.get('raw') == 'on':
+        with doc.open() as tmp:
+            return HttpResponse(tmp.read(), content_type=mime_type)
+
+    else:
+        return HttpResponse(doc.html())
 
 
 def whoami(request):
