@@ -28,16 +28,18 @@ class Document(object):
         }
         return rv
 
+    def open(self):
+        tmp = TemporaryFile()
+        self.dav.download(self.filename, tmp)
+        tmp.seek(0)
+        return tmp
+
     def text(self):
-        with TemporaryFile() as tmp:
-            self.dav.download(self.filename, tmp)
-            tmp.seek(0)
+        with self.open() as tmp:
             return tika.text(tmp)
 
     def html(self):
-        with TemporaryFile() as tmp:
-            self.dav.download(self.filename, tmp)
-            tmp.seek(0)
+        with self.open() as tmp:
             return tika.html(tmp)
 
 
