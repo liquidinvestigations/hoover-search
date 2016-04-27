@@ -61,6 +61,12 @@ def search(request):
     return JsonResponse(res)
 
 
+def doc(request, collection_name, id):
+    # TODO make sure user can access collection
+    collection = Collection.objects.get(name=collection_name)
+    return HttpResponse(collection.get_loader().get_html(id))
+
+
 def whoami(request):
     return JsonResponse({
         'username': request.user.username,

@@ -34,6 +34,12 @@ class Document(object):
             tmp.seek(0)
             return tika.text(tmp)
 
+    def html(self):
+        with TemporaryFile() as tmp:
+            self.dav.download(self.filename, tmp)
+            tmp.seek(0)
+            return tika.html(tmp)
+
 
 class Loader(object):
 
@@ -72,3 +78,7 @@ class Loader(object):
 
         for filename, file_obj in _files(''):
             yield Document(dav, filename, file_obj)
+
+    def get_html(self, id):
+        dav = self._dav()
+        return Document(dav, id, None).html()
