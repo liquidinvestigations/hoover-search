@@ -1,7 +1,7 @@
 import json
 from urllib.parse import quote
 from django.shortcuts import render
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.views.decorators.csrf import csrf_exempt
 from django.core.urlresolvers import reverse
 from django.conf import settings
@@ -73,7 +73,12 @@ def search(request):
 def doc(request, collection_name, id):
     # TODO make sure user can access collection
     collection = Collection.objects.get(name=collection_name)
-    es_doc = collection.get_document(id)
+
+    try:
+        es_doc = collection.get_document(id)
+    except es.TransportError:
+        raise Http404
+
     mime_type = es_doc['_source'].get('mime_type')
     doc = collection.get_loader().get_document(es_doc)
 
