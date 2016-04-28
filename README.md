@@ -1,9 +1,17 @@
-Hoover is an indexing and searching front-end for elasticsearch. It will index
-collections of documents in the ["collectible" format][collectible] and accept
-search queries using the elasticsearch [query DSL][querydsl].
+Hoover is a search tool for large collections of documents. It gues together
+proven open-source technologies like elasticsearch and Apache Tika to aid the
+work of investigative journalists.
+
+**Documents are imported** from various sources: WebDAV servers, like OwnCloud
+and Davros, or datasets prepared in a special metadata-rich ["collectible"
+format][collectible].
+
+**Searching** is done through a user-friendly web interface that leverages
+Lucene's rich query syntax. Hoover also provides an API to run queries using
+the elasticsearch [query DSL][].
 
 [collectible]: https://github.com/mgax/hoover/blob/master/docs/Collectible.md
-[querydsl]: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl.html
+[query dsl]: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl.html
 
 
 ## Installation
