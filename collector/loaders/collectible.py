@@ -29,24 +29,8 @@ class Url(object):
 
 class Document(object):
 
-    _NOT_PARSED = object()
-    _parsed = _NOT_PARSED
-
-    def __init__(self, raw, base_url):
-        self._raw = raw
-        self.base_url = base_url
-
-    def _expand_urls(self, data):
-        return dict(data,
-            url=self.base_url.join(data['url']).url,
-            text_url=self.base_url.join(data['text_url']).url,
-        )
-
-    @property
-    def metadata(self):
-        if self._parsed is Document._NOT_PARSED:
-            self._parsed = self._expand_urls(json.loads(self._raw.decode('utf-8')))
-        return self._parsed
+    def __init__(self, metadata):
+        self.metadata = metadata
 
     def text(self):
         resp = requests.get(self.metadata['text_url'])
@@ -77,4 +61,7 @@ class Loader(object):
             logger.info("loading document list %s", doc_url)
             with doc_url.open() as d:
                 for line in d:
-                    yield Document(line, doc_url)
+                    metadata = json.loads(line.decode('utf-8'))
+                    metadata['url'] = doc_url.join(data['url']).url
+                    metadata['text_url'] = doc_url.join(data['text_url']).url
+                    yield Document(metadata)
