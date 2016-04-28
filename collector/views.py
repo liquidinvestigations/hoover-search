@@ -87,7 +87,7 @@ def doc(request, collection_name, id):
             return HttpResponse(tmp.read(), content_type=mime_type)
 
     else:
-        if mime_type == 'application/pdf':
+        if settings.HOOVER_PDFJS_URL and mime_type == 'application/pdf':
             raw = request.build_absolute_uri() + '?raw=on'
             url = settings.HOOVER_PDFJS_URL + 'viewer.html?file=' + quote(raw)
             return HttpResponseRedirect(url)
