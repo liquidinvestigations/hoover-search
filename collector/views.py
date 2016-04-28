@@ -1,6 +1,6 @@
 import json
 from urllib.parse import quote
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.views.decorators.csrf import csrf_exempt
 from django.core.urlresolvers import reverse
@@ -71,8 +71,10 @@ def search(request):
 
 
 def doc(request, collection_name, id):
-    # TODO make sure user can access collection
-    collection = Collection.objects.get(name=collection_name)
+    collection = get_object_or_404(
+        Collection.objects_for_user(request.user),
+        name=collection_name,
+    )
 
     try:
         es_doc = collection.get_document(id)
