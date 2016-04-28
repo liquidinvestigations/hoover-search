@@ -88,7 +88,8 @@ def doc(request, collection_name, id):
             return HttpResponseRedirect(url)
 
         else:
-            return HttpResponse(doc.html())
+            return HttpResponse(doc.html() +
+                '\n<script src="//hypothes.is/embed.js"></script>')
 
 
 def whoami(request):
