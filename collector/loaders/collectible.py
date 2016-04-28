@@ -1,9 +1,11 @@
 import re
 import json
 import logging
+from tempfile import TemporaryFile
 import yaml
 import requests
 from ..utils import open_url
+from .. import tika
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -41,6 +43,18 @@ class Document(object):
         msg = "failed to get text %s: %r" % (self.metadata['id'], resp)
         raise RuntimeError(msg)
 
+    def open(self):
+        tmp = TemporaryFile()
+        resp = requests.get(self.metadata['url'], stream=True)
+        for chunk in resp.iter_content(256*1024):
+            tmp.write(chunk)
+        tmp.seek(0)
+        return tmp
+
+    def html(self):
+        with self.open() as tmp:
+            return tika.html(tmp)
+
 
 class Loader(object):
 
@@ -65,3 +79,6 @@ class Loader(object):
                     metadata['url'] = doc_url.join(data['url']).url
                     metadata['text_url'] = doc_url.join(data['text_url']).url
                     yield Document(metadata)
+
+    def get_document(self, es_doc):
+        return Document(es_doc['_source'])
