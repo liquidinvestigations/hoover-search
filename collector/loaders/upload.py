@@ -1,6 +1,7 @@
 from pathlib import Path
 import subprocess
 from django.conf import settings
+from .. import tika
 
 UPLOADS_ROOT = Path(settings.HOOVER_UPLOADS_ROOT)
 
@@ -32,6 +33,13 @@ class Document:
         args = ['pdftotext', str(self.local_path), '-']
         return subprocess.check_output(args).decode('utf-8')
 
+    def open(self):
+        return self.local_path.open('rb')
+
+    def html(self):
+        with self.open() as tmp:
+            return tika.html(tmp)
+
 
 def walk(folder):
     for item in folder.iterdir():
@@ -55,3 +63,6 @@ class Loader:
         for item in walk(UPLOADS_ROOT / self.config['name']):
             if item.suffix == '.pdf':
                 yield Document(item)
+
+    def get_document(self, es_doc):
+        return Document(UPLOADS_ROOT / es_doc['_id'])
