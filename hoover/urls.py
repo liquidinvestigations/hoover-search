@@ -4,6 +4,7 @@ from collector.admin import admin_site
 from collector import views, uploads
 
 urlpatterns = [
+    url(r'^_ping$', views.ping, name='ping'),
     url(r'^admin/', include(admin_site.urls)),
     url(r'^$', views.home, name='home'),
     url(r'^search$', views.search, name='search'),

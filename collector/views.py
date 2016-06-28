@@ -26,6 +26,11 @@ def collection_names(user, collections_arg):
     return rv
 
 
+def ping(request):
+    Collection.objects.count()
+    return HttpResponse('ok\n')
+
+
 def home(request):
     collections_arg = request.GET.get('collections')
     if collections_arg is not None:
