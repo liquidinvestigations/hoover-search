@@ -10,7 +10,7 @@ urlpatterns = [
     url(r'^search$', views.search, name='search'),
     url(r'^whoami$', views.whoami),
     url(r'^collections$', views.collections, name='collections'),
-    url(r'^doc/(?P<collection_name>[^/]+)/(?P<id>.+)$', views.doc),
+    url(r'^(?s)doc/(?P<collection_name>[^/]+)/(?P<id>.+)$', views.doc),
     url(r'^accounts/', include('django.contrib.auth.urls')),
     url(r'^uploads/(?P<filename>.+)$', uploads.serve_file),
 ]
