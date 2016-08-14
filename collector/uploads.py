@@ -29,13 +29,13 @@ def handle_zipfile(request, collection, uploaded_file):
             continue
 
         assert collection_path in local_path.parents
-        relative_path = local_path.relative_to(UPLOADS_ROOT)
+        relative_path = local_path.relative_to(collection_path)
 
         if local_path.suffix != '.pdf':
             yield ('fail', relative_path, "unknown file type")
             continue
 
-        index.index(collection, Document(local_path))
+        index.index(collection, Document(collection_path, relative_path))
         yield ('success', relative_path)
 
 

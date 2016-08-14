@@ -9,36 +9,31 @@ UPLOADS_ROOT = Path(settings.HOOVER_UPLOADS_ROOT)
 
 class Document:
 
-    def __init__(self, local_path):
-        relative_path = str(local_path.relative_to(UPLOADS_ROOT))
-        self.local_path = local_path
-        self.id = relative_path
-        self.url = (
-            settings.HOOVER_BASE_URL +
-            settings.HOOVER_UPLOADS_URL +
-            relative_path
-        )
+    def __init__(self, root, id):
+        self.path = root / id
+        if root not in self.path.parents:
+            raise RuntimeError("Relative path goes outside collection root")
+        self.id = str(id)
 
     @property
     def metadata(self):
         rv = {
             'id': self.id,
             'title': self.id,
-            'url': self.url,
         }
-        if self.local_path.suffix == '.pdf':
+        if self.path.suffix == '.pdf':
             rv['mime_type'] = 'application/pdf'
         return rv
 
     def text(self):
-        args = ['pdftotext', str(self.local_path), '-']
+        args = ['pdftotext', str(self.path), '-']
         return subprocess.check_output(args).decode('utf-8')
 
     def _open(self):
-        return self.local_path.open('rb')
+        return self.path.open('rb')
 
     def view(self, request):
-        if self.local_path.suffix == '.pdf':
+        if self.path.suffix == '.pdf':
             mime_type = 'application/pdf'
         else:
             mime_type = 'application/octet-stream'
@@ -74,6 +69,7 @@ class Loader:
     label = "Upload"
 
     def __init__(self, collection, **config):
+        self.root = UPLOADS_ROOT / collection.name
         self.config = config
 
     def get_metadata(self):
@@ -82,7 +78,7 @@ class Loader:
     def documents(self):
         for item in walk(UPLOADS_ROOT / self.config['name']):
             if item.suffix == '.pdf':
-                yield Document(item)
+                yield Document(self.root, str(item.relative_to(self.root)))
 
     def get(self, doc_id):
-        return Document(UPLOADS_ROOT / doc_id)
+        return Document(self.root, Path(doc_id))
