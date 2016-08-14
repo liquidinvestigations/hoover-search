@@ -1,4 +1,4 @@
-INSTALLED_APPS = (
+INSTALLED_APPS = [
     'collector',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -6,9 +6,9 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-)
+]
 
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE_CLASSES = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -19,7 +19,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.security.SecurityMiddleware',
     'collector.middleware.NoReferral',
     'collector.middleware.NoCache',
-)
+]
 
 ROOT_URLCONF = 'hoover.urls'
 
