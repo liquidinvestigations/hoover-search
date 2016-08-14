@@ -1,4 +1,5 @@
 /hoover/settings/local.py
+/hoover/settings/testing_local.py
 /static
 /uploads
 *.pyc
