@@ -34,10 +34,7 @@ class CollectionAdmin(admin.ModelAdmin):
     form = CollectionAdminForm
 
     def get_prepopulated_fields(self, request, obj=None):
-        return {} if obj else {'name': ['title']}
-
-    def get_readonly_fields(self, request, obj=None):
-        return ['name'] if obj else []
+        return {} if obj else {'name': ['title'], 'index': ['name']}
 
     def upload(self, obj):
         if obj.loader == 'collector.loaders.upload.Loader':

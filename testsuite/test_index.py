@@ -46,7 +46,8 @@ def api(client):
 
 def test_all_the_things(finally_cleanup_index, api):
     from collector.es import _index_name, DOCTYPE
-    col = models.Collection.objects.create(name='hoover-testcol', public=True)
+    col = models.Collection.objects.create(
+        name='hoover-testcol', index='hoover-testcol', public=True)
 
     assert {c['name'] for c in api.collections()} == {'hoover-testcol'}
 

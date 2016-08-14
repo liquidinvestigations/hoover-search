@@ -12,6 +12,7 @@ class Collection(models.Model):
 
     title = models.CharField(max_length=2048, blank=True)
     name = models.CharField(max_length=256, unique=True)
+    index = models.CharField(max_length=256)
 
     public = models.BooleanField(default=False)
     users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True)
