@@ -40,17 +40,6 @@ class Collection(models.Model):
     def count(self):
         return es.count(self.id)
 
-    def is_active(self):
-        return self.name in es.aliases(self.id)
-
-    is_active.boolean = True
-
-    def activate(self):
-        es.create_alias(self.id, self.name)
-
-    def deactivate(self):
-        es.delete_aliases(self.id)
-
     def access_list(self):
         return ', '.join(u.username for u in self.users.all())
 
@@ -61,19 +50,9 @@ class Collection(models.Model):
         es.set_mapping(self.id, fields)
 
     def reset(self):
-        active = self.is_active()
         es.delete_index(self.id, ok_missing=True)
         es.create_index(self.id, self.name)
         self.set_mapping()
-        if active:
-            self.activate()
 
     def get_document(self, doc_id):
         return es.get(self.id, doc_id)
-
-
-@receiver(models.signals.post_save, sender=Collection)
-def create_es_index(instance, created, **kwargs):
-    if created:
-        instance.reset()
-        instance.activate()

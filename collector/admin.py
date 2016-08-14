@@ -29,8 +29,7 @@ class CollectionAdminForm(forms.ModelForm):
 
 class CollectionAdmin(admin.ModelAdmin):
 
-    list_display = ['__unicode__', 'is_active', 'count',
-        'access_list', 'public', 'upload']
+    list_display = ['__unicode__', 'count', 'access_list', 'public', 'upload']
 
     form = CollectionAdminForm
 
