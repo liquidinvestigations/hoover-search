@@ -88,6 +88,7 @@ def test_all_the_things(finally_cleanup_index, api):
     hits = api.search({'match_all': {}}, ['testcol'])['hits']['hits']
     assert {hit['_id'] for hit in hits} == {'mock1'}
     assert hits[0]['_collection'] == 'testcol'
+    assert hits[0]['_url'] == 'http://testserver/doc/testcol/mock1'
 
 def test_external_loader(finally_cleanup_index, api, external):
     from collector.es import _index_name, DOCTYPE

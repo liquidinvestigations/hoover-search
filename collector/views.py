@@ -67,7 +67,10 @@ def search(request):
         return Collection.objects.get(id=id).name
 
     for item in res['hits']['hits']:
-        item['_collection'] = col_name(_index_id(item['_index']))
+        name = col_name(_index_id(item['_index']))
+        url = 'doc/{}/{}'.format(name, item['_id'])
+        item['_collection'] = name
+        item['_url'] = request.build_absolute_uri(url)
     res['count_by_index'] = {
         col_name(i): counts[i]
         for i in counts
