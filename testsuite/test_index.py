@@ -1,3 +1,4 @@
+import json
 import pytest
 from django.conf import settings
 from elasticsearch import Elasticsearch
@@ -24,9 +25,23 @@ def finally_cleanup_index():
         for id in id_list:
             es.indices.delete(id, ignore=[404])
 
-def test_populate_index(finally_cleanup_index):
+@pytest.fixture
+def api(client):
+    class Api:
+        @staticmethod
+        def search(query, collections):
+            data = {'query': query, 'collections': collections}
+            res = client.post('/search',
+                data=json.dumps(data).encode('utf-8'),
+                content_type='application/json',
+            )
+            return res.json()
+
+    return Api
+
+def test_all_the_things(finally_cleanup_index, api):
     from collector.es import _index_name, DOCTYPE
-    col = models.Collection.objects.create(name='hoover-testcol')
+    col = models.Collection.objects.create(name='hoover-testcol', public=True)
     finally_cleanup_index(_index_name(col.id))
     doc = MockDoc('mock1', {'foo': "bar"})
     index.index(col, doc)
@@ -39,3 +54,9 @@ def test_populate_index(finally_cleanup_index):
         collection='hoover-testcol',
         text=None,
     )
+
+    es.indices.put_alias(index=es_index_id, name='hoover-testcol')
+    es.indices.refresh()
+    hits = api.search({'match_all': {}}, ['hoover-testcol'])['hits']['hits']
+    assert {hit['_id'] for hit in hits} == {'mock1'}
+    assert hits[0]['_collection'] == 'hoover-testcol'
