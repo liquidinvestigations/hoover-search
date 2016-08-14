@@ -100,8 +100,10 @@ def doc(request, collection_name, id):
             return HttpResponseRedirect(url)
 
         else:
-            return HttpResponse(doc.html() +
-                '\n<script src="//hypothes.is/embed.js"></script>')
+            html = doc.html()
+            if settings.EMBED_HYPOTHESIS:
+                html += '\n' + settings.EMBED_HYPOTHESIS
+            return HttpResponse(html)
 
 
 def whoami(request):

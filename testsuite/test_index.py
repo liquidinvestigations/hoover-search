@@ -42,7 +42,27 @@ def api(client):
             )
             return res.json()
 
+        @staticmethod
+        def doc(collection, id):
+            return client.get('/doc/{}/{}'.format(collection, id))
+
     return Api
+
+class Response:
+    def __init__(self, **kwargs):
+        for k, v in dict({'status_code': 200}, **kwargs).items():
+            setattr(self, k, v)
+
+@pytest.fixture
+def external(monkeypatch):
+    class mock_requests:
+        @staticmethod
+        def get(url):
+            return urlmap.get(url) or Response(status_code=404)
+
+    urlmap = {}
+    monkeypatch.setattr('collector.loaders.external.requests', mock_requests)
+    return urlmap
 
 def test_all_the_things(finally_cleanup_index, api):
     from collector.es import _index_name, DOCTYPE
@@ -68,3 +88,28 @@ def test_all_the_things(finally_cleanup_index, api):
     hits = api.search({'match_all': {}}, ['testcol'])['hits']['hits']
     assert {hit['_id'] for hit in hits} == {'mock1'}
     assert hits[0]['_collection'] == 'testcol'
+
+def test_external_loader(finally_cleanup_index, api, external):
+    from collector.es import _index_name, DOCTYPE
+    col = models.Collection.objects.create(
+        name='testcol',
+        index='hoover-testcol',
+        public=True,
+        loader='collector.loaders.external.Loader',
+        options='{"documents": "https://example.com/doc/"}',
+    )
+
+    external['https://example.com/doc/mock1'] = Response(
+        headers={'Content-Type': 'text/plain'},
+        #content=b"hello world",
+        text="hello world",
+    )
+
+    finally_cleanup_index(_index_name(col.id))
+    doc = MockDoc('mock1', {'foo': "bar"})
+    index.index(col, doc)
+    es.indices.refresh()
+
+    res = api.doc('testcol', 'mock1')
+    assert res.status_code == 200
+    assert res.content == b'hello world'

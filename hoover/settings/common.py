@@ -92,8 +92,11 @@ HOOVER_LOADERS = [
     'collector.loaders.webdav.Loader',
     'collector.loaders.collectible.Loader',
     'collector.loaders.upload.Loader',
+    'collector.loaders.external.Loader',
 ]
 
 HOOVER_PDFJS_URL = None
 
 TIKA_URL = 'http://localhost:9998'
+
+EMBED_HYPOTHESIS = None
