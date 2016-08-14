@@ -4,20 +4,19 @@
 #
 #    pip-compile --output-file requirements.txt requirements.in
 #
-
 click==6.6                # via pip-tools
-django==1.9.5
+Django==1.10
 easywebdav==1.2.0
 elasticsearch==2.3.0
 first==2.0.1              # via pip-tools
-pip-tools==1.6.1
-psycopg2==2.6.1
+pip-tools==1.7.0
+psycopg2==2.6.2
 py==1.4.31                # via pytest
 pytest-django==2.9.1
-pytest==2.9.1
+pytest==2.9.2
 pyyaml==3.11
-requests==2.9.1
+requests==2.11.0
 six==1.10.0               # via pip-tools
-urllib3==1.15.1           # via elasticsearch
+urllib3==1.16             # via elasticsearch
 waitress==0.9.0
-whitenoise==3.0
+whitenoise==3.2.1
