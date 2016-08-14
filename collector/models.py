@@ -18,7 +18,7 @@ class Collection(models.Model):
     users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True)
 
     loader = models.CharField(max_length=2048,
-        default='collector.loaders.collectible.Loader')
+        default='collector.loaders.upload.Loader')
     options = models.TextField(default='{}')
 
     def __unicode__(self):

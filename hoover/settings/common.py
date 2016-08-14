@@ -92,9 +92,9 @@ ELASTICSEARCH_INDEX_PREFIX = 'hoover-'
 HOOVER_UPLOADS_URL = '/uploads/'
 
 HOOVER_LOADERS = [
+    'collector.loaders.upload.Loader',
     'collector.loaders.webdav.Loader',
     'collector.loaders.collectible.Loader',
-    'collector.loaders.upload.Loader',
     'collector.loaders.external.Loader',
 ]
 
