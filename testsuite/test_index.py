@@ -101,7 +101,6 @@ def test_external_loader(finally_cleanup_index, api, external):
 
     external['https://example.com/doc/mock1'] = Response(
         headers={'Content-Type': 'text/plain'},
-        #content=b"hello world",
         text="hello world",
     )
 
