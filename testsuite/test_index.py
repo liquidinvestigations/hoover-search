@@ -47,9 +47,9 @@ def api(client):
 def test_all_the_things(finally_cleanup_index, api):
     from collector.es import _index_name, DOCTYPE
     col = models.Collection.objects.create(
-        name='hoover-testcol', index='hoover-testcol', public=True)
+        name='testcol', index='hoover-testcol', public=True)
 
-    assert {c['name'] for c in api.collections()} == {'hoover-testcol'}
+    assert {c['name'] for c in api.collections()} == {'testcol'}
 
     finally_cleanup_index(_index_name(col.id))
     doc = MockDoc('mock1', {'foo': "bar"})
@@ -60,12 +60,11 @@ def test_all_the_things(finally_cleanup_index, api):
     assert data['_source'] == dict(
         id='mock1',
         foo='bar',
-        collection='hoover-testcol',
+        collection='testcol',
         text=None,
     )
 
-    es.indices.put_alias(index=es_index_id, name='hoover-testcol')
     es.indices.refresh()
-    hits = api.search({'match_all': {}}, ['hoover-testcol'])['hits']['hits']
+    hits = api.search({'match_all': {}}, ['testcol'])['hits']['hits']
     assert {hit['_id'] for hit in hits} == {'mock1'}
-    assert hits[0]['_collection'] == 'hoover-testcol'
+    assert hits[0]['_collection'] == 'testcol'

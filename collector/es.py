@@ -10,12 +10,12 @@ def create_index(collection_id, name):
     es.indices.create(index=_index_name(collection_id))
 
 def _index_name(collection_id):
-    return settings.ELASTICSEARCH_INDEX_PREFIX + str(collection_id)
+    from .models import Collection
+    return Collection.objects.get(id=collection_id).index
 
-def _index_id(name):
-    prefix = settings.ELASTICSEARCH_INDEX_PREFIX
-    if name.startswith(prefix):
-        return int(name[len(prefix):])
+def _index_id(index):
+    from .models import Collection
+    return Collection.objects.get(index=index).id
 
 def index(collection_id, doc):
     resp = es.index(
@@ -41,7 +41,13 @@ def get(collection_id, doc_id):
 
 
 def search(query, fields, highlight, collections, from_, size):
-    if not collections:
+    from .models import Collection
+    indices = ','.join(
+        c.index for c in
+        Collection.objects.filter(name__in=collections)
+    )
+
+    if not indices:
         # if index='', elasticsearch will search in all indices, so we make
         # sure to return an empty result set
         empty_query = {'query': {'bool': {'must_not': {'match_all': {}}}}}
@@ -65,7 +71,7 @@ def search(query, fields, highlight, collections, from_, size):
         body['highlight'] = highlight
 
     rv = es.search(
-        index=','.join(collections),
+        index=indices,
         ignore_unavailable=True,
         body=body,
     )
