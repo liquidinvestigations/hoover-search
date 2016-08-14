@@ -1,14 +1,16 @@
-import os
+from pathlib import Path
 from .common import cdn_assets
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+base_dir = Path(__file__).absolute().parent.parent.parent
+
 SECRET_KEY = 'something random'
 DEBUG = True
-#DATABASES = {
-#    'default': {
-#        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#        'NAME': 'hoover',
-#    },
-#}
-STATIC_ROOT = BASE_DIR + '/static'
-HOOVER_UPLOADS_ROOT = BASE_DIR + '/uploads'
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'hoover-search',
+    },
+}
+STATIC_ROOT = str(base_dir / 'static')
+HOOVER_UPLOADS_ROOT = str(base_dir / 'uploads')
 HOOVER_ASSETS = cdn_assets
