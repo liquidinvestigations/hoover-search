@@ -104,11 +104,6 @@ def test_external_loader(finally_cleanup_index, api, external):
         content=b"hello world",
     )
 
-    finally_cleanup_index(_index_name(col.id))
-    doc = MockDoc('mock1', {'foo': "bar"})
-    index.index(col, doc)
-    es.indices.refresh()
-
     res = api.doc('testcol', 'mock1')
     assert res.status_code == 200
     assert res.content == b'hello world'
