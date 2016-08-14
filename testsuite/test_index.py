@@ -29,6 +29,11 @@ def finally_cleanup_index():
 def api(client):
     class Api:
         @staticmethod
+        def collections():
+            res = client.get('/collections')
+            return res.json()
+
+        @staticmethod
         def search(query, collections):
             data = {'query': query, 'collections': collections}
             res = client.post('/search',
@@ -42,6 +47,9 @@ def api(client):
 def test_all_the_things(finally_cleanup_index, api):
     from collector.es import _index_name, DOCTYPE
     col = models.Collection.objects.create(name='hoover-testcol', public=True)
+
+    assert {c['name'] for c in api.collections()} == {'hoover-testcol'}
+
     finally_cleanup_index(_index_name(col.id))
     doc = MockDoc('mock1', {'foo': "bar"})
     index.index(col, doc)
