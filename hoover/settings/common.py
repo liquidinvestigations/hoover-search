@@ -34,6 +34,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'collector.context_processors.default',
             ],
         },
     },
@@ -102,3 +103,12 @@ HOOVER_PDFJS_URL = None
 TIKA_URL = 'http://localhost:9998'
 
 EMBED_HYPOTHESIS = None
+
+cdn_assets = {
+    'bootstrap_css': ('https://cdn.rawgit.com/twbs/bootstrap/v4-dev/dist/'
+        'css/bootstrap.css'),
+    'bootstrap_js': ('https://cdn.rawgit.com/twbs/bootstrap/v4-dev/dist/'
+        'js/bootstrap.js'),
+    'jquery_js': ('https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/'
+        'jquery.min.js'),
+}

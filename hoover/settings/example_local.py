@@ -1,4 +1,5 @@
 import os
+from .common import cdn_assets
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SECRET_KEY = 'something random'
 DEBUG = True
@@ -10,3 +11,4 @@ DEBUG = True
 #}
 STATIC_ROOT = BASE_DIR + '/static'
 HOOVER_UPLOADS_ROOT = BASE_DIR + '/uploads'
+HOOVER_ASSETS = cdn_assets
