@@ -1,6 +1,8 @@
 import logging
 from urllib.parse import urlparse, unquote
 from tempfile import TemporaryFile
+from django.conf import settings
+from django.http import HttpResponse
 import easywebdav
 from .. import tika
 
@@ -28,19 +30,28 @@ class Document(object):
         }
         return rv
 
-    def open(self):
+    def _open(self):
         tmp = TemporaryFile()
         self.dav.download(self.filename, tmp)
         tmp.seek(0)
         return tmp
 
     def text(self):
-        with self.open() as tmp:
+        with self._open() as tmp:
             return tika.text(tmp)
 
-    def html(self):
-        with self.open() as tmp:
-            return tika.html(tmp)
+    def view(self, request):
+        if request.GET.get('raw') == 'on':
+            with self._open() as tmp:
+                return HttpResponse(tmp.read(),
+                    content_type='application/octet-stream')
+
+        else:
+            with self._open() as tmp:
+                html = tika.html(tmp)
+            if settings.EMBED_HYPOTHESIS:
+                html += '\n' + settings.EMBED_HYPOTHESIS
+            return HttpResponse(html)
 
 
 class Loader(object):
@@ -83,8 +94,7 @@ class Loader(object):
             mime_type = file_obj.contenttype.split(';')[0]
             yield Document(dav, filename, mime_type)
 
-    def get_document(self, es_doc):
-        id = es_doc['_id']
-        mime_type = es_doc['_source']['mime_type']
+    def get(self, doc_id):
+        es_doc = self.collection.get_document(doc_id)
         dav = self._dav()
-        return Document(dav, id, mime_type)
+        return Document(dav, doc_id, es_doc['_source']['mime_type'])

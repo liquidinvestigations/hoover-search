@@ -2,6 +2,8 @@ import re
 import json
 import logging
 from tempfile import TemporaryFile
+from django.conf import settings
+from django.http import HttpResponse
 import yaml
 import requests
 from ..utils import open_url
@@ -43,7 +45,7 @@ class Document(object):
         msg = "failed to get text %s: %r" % (self.metadata['id'], resp)
         raise RuntimeError(msg)
 
-    def open(self):
+    def _open(self):
         tmp = TemporaryFile()
         resp = requests.get(self.metadata['url'], stream=True)
         for chunk in resp.iter_content(256*1024):
@@ -51,9 +53,18 @@ class Document(object):
         tmp.seek(0)
         return tmp
 
-    def html(self):
-        with self.open() as tmp:
-            return tika.html(tmp)
+    def view(self, request):
+        if request.GET.get('raw') == 'on':
+            with self._open() as tmp:
+                return HttpResponse(tmp.read(),
+                    content_type='application/octet-stream')
+
+        else:
+            with self._open() as tmp:
+                html = tika.html(tmp)
+            if settings.EMBED_HYPOTHESIS:
+                html += '\n' + settings.EMBED_HYPOTHESIS
+            return HttpResponse(html)
 
 
 class Loader(object):
@@ -81,5 +92,6 @@ class Loader(object):
                     metadata['text_url'] = doc_url.join(data['text_url']).url
                     yield Document(metadata)
 
-    def get_document(self, es_doc):
+    def get(self, doc_id):
+        es_doc = self.collection.get_document(doc_id)
         return Document(es_doc['_source'])

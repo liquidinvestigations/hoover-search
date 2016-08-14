@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.http import HttpResponse
 import requests
 
 class Document:
@@ -10,13 +11,13 @@ class Document:
     def _get(self):
         return requests.get(self.root_url + self.doc_id)
 
-    def html(self):
-        resp = self._get()
-        if resp.status_code == 200:
-            return resp.text
-
-        msg = "failed to get text for %s: %r" % (self.id, resp)
-        raise RuntimeError(msg)
+    def view(self, request):
+        url = self.root_url + self.doc_id
+        if request.GET.get('raw') == 'on':
+            url += '?raw=on'
+        resp = requests.get(url)
+        return HttpResponse(resp.content,
+            content_type=resp.headers['Content-Type'])
 
 class Loader:
 
@@ -25,5 +26,5 @@ class Loader:
     def __init__(self, collection, **config):
         self.config = config
 
-    def get_document(self, es_doc):
-        return Document(self.config['documents'], es_doc['_id'])
+    def get(self, doc_id):
+        return Document(self.config['documents'], doc_id)

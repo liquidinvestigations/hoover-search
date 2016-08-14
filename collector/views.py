@@ -80,30 +80,7 @@ def doc(request, collection_name, id):
         Collection.objects_for_user(request.user),
         name=collection_name,
     )
-
-    try:
-        es_doc = collection.get_document(id)
-    except es.TransportError:
-        raise Http404
-
-    mime_type = es_doc['_source'].get('mime_type')
-    doc = collection.get_loader().get_document(es_doc)
-
-    if request.GET.get('raw') == 'on':
-        with doc.open() as tmp:
-            return HttpResponse(tmp.read(), content_type=mime_type)
-
-    else:
-        if settings.HOOVER_PDFJS_URL and mime_type == 'application/pdf':
-            raw = request.build_absolute_uri() + '?raw=on'
-            url = settings.HOOVER_PDFJS_URL + 'viewer.html?file=' + quote(raw)
-            return HttpResponseRedirect(url)
-
-        else:
-            html = doc.html()
-            if settings.EMBED_HYPOTHESIS:
-                html += '\n' + settings.EMBED_HYPOTHESIS
-            return HttpResponse(html)
+    return collection.get_loader().get(id).view(request)
 
 
 def whoami(request):
