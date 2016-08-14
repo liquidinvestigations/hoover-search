@@ -60,7 +60,8 @@ class Loader(object):
 
     label = "Collectible"
 
-    def __init__(self, index, match='', **config):
+    def __init__(self, collection, index, match='', **config):
+        self.collection = collection
         self.index = Url(index)
         self.match = match
 

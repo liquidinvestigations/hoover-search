@@ -26,7 +26,7 @@ class Collection(models.Model):
 
     def get_loader(self):
         cls = import_string(self.loader)
-        return cls(**json.loads(self.options))
+        return cls(self, **json.loads(self.options))
 
     def label(self):
         return self.title or self.name

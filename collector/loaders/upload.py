@@ -53,7 +53,7 @@ class Loader:
 
     label = "Upload"
 
-    def __init__(self, **config):
+    def __init__(self, collection, **config):
         self.config = config
 
     def get_metadata(self):

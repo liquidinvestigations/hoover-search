@@ -47,7 +47,8 @@ class Loader(object):
 
     label = "WebDAV"
 
-    def __init__(self, **config):
+    def __init__(self, collection, **config):
+        self.collection = collection
         self.config = config
         self.source_url = urlparse(self.config['source'])
         self.base_path = '/' + self.source_url.path.strip('/') + '/'

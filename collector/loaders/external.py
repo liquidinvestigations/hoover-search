@@ -22,7 +22,7 @@ class Loader:
 
     label = "External"
 
-    def __init__(self, **config):
+    def __init__(self, collection, **config):
         self.config = config
 
     def get_document(self, es_doc):
