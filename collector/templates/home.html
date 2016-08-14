@@ -160,16 +160,17 @@ if(q) {
     resp.hits.hits.forEach(function(hit) {
 
       var item = $('<div>').appendTo('#results')
-      var i = hit.fields
 
       $('<h3>').append(
-        $('<a>', {href: i.url}).text(i.title)
+        $('<a>', {href: hit._url}).text(hit.fields.title)
       ).appendTo(item)
 
-      var highlights = $('<ul>').appendTo(item)
-      hit.highlight.text.forEach(function(hi) {
-        $('<li class="highlight">').html(hi).appendTo(highlights)
-      })
+      if(hit.highlight && hit.highlight.text) {
+        var highlights = $('<ul>').appendTo(item)
+        hit.highlight.text.forEach(function(hi) {
+          $('<li class="highlight">').html(hi).appendTo(highlights)
+        })
+      }
 
     })
 
