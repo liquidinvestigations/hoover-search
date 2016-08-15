@@ -1,5 +1,6 @@
 import subprocess
 from base64 import b32encode
+from contextlib import contextmanager
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
 APP_NAME = 'Hoover'
@@ -19,6 +20,21 @@ def delete_all(user, keep=None):
         if old_device == keep:
             continue
         old_device.delete()
+
+@contextmanager
+def setup(user, id):
+    device = None
+    if id:
+        device = get(user, id)
+
+    if not device:
+        username = user.get_username()
+        device = create(user, username)
+
+    def setup_successful():
+        delete_all(user, keep=device)
+
+    yield device, setup_successful
 
 def qrencode(data):
     return subprocess.check_output(['qrencode', data, '-s', '5', '-o', '-'])

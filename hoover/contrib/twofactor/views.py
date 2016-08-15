@@ -17,31 +17,26 @@ def invitation(request, code):
     user = invitation.user
     username = user.get_username()
 
-    device = None
     device_id = request.session.get('invitation_device_id')
-    if device_id:
-        device = devices.get(user, device_id)
-
-    if not device:
-        device = devices.create(user, username)
+    with devices.setup(user, device_id) as (device, setup_successful):
         request.session['invitation_device_id'] = device.id
 
-    if request.method == 'POST':
-        code = request.POST['code']
-        if not device.verify_token(code):
-            bad_token = True
+        if request.method == 'POST':
+            code = request.POST['code']
+            if not device.verify_token(code):
+                bad_token = True
 
-        if request.POST['username'] != username:
-            bad_username = True
+            if request.POST['username'] != username:
+                bad_username = True
 
-        if request.POST['password'] != request.POST['password-confirm']:
-            bad_password = True
+            if request.POST['password'] != request.POST['password-confirm']:
+                bad_password = True
 
-        if not (bad_username or bad_password or bad_token):
-            password = request.POST['password']
-            invitations.accept(request, invitation, device, password)
-            devices.delete_all(user, keep=device)
-            success = True
+            if not (bad_username or bad_password or bad_token):
+                password = request.POST['password']
+                invitations.accept(request, invitation, device, password)
+                setup_successful()
+                success = True
 
     png_data = b64encode(devices.qr_png(device, username)).decode('utf8')
     otp_png = 'data:image/png;base64,' + png_data
