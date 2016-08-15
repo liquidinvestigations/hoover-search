@@ -21,7 +21,7 @@ MIDDLEWARE_CLASSES = [
     'collector.middleware.NoCache',
 ]
 
-ROOT_URLCONF = 'hoover.urls'
+ROOT_URLCONF = 'hoover.site.urls'
 
 TEMPLATES = [
     {
@@ -76,7 +76,7 @@ LOGGING = {
     },
 }
 
-WSGI_APPLICATION = 'hoover.wsgi.application'
+WSGI_APPLICATION = 'hoover.site.wsgi.application'
 
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
