@@ -7,8 +7,7 @@ shift
 
 case "$COMMAND" in
 
-  'tests')
-    export DJANGO_SETTINGS_MODULE=testsuite.settings
+  'testsuite')
     exec py.test "$@"
     ;;
 
