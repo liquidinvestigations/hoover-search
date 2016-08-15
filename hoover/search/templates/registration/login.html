@@ -35,7 +35,7 @@
     </div>
   </fieldset>
 
-  {% if installed.twofactor %}
+  {% if HOOVER_INSTALLED.twofactor %}
   <fieldset class="form-group row">
     {{ form.otp_token.label_tag }}
     <div class="col-sm-4">
@@ -48,7 +48,7 @@
   <input type="hidden" name="next" value="{{ next }}" />
 </form>
 
-{% if not installed.twofactor %}
+{% if not HOOVER_INSTALLED.twofactor %}
 <p><a href="{% url 'password_reset' %}">Lost password?</a></p>
 {% endif %}
 
