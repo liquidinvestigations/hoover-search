@@ -1,7 +1,7 @@
 from django.conf.urls import include, url
 from django.contrib import admin
-from hoover.search.admin import admin_site
-from hoover.search import views, uploads
+from ..search.admin import admin_site
+from ..search import views, uploads
 
 urlpatterns = [
     url(r'^_ping$', views.ping, name='ping'),
