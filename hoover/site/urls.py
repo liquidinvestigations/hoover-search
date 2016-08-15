@@ -8,7 +8,7 @@ urlpatterns = [
     url(r'^admin/', include(admin_site.urls)),
     url(r'^$', views.home, name='home'),
     url(r'^search$', views.search, name='search'),
-    url(r'^whoami$', views.whoami),
+    url(r'^whoami$', views.whoami, name='whoami'),
     url(r'^collections$', views.collections, name='collections'),
     url(r'^(?s)doc/(?P<collection_name>[^/]+)/(?P<id>.+)$', views.doc),
     url(r'^accounts/', include('django.contrib.auth.urls')),

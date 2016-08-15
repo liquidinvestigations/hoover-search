@@ -29,38 +29,16 @@
 {% block content %}
 
 <div id="navbar">
-  <p>
-    <a href="https://github.com/mgax/hoover"
-      class="btn btn-primary-outline">about</a>
-  </p>
-
-  {% if request.user.is_authenticated %}
-
-    <div class="btn-group" role="group">
-      <button id="loggedin-btngroup" type="button"
-              class="btn btn-secondary dropdown-toggle"
-              data-toggle="dropdown"
-              aria-haspopup="true" aria-expanded="false">
-        {{ request.user }}
-      </button>
-      <div class="dropdown-menu" aria-labelledby="loggedin-btngroup">
-        {% if request.user.is_superuser %}
-          <a class="dropdown-item"
-             href="{% url 'admin:index' %}"
-             >admin</a>
-        {% endif %}
-        <a class="dropdown-item"
-           href="{% url 'logout' %}?next={% url 'home' %}"
-           >logout</a>
-      </div>
+  <div class="btn-group" role="group">
+    <button id="loggedin-btngroup" type="button"
+            class="btn btn-secondary dropdown-toggle"
+            data-toggle="dropdown"
+            aria-haspopup="true" aria-expanded="false">
+    </button>
+    <div id="menu" class="dropdown-menu" aria-labelledby="loggedin-btngroup">
     </div>
+  </div>
 
-
-  {% else %}
-
-    <a href="{% url 'login' %}" class="btn btn-primary-outline">login</a>
-
-  {% endif %}
 </div>
 
 <h1>hoover</h1>
@@ -102,6 +80,30 @@
 <script src="{{ HOOVER_ASSETS.bootstrap_js }}"></script>
 
 <script>
+
+$.get('{% url "whoami" %}', function(resp) {
+  var links = [
+    {text: 'about', href: "https://github.com/mgax/hoover"},
+    {text: 'documentation', href: "https://dl.dropboxusercontent.com"
+      + "/u/103063/static/hoover/HooverDocumentaiton.pdf"},
+    {text: 'terms', href: "/terms.html"},
+    {text: 'login', href: resp.urls.login,
+      hide: !! resp.username},
+    {text: '('+resp.username+') logout', href: resp.urls.logout,
+      hide: ! resp.username},
+    {text: 'change password', href: resp.urls.password_change,
+      hide: ! resp.username},
+    {text: 'admin', href: resp.urls.admin,
+      hide: ! resp.admin}
+  ]
+  links.forEach(function(link) {
+    if(link.hide) return
+    $('<a class="dropdown-item">')
+      .text(link.text)
+      .attr('href', link.href)
+      .appendTo($('#menu'))
+  })
+});
 
 var checkboxes = $('#collections input[type=checkbox]')
 checkboxes.change(function(evt) {
