@@ -3,7 +3,7 @@ import pytest
 from django.utils.timezone import utc, now
 from django_otp.oath import TOTP
 from django_otp.plugins.otp_totp.models import TOTPDevice
-from hoover.contrib.twofactor import invitations, models
+from hoover.contrib.twofactor import invitations, models, devices
 
 pytestmark = pytest.mark.django_db
 
@@ -78,3 +78,30 @@ def test_flow(client, mock_time, minutes, username_ok, password_ok, code_ok,
 
     else:
         assert not _access_homepage(client)
+
+def _accept(invitation, password):
+    from django.http import HttpRequest
+    from django.contrib.sessions.backends.db import SessionStore
+    request = HttpRequest()
+    request.session = SessionStore()
+    with devices.setup(invitation.user, None) as (device, setup_successful):
+        invitations.accept(request, invitation, device, password)
+        setup_successful()
+    return device
+
+@pytest.mark.parametrize('username,password,interval,success', [
+    ('john', 'pw', timedelta(0), True),
+    ('john', 'pw', timedelta(minutes=2), False),
+    ('johnny', 'pw', timedelta(0), False),
+    ('john', 'pwz', timedelta(0), False),
+])
+def test_login(client, username, password, interval, success):
+    invitations.invite('john', create=True)
+    device = _accept(models.Invitation.objects.get(), 'pw')
+    assert not _access_homepage(client)
+    client.post('/accounts/login/', {
+        'username': username,
+        'password': password,
+        'otp_token': _totp(device, now() + interval),
+    })
+    assert _access_homepage(client) == success
