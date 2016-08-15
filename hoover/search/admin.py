@@ -9,12 +9,19 @@ from django.contrib.auth.admin import User, Group, UserAdmin, GroupAdmin
 from django.contrib.auth.forms import UserCreationForm
 from django.utils.module_loading import import_string
 from django.shortcuts import render, redirect
+from ..contrib import installed
 from . import models
 from . import es
 from . import uploads
 
+if installed.twofactor:
+    from django_otp.admin import OTPAdminSite
+    _admin_baseclass = OTPAdminSite
+else:
+    _admin_baseclass = admin.AdminSite
 
-class HooverAdminSite(admin.AdminSite):
+
+class HooverAdminSite(_admin_baseclass):
 
     pass
 

@@ -5,7 +5,8 @@
 #    pip-compile --output-file requirements.txt requirements.in
 #
 click==6.6                # via pip-tools
-Django==1.10
+django-otp==0.3.5
+Django==1.10              # via django-otp
 easywebdav==1.2.0
 elasticsearch==2.3.0
 first==2.0.1              # via pip-tools

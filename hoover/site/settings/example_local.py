@@ -1,7 +1,18 @@
 from pathlib import Path
-from .common import cdn_assets
+from . import common
 
 base_dir = Path(__file__).absolute().parent.parent.parent.parent
+
+## to enable two-factor authentication:
+#INSTALLED_APPS = common.INSTALLED_APPS + (
+#    'hoover.contrib.twofactor',
+#    'django_otp',
+#    'django_otp.plugins.otp_totp',
+#)
+#MIDDLEWARE_CLASSES = common.MIDDLEWARE_CLASSES + (
+#    'django_otp.middleware.OTPMiddleware',
+#    'hoover.contrib.twofactor.middleware.RequireAuth',
+#)
 
 SECRET_KEY = 'something random'
 DEBUG = True
@@ -13,4 +24,4 @@ DATABASES = {
 }
 STATIC_ROOT = str(base_dir / 'static')
 HOOVER_UPLOADS_ROOT = str(base_dir / 'uploads')
-HOOVER_ASSETS = cdn_assets
+HOOVER_ASSETS = common.cdn_assets

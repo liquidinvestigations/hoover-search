@@ -16,6 +16,13 @@ class MockDoc:
     def text(self):
         return self.metadata.get('text')
 
+@pytest.fixture()
+def skip_twofactor(monkeypatch):
+    monkeypatch.setattr(
+        'hoover.contrib.twofactor.middleware.RequireAuth.process_request',
+        lambda self, request: None
+    )
+
 @pytest.yield_fixture
 def finally_cleanup_index():
     id_list = []
@@ -26,7 +33,7 @@ def finally_cleanup_index():
             es.indices.delete(id, ignore=[404])
 
 @pytest.fixture
-def api(client):
+def api(client, skip_twofactor):
     class Api:
         @staticmethod
         def collections():

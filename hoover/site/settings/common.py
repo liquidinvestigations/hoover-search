@@ -84,7 +84,7 @@ USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 STATIC_URL = '/static/'
-LOGIN_REDIRECT_URL = 'home'
+LOGIN_REDIRECT_URL = '/'
 
 ELASTICSEARCH_URL = 'http://localhost:9200'
 
@@ -111,3 +111,6 @@ cdn_assets = {
     'jquery_js': ('https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/'
         'jquery.min.js'),
 }
+
+_hour = 60 * 60
+HOOVER_TWOFACTOR_INVITATION_VALID = _hour / 2

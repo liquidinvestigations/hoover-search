@@ -35,10 +35,21 @@
     </div>
   </fieldset>
 
+  {% if installed.twofactor %}
+  <fieldset class="form-group row">
+    {{ form.otp_token.label_tag }}
+    <div class="col-sm-4">
+      {{ form.otp_token }}
+    </div>
+  </fieldset>
+  {% endif %}
+
   <button type="submit" class="btn btn-primary">login</button>
   <input type="hidden" name="next" value="{{ next }}" />
 </form>
 
+{% if not installed.twofactor %}
 <p><a href="{% url 'password_reset' %}">Lost password?</a></p>
+{% endif %}
 
 {% endblock %}

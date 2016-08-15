@@ -1,0 +1,56 @@
+from base64 import b64encode
+from django.db import transaction
+from django.shortcuts import render
+from django_otp.forms import OTPAuthenticationForm
+from . import devices
+from . import invitations
+
+AuthenticationForm = OTPAuthenticationForm
+
+@transaction.atomic
+def invitation(request, code):
+    invitation = invitations.get_or_404(code)
+    success = False
+    bad_token = None
+    bad_username = False
+    bad_password = False
+    user = invitation.user
+    username = user.get_username()
+
+    device = None
+    device_id = request.session.get('invitation_device_id')
+    if device_id:
+        device = devices.get(user, device_id)
+
+    if not device:
+        device = devices.create(user, username)
+        request.session['invitation_device_id'] = device.id
+
+    if request.method == 'POST':
+        code = request.POST['code']
+        if not device.verify_token(code):
+            bad_token = True
+
+        if request.POST['username'] != username:
+            bad_username = True
+
+        if request.POST['password'] != request.POST['password-confirm']:
+            bad_password = True
+
+        if not (bad_username or bad_password or bad_token):
+            password = request.POST['password']
+            invitations.accept(request, invitation, device, password)
+            devices.delete_all(user, keep=device)
+            success = True
+
+    png_data = b64encode(devices.qr_png(device, username)).decode('utf8')
+    otp_png = 'data:image/png;base64,' + png_data
+
+    return render(request, 'totp-invitation.html', {
+        'username': username,
+        'otp_png': otp_png,
+        'success': success,
+        'bad_username': bad_username,
+        'bad_password': bad_password,
+        'bad_token': bad_token,
+    })
