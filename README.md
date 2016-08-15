@@ -49,7 +49,7 @@ probably want to set up a [virtualenv][] too.
    ```
 
 5. Import a collection: first, create the collection in Django admin, at
-   http://127.0.0.1:8000/admin/collector/collection/. You need to provide a
+   http://127.0.0.1:8000/admin/search/collection/. You need to provide a
    JSON configuration in the "options" field; for the "Monitorul Oficial"
    collection you can use this one:
 

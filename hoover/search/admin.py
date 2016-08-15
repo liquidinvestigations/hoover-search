@@ -37,7 +37,7 @@ class CollectionAdmin(admin.ModelAdmin):
         return {} if obj else {'name': ['title'], 'index': ['name']}
 
     def upload(self, obj):
-        if obj.loader == 'collector.loaders.upload.Loader':
+        if obj.loader == 'hoover.search.loaders.upload.Loader':
             return '<a href="%s/upload">upload</a>' % obj.pk
 
     upload.allow_tags = True

@@ -2,7 +2,7 @@ import json
 import pytest
 from django.conf import settings
 from elasticsearch import Elasticsearch
-from collector import models, index
+from hoover.search import models, index
 
 pytestmark = pytest.mark.django_db
 es = Elasticsearch(settings.ELASTICSEARCH_URL)
@@ -61,11 +61,12 @@ def external(monkeypatch):
             return urlmap.get(url) or Response(status_code=404)
 
     urlmap = {}
-    monkeypatch.setattr('collector.loaders.external.requests', mock_requests)
+    monkeypatch.setattr('hoover.search.loaders.external.requests',
+        mock_requests)
     return urlmap
 
 def test_all_the_things(finally_cleanup_index, api):
-    from collector.es import _index_name, DOCTYPE
+    from hoover.search.es import _index_name, DOCTYPE
     col = models.Collection.objects.create(
         name='testcol', index='hoover-testcol', public=True)
 
@@ -91,12 +92,12 @@ def test_all_the_things(finally_cleanup_index, api):
     assert hits[0]['_url'] == 'http://testserver/doc/testcol/mock1'
 
 def test_external_loader(finally_cleanup_index, api, external):
-    from collector.es import _index_name, DOCTYPE
+    from hoover.search.es import _index_name, DOCTYPE
     col = models.Collection.objects.create(
         name='testcol',
         index='hoover-testcol',
         public=True,
-        loader='collector.loaders.external.Loader',
+        loader='hoover.search.loaders.external.Loader',
         options='{"documents": "https://example.com/doc/"}',
     )
 

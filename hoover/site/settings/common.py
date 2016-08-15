@@ -18,8 +18,8 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'collector.middleware.NoReferral',
-    'collector.middleware.NoCache',
+    'hoover.search.middleware.NoReferral',
+    'hoover.search.middleware.NoCache',
 ]
 
 ROOT_URLCONF = 'hoover.site.urls'
@@ -35,7 +35,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'collector.context_processors.default',
+                'hoover.search.context_processors.default',
             ],
         },
     },
@@ -57,7 +57,7 @@ LOGGING = {
             'propagate': False,
             'handlers': ['stderr'],
         },
-        'collector': {
+        'hoover.search': {
             'level': 'INFO',
             'propagate': False,
             'handlers': ['stderr'],
@@ -92,10 +92,10 @@ ELASTICSEARCH_URL = 'http://localhost:9200'
 HOOVER_UPLOADS_URL = '/uploads/'
 
 HOOVER_LOADERS = [
-    'collector.loaders.upload.Loader',
-    'collector.loaders.webdav.Loader',
-    'collector.loaders.collectible.Loader',
-    'collector.loaders.external.Loader',
+    'hoover.search.loaders.upload.Loader',
+    'hoover.search.loaders.webdav.Loader',
+    'hoover.search.loaders.collectible.Loader',
+    'hoover.search.loaders.external.Loader',
 ]
 
 HOOVER_PDFJS_URL = None

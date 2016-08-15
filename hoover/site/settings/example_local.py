@@ -1,7 +1,7 @@
 from pathlib import Path
 from .common import cdn_assets
 
-base_dir = Path(__file__).absolute().parent.parent.parent
+base_dir = Path(__file__).absolute().parent.parent.parent.parent
 
 SECRET_KEY = 'something random'
 DEBUG = True
