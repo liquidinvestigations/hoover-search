@@ -3,6 +3,7 @@ import pytest
 from django.conf import settings
 from elasticsearch import Elasticsearch
 from hoover.search import models, index
+from .fixtures import skip_twofactor
 
 pytestmark = pytest.mark.django_db
 es = Elasticsearch(settings.ELASTICSEARCH_URL)
@@ -15,13 +16,6 @@ class MockDoc:
 
     def text(self):
         return self.metadata.get('text')
-
-@pytest.fixture()
-def skip_twofactor(monkeypatch):
-    monkeypatch.setattr(
-        'hoover.contrib.twofactor.middleware.RequireAuth.process_request',
-        lambda self, request: None
-    )
 
 @pytest.yield_fixture
 def finally_cleanup_index():
