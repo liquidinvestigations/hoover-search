@@ -1,5 +1,4 @@
 INSTALLED_APPS = [
-    'collector',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
