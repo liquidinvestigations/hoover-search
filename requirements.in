@@ -1,5 +1,4 @@
 Django
-whitenoise
 elasticsearch
 pip-tools
 psycopg2
