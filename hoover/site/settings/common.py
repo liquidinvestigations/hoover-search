@@ -112,5 +112,7 @@ cdn_assets = {
         'jquery.min.js'),
 }
 
-_hour = 60 * 60
+_minute = 60
+_hour = 60 * _minute
 HOOVER_TWOFACTOR_INVITATION_VALID = _hour / 2
+HOOVER_RATELIMIT_USER = (30, _minute)

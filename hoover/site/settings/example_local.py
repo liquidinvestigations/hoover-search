@@ -14,6 +14,11 @@ base_dir = Path(__file__).absolute().parent.parent.parent.parent
 #    'hoover.contrib.twofactor.middleware.RequireAuth',
 #)
 
+## to enable rate limiting for searches and downloads:
+#INSTALLED_APPS = common.INSTALLED_APPS + (
+#    'hoover.contrib.ratelimit',
+#)
+
 SECRET_KEY = 'something random'
 DEBUG = True
 DATABASES = {

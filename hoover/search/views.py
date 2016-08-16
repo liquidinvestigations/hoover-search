@@ -5,8 +5,14 @@ from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.views.decorators.csrf import csrf_exempt
 from django.core.urlresolvers import reverse
 from django.conf import settings
+from ..contrib import installed
 from . import es
 from .models import Collection
+
+if installed.ratelimit:
+    from ..contrib.ratelimit.decorators import limit_user
+else:
+    limit_user = lambda func: func
 
 
 class JsonResponse(HttpResponse):
@@ -50,6 +56,7 @@ def collections(request):
 
 
 @csrf_exempt
+@limit_user
 def search(request):
     body = json.loads(request.body.decode('utf-8'))
     collections = list(collection_names(request.user, body.get('collections')))
@@ -78,6 +85,7 @@ def search(request):
     return JsonResponse(res)
 
 
+@limit_user
 def doc(request, collection_name, id):
     collection = get_object_or_404(
         Collection.objects_for_user(request.user),
