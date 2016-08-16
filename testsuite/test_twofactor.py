@@ -14,6 +14,7 @@ def mock_time(monkeypatch):
     t = now()
     patch = monkeypatch.setattr
     patch('hoover.contrib.twofactor.invitations.now', lambda: t)
+    patch('hoover.contrib.twofactor.middleware.time', mock_time.time)
     patch('django_otp.plugins.otp_totp.models.time', mock_time)
     def set_time(value):
         nonlocal t
@@ -32,7 +33,6 @@ def _access_homepage(client):
         assert '<input name="q"' in resp.content.decode('utf-8')
         return True
     elif resp.status_code == 302:
-        assert resp.url == '/accounts/login/?next=/'
         return False
     else:
         raise RuntimeError("unexpected response %r" % resp)
@@ -105,3 +105,23 @@ def test_login(client, username, password, interval, success):
         'otp_token': _totp(device, now() + interval),
     })
     assert _access_homepage(client) == success
+
+def test_auto_logout(client, mock_time):
+    t0 = datetime(2016, 6, 13, 12, 0, 0, tzinfo=utc)
+
+    mock_time(t0)
+    invitations.invite('john', create=True)
+    device = _accept(models.Invitation.objects.get(), 'pw')
+    assert not _access_homepage(client)
+    client.post('/accounts/login/', {
+        'username': 'john',
+        'password': 'pw',
+        'otp_token': _totp(device, t0),
+    })
+    assert _access_homepage(client)
+
+    mock_time(t0 + timedelta(hours=2, minutes=59))
+    assert _access_homepage(client)
+
+    mock_time(t0 + timedelta(hours=3, minutes=0, seconds=5))
+    assert not _access_homepage(client)

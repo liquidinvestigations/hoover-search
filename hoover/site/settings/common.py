@@ -115,4 +115,5 @@ cdn_assets = {
 _minute = 60
 _hour = 60 * _minute
 HOOVER_TWOFACTOR_INVITATION_VALID = _hour / 2
+HOOVER_TWOFACTOR_AUTOLOGOUT = 3 * _hour
 HOOVER_RATELIMIT_USER = (30, _minute)

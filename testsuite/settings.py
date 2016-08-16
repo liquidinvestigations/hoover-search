@@ -10,6 +10,7 @@ INSTALLED_APPS = INSTALLED_APPS + (
 
 MIDDLEWARE_CLASSES = MIDDLEWARE_CLASSES + (
     'django_otp.middleware.OTPMiddleware',
+    'hoover.contrib.twofactor.middleware.AutoLogout',
     'hoover.contrib.twofactor.middleware.RequireAuth',
 )
 

@@ -11,6 +11,7 @@ base_dir = Path(__file__).absolute().parent.parent.parent.parent
 #)
 #MIDDLEWARE_CLASSES = common.MIDDLEWARE_CLASSES + (
 #    'django_otp.middleware.OTPMiddleware',
+#    'hoover.contrib.twofactor.middleware.AutoLogout',
 #    'hoover.contrib.twofactor.middleware.RequireAuth',
 #)
 
