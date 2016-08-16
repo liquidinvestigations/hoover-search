@@ -24,11 +24,11 @@ class JsonResponse(HttpResponse):
         )
 
 
-def collection_names(user, collections_arg):
-    rv = (c.name for c in Collection.objects_for_user(user))
+def can_search(user, collections_arg):
+    rv = list(Collection.objects_for_user(user))
     if collections_arg is not None:
         collections = set(collections_arg)
-        rv = (name for name in rv if name in collections)
+        rv = [col for col in rv if col.name in collections]
     return rv
 
 
@@ -43,7 +43,7 @@ def home(request):
         collections_arg = collections_arg.split()
     return render(request, 'home.html', {
         'collections': Collection.objects_for_user(request.user),
-        'selected': set(collection_names(request.user, collections_arg)),
+        'selected': set(can_search(request.user, collections_arg)),
     })
 
 
@@ -59,14 +59,14 @@ def collections(request):
 @limit_user
 def search(request):
     body = json.loads(request.body.decode('utf-8'))
-    collections = list(collection_names(request.user, body.get('collections')))
+    collections = can_search(request.user, body.get('collections'))
     res, counts = es.search(
         from_=body.get('from'),
         size=body.get('size'),
         query=body['query'],
         fields=body.get('fields'),
         highlight=body.get('highlight'),
-        collections=collections,
+        collections=[c.name for c in collections],
     )
 
     from .es import _index_id
