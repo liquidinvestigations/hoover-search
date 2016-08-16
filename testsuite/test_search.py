@@ -2,8 +2,8 @@ import json
 import pytest
 from django.conf import settings
 from elasticsearch import Elasticsearch
-from hoover.search import models, index
-from .fixtures import skip_twofactor
+from hoover.search import models, index, signals
+from .fixtures import skip_twofactor, listen
 
 pytestmark = pytest.mark.django_db
 es = Elasticsearch(settings.ELASTICSEARCH_URL)
@@ -66,8 +66,9 @@ def external(monkeypatch):
         mock_requests)
     return urlmap
 
-def test_all_the_things(finally_cleanup_index, api):
+def test_all_the_things(finally_cleanup_index, listen, api):
     from hoover.search.es import _index_name, DOCTYPE
+    search_events = listen(signals.search)
     col = models.Collection.objects.create(
         name='testcol', index='hoover-testcol', public=True)
 
@@ -92,8 +93,13 @@ def test_all_the_things(finally_cleanup_index, api):
     assert hits[0]['_collection'] == 'testcol'
     assert hits[0]['_url'] == 'http://testserver/doc/testcol/mock1'
 
-def test_external_loader(finally_cleanup_index, api, external):
+    assert len(search_events) == 1
+    assert search_events[0]['collections'] == [col]
+    assert search_events[0]['success']
+
+def test_external_loader(finally_cleanup_index, listen, api, external):
     from hoover.search.es import _index_name, DOCTYPE
+    doc_events = listen(signals.doc)
     col = models.Collection.objects.create(
         name='testcol',
         index='hoover-testcol',
@@ -110,3 +116,8 @@ def test_external_loader(finally_cleanup_index, api, external):
     res = api.doc('testcol', 'mock1')
     assert res.status_code == 200
     assert res.content == b'hello world'
+
+    assert len(doc_events) == 1
+    assert doc_events[0]['collection'] == col
+    assert doc_events[0]['doc_id'] == 'mock1'
+    assert doc_events[0]['success']

@@ -1,4 +1,5 @@
 import json
+from time import time
 from urllib.parse import quote
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect, Http404
@@ -8,6 +9,7 @@ from django.conf import settings
 from ..contrib import installed
 from . import es
 from .models import Collection
+from . import signals
 
 if installed.ratelimit:
     from ..contrib.ratelimit.decorators import limit_user
@@ -58,31 +60,44 @@ def collections(request):
 @csrf_exempt
 @limit_user
 def search(request):
+    t0 = time()
     body = json.loads(request.body.decode('utf-8'))
     collections = can_search(request.user, body.get('collections'))
-    res, counts = es.search(
-        from_=body.get('from'),
-        size=body.get('size'),
-        query=body['query'],
-        fields=body.get('fields'),
-        highlight=body.get('highlight'),
-        collections=[c.name for c in collections],
-    )
 
-    from .es import _index_id
-    def col_name(id):
-        return Collection.objects.get(id=id).name
+    success = False
+    try:
+        res, counts = es.search(
+            from_=body.get('from'),
+            size=body.get('size'),
+            query=body['query'],
+            fields=body.get('fields'),
+            highlight=body.get('highlight'),
+            collections=[c.name for c in collections],
+        )
 
-    for item in res['hits']['hits']:
-        name = col_name(_index_id(item['_index']))
-        url = 'doc/{}/{}'.format(name, item['_id'])
-        item['_collection'] = name
-        item['_url'] = request.build_absolute_uri(url)
-    res['count_by_index'] = {
-        col_name(i): counts[i]
-        for i in counts
-    }
-    return JsonResponse(res)
+        from .es import _index_id
+        def col_name(id):
+            return Collection.objects.get(id=id).name
+
+        for item in res['hits']['hits']:
+            name = col_name(_index_id(item['_index']))
+            url = 'doc/{}/{}'.format(name, item['_id'])
+            item['_collection'] = name
+            item['_url'] = request.build_absolute_uri(url)
+        res['count_by_index'] = {
+            col_name(i): counts[i]
+            for i in counts
+        }
+        success = True
+        return JsonResponse(res)
+
+    finally:
+        signals.search.send('hoover.search', **{
+            'request': request,
+            'collections': collections,
+            'duration': time() - t0,
+            'success': success,
+        })
 
 
 @limit_user
@@ -91,7 +106,21 @@ def doc(request, collection_name, id):
         Collection.objects_for_user(request.user),
         name=collection_name,
     )
-    return collection.get_loader().get(id).view(request)
+    t0 = time()
+    success = False
+    try:
+        rv = collection.get_loader().get(id).view(request)
+        success = True
+        return rv
+
+    finally:
+        signals.doc.send('hoover.search', **{
+            'request': request,
+            'collection': collection,
+            'doc_id': id,
+            'duration': time() - t0,
+            'success': success,
+        })
 
 
 def whoami(request):
