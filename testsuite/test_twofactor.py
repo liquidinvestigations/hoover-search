@@ -1,9 +1,12 @@
+# TODO make sure signals are sent
+
 from datetime import datetime, timedelta
 import pytest
 from django.utils.timezone import utc, now
 from django_otp.oath import TOTP
 from django_otp.plugins.otp_totp.models import TOTPDevice
-from hoover.contrib.twofactor import invitations, models, devices
+from hoover.contrib.twofactor import invitations, models, devices, signals
+from .fixtures import listen
 
 pytestmark = pytest.mark.django_db
 
@@ -46,8 +49,12 @@ def _access_homepage(client):
         (10, True, False, True, True, False),
         (10, True, True, False, True, False),
     ])
-def test_flow(client, mock_time, minutes, username_ok, password_ok, code_ok,
+def test_flow(client, listen,
+        mock_time, minutes, username_ok, password_ok, code_ok,
         invitation, success):
+
+    invitation_open = listen(signals.invitation_open)
+    invitation_accept = listen(signals.invitation_accept)
 
     t0 = datetime(2016, 6, 13, 12, 0, 0, tzinfo=utc)
     t1 = t0 + timedelta(minutes=minutes)
@@ -63,6 +70,8 @@ def test_flow(client, mock_time, minutes, username_ok, password_ok, code_ok,
         assert TOTPDevice.objects.count() == 0
         return
 
+    assert invitation_open == [{'username': 'john'}]
+
     [device] = TOTPDevice.objects.all()
     hour = timedelta(hours=1)
     resp = client.post(url, {
@@ -73,10 +82,12 @@ def test_flow(client, mock_time, minutes, username_ok, password_ok, code_ok,
     })
 
     if success:
+        assert invitation_accept == [{'username': 'john'}]
         assert "Verification successful." in resp.content.decode('utf-8')
         assert _access_homepage(client)
 
     else:
+        assert invitation_accept == []
         assert not _access_homepage(client)
 
 def _accept(invitation, password):
@@ -95,7 +106,8 @@ def _accept(invitation, password):
     ('johnny', 'pw', timedelta(0), False),
     ('john', 'pwz', timedelta(0), False),
 ])
-def test_login(client, username, password, interval, success):
+def test_login(client, listen, username, password, interval, success):
+    login_failure = listen(signals.login_failure)
     invitations.invite('john', create=True)
     device = _accept(models.Invitation.objects.get(), 'pw')
     assert not _access_homepage(client)
@@ -104,9 +116,15 @@ def test_login(client, username, password, interval, success):
         'password': password,
         'otp_token': _totp(device, now() + interval),
     })
-    assert _access_homepage(client) == success
+    if success:
+        assert login_failure == []
+        assert _access_homepage(client)
+    else:
+        assert login_failure == [{'otp_failure': bool(interval)}]
+        assert not _access_homepage(client)
 
-def test_auto_logout(client, mock_time):
+def test_auto_logout(client, mock_time, listen):
+    auto_logout = listen(signals.auto_logout)
     t0 = datetime(2016, 6, 13, 12, 0, 0, tzinfo=utc)
 
     mock_time(t0)
@@ -121,7 +139,9 @@ def test_auto_logout(client, mock_time):
     assert _access_homepage(client)
 
     mock_time(t0 + timedelta(hours=2, minutes=59))
+    assert auto_logout == []
     assert _access_homepage(client)
 
     mock_time(t0 + timedelta(hours=3, minutes=0, seconds=5))
     assert not _access_homepage(client)
+    assert auto_logout == [{'username': 'john'}]

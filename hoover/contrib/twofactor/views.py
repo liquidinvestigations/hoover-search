@@ -1,11 +1,22 @@
 from base64 import b64encode
 from django.db import transaction
+from django.forms import ValidationError
 from django.shortcuts import render
 from django_otp.forms import OTPAuthenticationForm
 from . import devices
 from . import invitations
+from . import signals
+from . import models
 
-AuthenticationForm = OTPAuthenticationForm
+class AuthenticationForm(OTPAuthenticationForm):
+
+    def clean_otp(self, user):
+        try:
+            return super().clean_otp(user)
+        except ValidationError:
+            signals.login_failure.send('hoover.contrib.twofactor',
+                otp_failure=True)
+            raise
 
 @transaction.atomic
 def invitation(request, code):
@@ -16,6 +27,8 @@ def invitation(request, code):
     bad_password = False
     user = invitation.user
     username = user.get_username()
+
+    signals.invitation_open.send(models.Invitation, username=username)
 
     device_id = request.session.get('invitation_device_id')
     with devices.setup(user, device_id) as (device, setup_successful):
@@ -36,6 +49,8 @@ def invitation(request, code):
                 password = request.POST['password']
                 invitations.accept(request, invitation, device, password)
                 setup_successful()
+                signals.invitation_accept.send(models.Invitation,
+                    username=username)
                 success = True
 
     png_data = b64encode(devices.qr_png(device, username)).decode('utf8')

@@ -6,6 +6,7 @@ from django.dispatch import receiver
 from django.contrib.auth import logout
 from django.contrib.auth.views import redirect_to_login
 from django.contrib.auth.signals import user_logged_in
+from . import signals
 
 LOGIN_TIME_SESSION_KEY = 'hoover.contrib.twofactor.login_time'
 
@@ -21,6 +22,8 @@ class AutoLogout:
         if user.is_authenticated():
             login_time = request.session.get(LOGIN_TIME_SESSION_KEY) or 0
             if time() - login_time > settings.HOOVER_TWOFACTOR_AUTOLOGOUT:
+                signals.auto_logout.send(AutoLogout,
+                    username=user.get_username())
                 logout(request)
                 return HttpResponseRedirect(settings.HOOVER_BASE_URL)
 
