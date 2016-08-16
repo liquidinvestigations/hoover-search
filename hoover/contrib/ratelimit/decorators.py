@@ -1,6 +1,7 @@
 from django.http import HttpResponse
 from django.conf import settings
 from . import models
+from . import signals
 
 class HttpLimitExceeded(HttpResponse):
 
@@ -23,6 +24,11 @@ class RateLimit:
             key = self.name + ':' + self.keyfunc(request)
             counter = models.Count.inc(key, self.interval)
             if counter.n > self.limit:
+                signals.rate_limit_exceeded.send(
+                    models.Count,
+                    counter=counter,
+                    request=request,
+                )
                 return HttpLimitExceeded()
             return view(request, *args, **kwargs)
         return wrapper
