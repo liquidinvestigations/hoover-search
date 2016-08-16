@@ -9,7 +9,6 @@ from ..contrib import installed
 urlpatterns = [
     url(r'^_ping$', views.ping, name='ping'),
     url(r'^admin/', include(admin_site.urls)),
-    url(r'^$', views.home, name='home'),
     url(r'^search$', views.search, name='search'),
     url(r'^whoami$', views.whoami, name='whoami'),
     url(r'^collections$', views.collections, name='collections'),
@@ -29,3 +28,12 @@ urlpatterns += [
     url(r'^accounts/', include('django.contrib.auth.urls')),
     url(r'^uploads/(?P<filename>.+)$', uploads.serve_file),
 ]
+
+if settings.HOOVER_UI_ROOT:
+    urlpatterns += [
+        url(r'^(?P<filename>.*)$', 'collector.views.serve_ui'),
+    ]
+else:
+    urlpatterns += [
+        url(r'^$', views.home, name='home'),
+    ]

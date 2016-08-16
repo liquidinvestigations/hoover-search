@@ -1,8 +1,11 @@
 import json
 from time import time
 from urllib.parse import quote
+import mimetypes
+from pathlib import Path
 from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponse, HttpResponseRedirect, Http404
+from django.http import (HttpResponse, HttpResponseRedirect, Http404,
+    FileResponse)
 from django.views.decorators.csrf import csrf_exempt
 from django.core.urlresolvers import reverse
 from django.conf import settings
@@ -128,9 +131,28 @@ def whoami(request):
         'username': request.user.username,
         'admin': request.user.is_superuser,
         'urls': {
-            'login': reverse('login'),
+            'login': settings.LOGIN_URL,
             'admin': reverse('admin:index'),
             'password_change': reverse('password_change'),
-            'logout': reverse('logout') + '?next=' + reverse('home'),
+            'logout': reverse('logout') + '?next=/',
         },
     })
+
+
+def serve_ui(request, filename):
+    ui_root = Path(settings.UI_ROOT)
+    file = ui_root / filename
+
+    if not (ui_root == file or ui_root in file.parents):
+        raise Http404()
+
+    if file.is_dir():
+        file = file / 'index.html'
+
+    if not file.is_file():
+        raise Http404()
+
+    return FileResponse(
+        file.open('rb'),
+        content_type=mimetypes.guess_type(str(file))[0] or None,
+    )
