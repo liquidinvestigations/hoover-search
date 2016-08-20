@@ -27,4 +27,7 @@ class Loader:
         self.config = config
 
     def get(self, doc_id):
-        return Document(self.config['documents'], doc_id)
+        url_root = self.config['documents']
+        if not url_root.endswith('/'):
+            url_root += '/'
+        return Document(url_root, doc_id)
