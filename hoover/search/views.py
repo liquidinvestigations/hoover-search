@@ -140,7 +140,7 @@ def whoami(request):
 
 
 def serve_ui(request, filename):
-    ui_root = Path(settings.UI_ROOT)
+    ui_root = Path(settings.HOOVER_UI_ROOT)
     file = ui_root / filename
 
     if not (ui_root == file or ui_root in file.parents):

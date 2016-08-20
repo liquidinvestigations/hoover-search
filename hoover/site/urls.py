@@ -30,7 +30,7 @@ urlpatterns += [
 
 if settings.HOOVER_UI_ROOT:
     urlpatterns += [
-        url(r'^(?P<filename>.*)$', 'collector.views.serve_ui'),
+        url(r'^(?P<filename>.*)$', views.serve_ui),
     ]
 else:
     urlpatterns += [
