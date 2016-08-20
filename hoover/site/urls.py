@@ -3,7 +3,6 @@ from django.conf.urls import include, url
 from django.contrib import admin
 from ..search.admin import admin_site
 from ..search import views, uploads
-from ..contrib.twofactor.views import AuthenticationForm
 from ..contrib import installed
 
 urlpatterns = [
@@ -16,12 +15,12 @@ urlpatterns = [
 ]
 
 if installed.twofactor:
-    from hoover.contrib.twofactor import views as twofactor_views
+    from ..contrib.twofactor import views as twofactor_views
     from django.contrib.auth import views as auth_views
     urlpatterns += [
         url(r'^invitation/(?P<code>.*)$', twofactor_views.invitation),
         url(r'^accounts/login/$', auth_views.login, kwargs={
-            'authentication_form': AuthenticationForm}),
+            'authentication_form': twofactor_views.AuthenticationForm}),
     ]
 
 urlpatterns += [
