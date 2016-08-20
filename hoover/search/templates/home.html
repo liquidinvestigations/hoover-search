@@ -13,11 +13,6 @@
   margin: 0 0 0 1em;
 }
 
-#collections {
-  float: right;
-  max-width: 33%;
-}
-
 .highlight em {
   background: #aff;
 }
@@ -45,23 +40,6 @@
 
 <div id="search">
   <form>
-
-    <div id="collections">
-      <h2>Collections</h2>
-
-      {% for collection in collections %}
-        <div class="checkbox">
-          <label>
-            <input type="checkbox" value="{{ collection.name }}"
-              {% if collection.name in selected %}checked{% endif %}>
-            {{ collection.label }}
-          </label>
-        </div>
-      {% empty %}
-        <em>none available</em>
-      {% endfor %}
-      <input id="collections-input" type="hidden">
-    </div>
 
     <div class="form-inline">
       <div class="form-group">
@@ -105,41 +83,13 @@ $.get('{% url "whoami" %}', function(resp) {
   })
 });
 
-var checkboxes = $('#collections input[type=checkbox]')
-checkboxes.change(function(evt) {
-  saveCollections()
-})
-saveCollections()
-
-function saveCollections() {
-  var collectionsInput = $('#collections-input')
-  if(checkboxes.filter(':not(:checked)').length > 0) {
-
-    var selected = ''+(
-      checkboxes
-      .filter(':checked')
-      .get()
-      .map(function(c) { return c.value })
-      .join(' ')
-    )
-    collectionsInput.attr('name', 'collections').val(selected)
-
-  }
-  else {
-
-    collectionsInput.attr('name', null).val('')
-
-  }
-}
-
-function search(q, collections, callback) {
+function search(q, callback) {
   $.ajax({
     url: '{% url "search" %}',
     method: 'POST',
     data: JSON.stringify({
-      collections: collections,
       query: {query_string: {default_field: 'text', query: q}},
-      fields: ['title', 'url'],
+      fields: ['path'],
       highlight: {fields: {text: {}}},
     }),
     success: callback,
@@ -149,10 +99,8 @@ function search(q, collections, callback) {
 var q = document.querySelector('[name=q]').value
 if(q) {
 
-  var collections = (document.querySelector('[name=collections]') || {}).value
-  if(collections) collections = collections.split(' ')
   $('#results').text('searching ...')
-  search(q, collections, function(resp) {
+  search(q, function(resp) {
 
     $('#results').empty()
     if(! resp.hits.hits.length) {
@@ -162,10 +110,8 @@ if(q) {
     resp.hits.hits.forEach(function(hit) {
 
       var item = $('<div>').appendTo('#results')
-
-      $('<h3>').append(
-        $('<a>', {href: hit._url}).text(hit.fields.title)
-      ).appendTo(item)
+      var a = $('<a>', {href: hit._url}).text(hit.fields.path)
+      $('<h3>').append(a).appendTo(item)
 
       if(hit.highlight && hit.highlight.text) {
         var highlights = $('<ul>').appendTo(item)
