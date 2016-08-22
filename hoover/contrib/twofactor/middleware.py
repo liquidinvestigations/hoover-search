@@ -1,4 +1,5 @@
 from time import time
+import re
 from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.shortcuts import resolve_url
@@ -29,8 +30,14 @@ class AutoLogout:
 
 class RequireAuth:
     def process_request(self, request):
-        for prefix in ['/accounts/', '/invitation/']:
-            if request.path.startswith(prefix):
+        WHITELIST = [
+            r'^/accounts/',
+            r'^/invitation/',
+            r'^/static/',
+            r'^/_ping$',
+        ]
+        for pattern in WHITELIST:
+            if re.match(pattern, request.path):
                 return
 
         user = request.user
