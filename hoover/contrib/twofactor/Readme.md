@@ -6,7 +6,7 @@ token. It works with phone apps like Google Authenticator and Duo Mobile.
 ### setup
 * Add the following to `INSTALLED_APPS`:
 
-   ```
+   ```python
         'hoover.contrib.twofactor',
         'django_otp',
         'django_otp.plugins.otp_totp',
@@ -14,7 +14,7 @@ token. It works with phone apps like Google Authenticator and Duo Mobile.
 
 * Add the following to `MIDDLEWARE_CLASSES`:
 
-   ```
+   ```python
         'django_otp.middleware.OTPMiddleware',
         'hoover.contrib.twofactor.middleware.AutoLogout',
         'hoover.contrib.twofactor.middleware.RequireAuth',
