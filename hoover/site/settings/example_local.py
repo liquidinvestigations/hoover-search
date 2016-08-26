@@ -20,8 +20,7 @@ base_dir = Path(__file__).absolute().parent.parent.parent.parent
 #    'hoover.contrib.ratelimit',
 #)
 
-SECRET_KEY = 'something random'
-DEBUG = True
+SECRET_KEY = TODO_generate_random_string
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
