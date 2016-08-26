@@ -3,22 +3,9 @@ from . import common
 
 base_dir = Path(__file__).absolute().parent.parent.parent.parent
 
-## to enable two-factor authentication:
-#INSTALLED_APPS = common.INSTALLED_APPS + (
-#    'hoover.contrib.twofactor',
-#    'django_otp',
-#    'django_otp.plugins.otp_totp',
-#)
-#MIDDLEWARE_CLASSES = common.MIDDLEWARE_CLASSES + (
-#    'django_otp.middleware.OTPMiddleware',
-#    'hoover.contrib.twofactor.middleware.AutoLogout',
-#    'hoover.contrib.twofactor.middleware.RequireAuth',
-#)
-
-## to enable rate limiting for searches and downloads:
-#INSTALLED_APPS = common.INSTALLED_APPS + (
-#    'hoover.contrib.ratelimit',
-#)
+# To enable two-factor authentication and rate limiting see:
+# github.com/hoover/search/tree/master/hoover/contrib/twofactor#readme
+# github.com/hoover/search/tree/master/hoover/contrib/ratelimit#readme
 
 SECRET_KEY = TODO_generate_random_string
 DATABASES = {
