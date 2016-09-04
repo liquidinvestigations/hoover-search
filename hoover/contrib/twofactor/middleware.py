@@ -26,7 +26,8 @@ class AutoLogout:
                 signals.auto_logout.send(AutoLogout,
                     username=user.get_username())
                 logout(request)
-                return HttpResponseRedirect(settings.HOOVER_BASE_URL)
+                login = "{}?next={}".format(settings.LOGIN_URL, request.path)
+                return HttpResponseRedirect(login)
 
 class RequireAuth:
     def process_request(self, request):
