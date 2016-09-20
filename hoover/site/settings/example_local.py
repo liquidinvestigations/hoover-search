@@ -16,4 +16,3 @@ DATABASES = {
 }
 STATIC_ROOT = str(base_dir / 'static')
 HOOVER_UPLOADS_ROOT = str(base_dir / 'uploads')
-HOOVER_ASSETS = common.cdn_assets

@@ -4,3 +4,4 @@
 /uploads
 *.pyc
 /.cache
+/hoover/search/static

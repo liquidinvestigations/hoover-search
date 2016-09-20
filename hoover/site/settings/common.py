@@ -103,20 +103,10 @@ TIKA_URL = 'http://localhost:9998'
 
 EMBED_HYPOTHESIS = None
 
-cdn_assets = {
-    'bootstrap_css': ('https://cdn.rawgit.com/twbs/bootstrap/v4-dev/dist/'
-        'css/bootstrap.css'),
-    'bootstrap_js': ('https://cdn.rawgit.com/twbs/bootstrap/v4-dev/dist/'
-        'js/bootstrap.js'),
-    'jquery_js': ('https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/'
-        'jquery.min.js'),
-}
-
 _minute = 60
 _hour = 60 * _minute
 HOOVER_TWOFACTOR_INVITATION_VALID = _hour / 2
 HOOVER_TWOFACTOR_AUTOLOGOUT = 3 * _hour
 HOOVER_RATELIMIT_USER = (30, _minute)
 HOOVER_UI_ROOT = None
-HOOVER_ASSETS = {}
 HOOVER_EVENTS_DIR = None

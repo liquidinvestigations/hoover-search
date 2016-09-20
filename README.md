@@ -44,17 +44,26 @@ probably want to set up a [virtualenv][] too.
    ./manage.py createsuperuser
    ```
 
-4. Run the server
+4. Download assets (jQuery and bootstrap) used by the default search UI and the
+   two-factor login page. You can skip this step if you use the [advanced
+   UI](https://github.com/hoover/ui) and don't enable two-factor login.
+
+    ```shell
+    ./manage.py downloadassets
+    ./manage.py collectstatic
+    ```
+
+5. Run the server
 
    ```shell
    ./run devserver
    ```
 
-5. Import a collection: first, create the collection in Django admin, at
+6. Import a collection: first, create the collection in Django admin, at
    http://127.0.0.1:8000/admin/search/collection/. Then, click on "upload", and
    select a ZIP archive containing PDF files.
 
-6. Run some search queries! There is a minimal search UI on the homepage of the
+7. Run some search queries! There is a minimal search UI on the homepage of the
    Django site (http://127.0.0.1:8000/).
 
 
