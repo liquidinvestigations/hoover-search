@@ -18,7 +18,8 @@ class Command(BaseCommand):
     def handle(self, **options):
         appdir = Path(__file__).absolute().parent.parent.parent
         static = appdir / 'static' / 'search'
-        static.mkdir(parents=True, exist_ok=True)
+        if not static.exists():
+            static.mkdir(parents=True)
 
         for name, url in ASSETS.items():
             print(name)
