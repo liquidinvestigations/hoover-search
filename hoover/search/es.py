@@ -40,7 +40,7 @@ def get(collection_id, doc_id):
     )
 
 
-def search(query, fields, highlight, collections, from_, size):
+def search(query, fields, highlight, collections, from_, size, sort):
     from .models import Collection
     indices = ','.join(
         c.index for c in
@@ -58,6 +58,7 @@ def search(query, fields, highlight, collections, from_, size):
         'size': size,
         'query': query,
         'fields': fields,
+        'sort': sort,
         'aggs': {
             'count_by_index': {
                 'terms': {
