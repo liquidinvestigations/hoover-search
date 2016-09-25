@@ -74,6 +74,7 @@ def search(request):
             size=body.get('size'),
             query=body['query'],
             fields=body.get('fields'),
+            sort=body.get('sort', ['_score']),
             highlight=body.get('highlight'),
             collections=[c.name for c in collections],
         )
