@@ -9,13 +9,17 @@ from . import models
 
 @transaction.atomic
 def invite(username, create=False):
+    duration = settings.HOOVER_TWOFACTOR_INVITATION_VALID
     if create:
         user = get_user_model().objects.create(username=username)
     else:
         user = get_user_model().objects.get_by_natural_key(username)
 
     models.Invitation.objects.filter(user=user).delete()
-    invitation = models.Invitation.objects.create(user=user, generated=now())
+    invitation = models.Invitation.objects.create(
+        user=user,
+        expires=now() + timedelta(seconds=duration),
+    )
 
     url = "{}/invitation/{}".format(
         settings.HOOVER_BASE_URL,
@@ -24,11 +28,10 @@ def invite(username, create=False):
     return url
 
 def get_or_404(code):
-    valid = timedelta(seconds=settings.HOOVER_TWOFACTOR_INVITATION_VALID)
     return get_object_or_404(
         models.Invitation.objects.select_for_update(),
         code=code,
-        generated__gt=now() - valid,
+        expires__gt=now(),
     )
 
 @transaction.atomic

@@ -16,4 +16,4 @@ class Invitation(models.Model):
 
     user = models.OneToOneField(settings.AUTH_USER_MODEL)
     code = models.CharField(max_length=200, default=random_code)
-    generated = models.DateTimeField()
+    expires = models.DateTimeField()
