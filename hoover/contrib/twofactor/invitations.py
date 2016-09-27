@@ -8,8 +8,7 @@ from django_otp import login as otp_login
 from . import models
 
 @transaction.atomic
-def invite(username, create=False):
-    duration = settings.HOOVER_TWOFACTOR_INVITATION_VALID
+def invite(username, duration, create=False):
     if create:
         user = get_user_model().objects.create(username=username)
     else:
