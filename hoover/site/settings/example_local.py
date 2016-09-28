@@ -7,7 +7,8 @@ base_dir = Path(__file__).absolute().parent.parent.parent.parent
 # github.com/hoover/search/tree/master/hoover/contrib/twofactor#readme
 # github.com/hoover/search/tree/master/hoover/contrib/ratelimit#readme
 
-SECRET_KEY = TODO_generate_random_string
+DEBUG = True
+SECRET_KEY = 'FIME: generate random string'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
