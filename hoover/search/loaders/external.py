@@ -15,6 +15,8 @@ class Document:
         url = self.root_url + self.doc_id
         if request.GET.get('raw') == 'on':
             url += '?raw=on'
+        if request.GET.get('embed') == 'on':
+            url += '?embed=on'
         resp = requests.get(url)
         return HttpResponse(resp.content,
             content_type=resp.headers['Content-Type'])
