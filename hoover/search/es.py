@@ -75,6 +75,7 @@ def search(query, fields, highlight, collections, from_, size, sort, aggs):
         index=indices,
         ignore_unavailable=True,
         body=body,
+        request_timeout=60,
     )
 
     count_by_index = {
