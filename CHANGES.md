@@ -1,4 +1,5 @@
 ## master
+* rename settings' ELASTICSEARCH_URL to HOOVER_ELASTICSEARCH_URL
 * upgrade to Django 1.10
 * "External" loader that fetches documents from a URL
 * set no-cache and no-referral response headers
