@@ -3,7 +3,7 @@ from elasticsearch import Elasticsearch, helpers
 from elasticsearch.client.utils import _make_path
 from elasticsearch.exceptions import NotFoundError, TransportError
 
-es = Elasticsearch(settings.ELASTICSEARCH_URL)
+es = Elasticsearch(settings.HOOVER_ELASTICSEARCH_URL)
 DOCTYPE = 'doc'
 
 def create_index(collection_id, name):

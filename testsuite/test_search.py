@@ -6,7 +6,7 @@ from hoover.search import models, index, signals
 from .fixtures import skip_twofactor, listen
 
 pytestmark = pytest.mark.django_db
-es = Elasticsearch(settings.ELASTICSEARCH_URL)
+es = Elasticsearch(settings.HOOVER_ELASTICSEARCH_URL)
 
 class MockDoc:
 

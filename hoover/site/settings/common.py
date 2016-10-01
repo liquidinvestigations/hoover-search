@@ -86,7 +86,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 LOGIN_REDIRECT_URL = '/'
 
-ELASTICSEARCH_URL = 'http://localhost:9200'
+HOOVER_ELASTICSEARCH_URL = 'http://localhost:9200'
 
 HOOVER_UPLOADS_URL = '/uploads/'
 
