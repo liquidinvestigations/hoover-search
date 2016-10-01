@@ -60,7 +60,7 @@ def test_flow(client, listen,
     t1 = t0 + timedelta(minutes=minutes)
 
     mock_time(t0)
-    url = invitations.invite('john', create=True)
+    url = invitations.invite('john', duration=15*60, create=True)
     assert not _access_homepage(client)
 
     mock_time(t1)
@@ -108,7 +108,7 @@ def _accept(invitation, password):
 ])
 def test_login(client, listen, username, password, interval, success):
     login_failure = listen(signals.login_failure)
-    invitations.invite('john', create=True)
+    invitations.invite('john', duration=interval.seconds+1, create=True)
     device = _accept(models.Invitation.objects.get(), 'pw')
     assert not _access_homepage(client)
     client.post('/accounts/login/', {
@@ -128,7 +128,7 @@ def test_auto_logout(client, mock_time, listen):
     t0 = datetime(2016, 6, 13, 12, 0, 0, tzinfo=utc)
 
     mock_time(t0)
-    invitations.invite('john', create=True)
+    invitations.invite('john', duration=60, create=True)
     device = _accept(models.Invitation.objects.get(), 'pw')
     assert not _access_homepage(client)
     client.post('/accounts/login/', {
