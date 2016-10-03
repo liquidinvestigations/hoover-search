@@ -5,4 +5,4 @@ DATABASES = {
     },
 }
 
-ELASTICSEARCH_URL = 'http://localhost:9200'
+HOOVER_ELASTICSEARCH_URL = 'http://localhost:9200'

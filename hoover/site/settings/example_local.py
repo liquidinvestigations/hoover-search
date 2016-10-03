@@ -7,8 +7,7 @@ base_dir = Path(__file__).absolute().parent.parent.parent.parent
 # github.com/hoover/search/tree/master/hoover/contrib/twofactor#readme
 # github.com/hoover/search/tree/master/hoover/contrib/ratelimit#readme
 
-DEBUG = True
-SECRET_KEY = 'FIME: generate random string'
+SECRET_KEY = TODO_generate_random_string
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -17,3 +16,5 @@ DATABASES = {
 }
 STATIC_ROOT = str(base_dir / 'static')
 HOOVER_UPLOADS_ROOT = str(base_dir / 'uploads')
+HOOVER_ELASTICSEARCH_URL = 'http://localhost:9200'
+
