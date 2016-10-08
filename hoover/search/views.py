@@ -21,10 +21,9 @@ else:
 
 
 def can_search(user, collections_arg):
-    rv = list(Collection.objects_for_user(user))
-    if collections_arg is not None:
-        collections = set(collections_arg)
-        rv = [col for col in rv if col.name in collections]
+    available = list(Collection.objects_for_user(user))
+    requested = set(collections_arg)
+    rv = [col for col in available if col.name in requested]
     return rv
 
 
@@ -67,7 +66,7 @@ def _search(request, **kwargs):
 def search(request):
     t0 = time()
     body = json.loads(request.body.decode('utf-8'))
-    collections = can_search(request.user, body.get('collections'))
+    collections = can_search(request.user, body['collections'])
 
     success = False
     try:
