@@ -5,7 +5,7 @@ import mimetypes
 from pathlib import Path
 from django.shortcuts import render, get_object_or_404
 from django.http import (HttpResponse, HttpResponseRedirect, Http404,
-    FileResponse)
+    FileResponse, JsonResponse)
 from django.views.decorators.csrf import csrf_exempt
 from django.core.urlresolvers import reverse
 from django.conf import settings
@@ -18,15 +18,6 @@ if installed.ratelimit:
     from ..contrib.ratelimit.decorators import limit_user
 else:
     limit_user = lambda func: func
-
-
-class JsonResponse(HttpResponse):
-
-    def __init__(self, data):
-        return super(JsonResponse, self).__init__(
-            json.dumps(data),
-            content_type='application/json',
-        )
 
 
 def can_search(user, collections_arg):
@@ -57,7 +48,7 @@ def collections(request):
     return JsonResponse([
         {'name': col.name, 'title': col.title}
         for col in Collection.objects_for_user(request.user)
-    ])
+    ], safe=False)
 
 def _search(request, **kwargs):
     res, counts = es.search(**kwargs)
