@@ -59,6 +59,23 @@ def collections(request):
         for col in Collection.objects_for_user(request.user)
     ])
 
+def _search(request, **kwargs):
+    res, counts = es.search(**kwargs)
+
+    from .es import _index_id
+    def col_name(id):
+        return Collection.objects.get(id=id).name
+
+    for item in res['hits']['hits']:
+        name = col_name(_index_id(item['_index']))
+        url = 'doc/{}/{}'.format(name, item['_id'])
+        item['_collection'] = name
+        item['_url'] = request.build_absolute_uri(url)
+    res['count_by_index'] = {
+        col_name(i): counts[i]
+        for i in counts
+    }
+    return JsonResponse(res)
 
 @csrf_exempt
 @limit_user
@@ -69,7 +86,8 @@ def search(request):
 
     success = False
     try:
-        res, counts = es.search(
+        response = _search(
+            request,
             from_=body.get('from'),
             size=body.get('size'),
             query=body['query'],
@@ -79,22 +97,8 @@ def search(request):
             highlight=body.get('highlight'),
             collections=[c.name for c in collections],
         )
-
-        from .es import _index_id
-        def col_name(id):
-            return Collection.objects.get(id=id).name
-
-        for item in res['hits']['hits']:
-            name = col_name(_index_id(item['_index']))
-            url = 'doc/{}/{}'.format(name, item['_id'])
-            item['_collection'] = name
-            item['_url'] = request.build_absolute_uri(url)
-        res['count_by_index'] = {
-            col_name(i): counts[i]
-            for i in counts
-        }
         success = True
-        return JsonResponse(res)
+        return response
 
     finally:
         signals.search.send('hoover.search', **{
