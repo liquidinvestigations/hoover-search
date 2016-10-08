@@ -19,21 +19,17 @@ if installed.ratelimit:
 else:
     limit_user = lambda func: func
 
-
 def collections_acl(user, collections_arg):
     available = list(Collection.objects_for_user(user))
     requested = set(collections_arg)
     return set(col for col in available if col.name in requested)
 
-
 def ping(request):
     Collection.objects.count()
     return HttpResponse('ok\n')
 
-
 def home(request):
     return render(request, 'home.html')
-
 
 @csrf_exempt
 def collections(request):
@@ -91,7 +87,6 @@ def search(request):
             'success': success,
         })
 
-
 @limit_user
 def doc(request, collection_name, id):
     collection = get_object_or_404(
@@ -114,7 +109,6 @@ def doc(request, collection_name, id):
             'success': success,
         })
 
-
 def whoami(request):
     return JsonResponse({
         'username': request.user.username,
@@ -126,7 +120,6 @@ def whoami(request):
             'logout': reverse('logout') + '?next=/',
         },
     })
-
 
 def serve_ui(request, filename):
     ui_root = Path(settings.HOOVER_UI_ROOT)
