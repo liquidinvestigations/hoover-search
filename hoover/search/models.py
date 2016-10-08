@@ -21,7 +21,7 @@ class Collection(models.Model):
         default='hoover.search.loaders.upload.Loader')
     options = models.TextField(default='{}')
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     def get_loader(self):
