@@ -20,7 +20,7 @@ else:
     limit_user = lambda func: func
 
 
-def can_search(user, collections_arg):
+def collections_acl(user, collections_arg):
     available = list(Collection.objects_for_user(user))
     requested = set(collections_arg)
     return set(col for col in available if col.name in requested)
@@ -65,7 +65,7 @@ def _search(request, **kwargs):
 def search(request):
     t0 = time()
     body = json.loads(request.body.decode('utf-8'))
-    collections = can_search(request.user, body['collections'])
+    collections = collections_acl(request.user, body['collections'])
 
     success = False
     try:
