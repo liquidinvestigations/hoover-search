@@ -84,16 +84,28 @@ $.get('{% url "whoami" %}', function(resp) {
   })
 });
 
-function search(q, callback) {
+function get_collections(callback) {
   $.ajax({
-    url: '{% url "search" %}',
-    method: 'POST',
-    data: JSON.stringify({
-      query: {query_string: {default_field: 'text', query: q}},
-      fields: ['path'],
-      highlight: {fields: {text: {}}},
-    }),
-    success: callback,
+    url: '{% url "collections" %}',
+    success: function(data) {
+      callback(data.map(function(c) { return c.name }))
+    },
+  })
+}
+
+function search(q, callback) {
+  get_collections(function(collections) {
+    $.ajax({
+      url: '{% url "search" %}',
+      method: 'POST',
+      data: JSON.stringify({
+        collections: collections,
+        query: {query_string: {default_field: 'text', query: q}},
+        fields: ['path'],
+        highlight: {fields: {text: {}}},
+      }),
+      success: callback,
+    })
   })
 }
 
