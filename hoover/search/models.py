@@ -1,7 +1,6 @@
 import hashlib
 import json
 from django.db import models
-from django.db.models import Q
 from django.dispatch import receiver
 from django.conf import settings
 from django.utils.module_loading import import_string
@@ -33,10 +32,10 @@ class Collection(models.Model):
 
     @classmethod
     def objects_for_user(cls, user):
-        query = Q(public=True)
+        rv = set(cls.objects.filter(public=True))
         if user.id is not None:
-            query = query | Q(users__id=user.id)
-        return cls.objects.filter(query)
+            rv |= set(cls.objects.filter(users__id=user.id))
+        return rv
 
     def count(self):
         return es.count(self.id)
