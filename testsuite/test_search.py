@@ -94,7 +94,7 @@ def test_all_the_things(finally_cleanup_index, listen, api):
     assert hits[0]['_url'] == 'http://testserver/doc/testcol/mock1'
 
     assert len(search_events) == 1
-    assert search_events[0]['collections'] == [col]
+    assert search_events[0]['collections'] == {col}
     assert search_events[0]['success']
 
 def test_external_loader(finally_cleanup_index, listen, api, external):

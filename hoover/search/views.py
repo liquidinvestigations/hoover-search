@@ -23,8 +23,7 @@ else:
 def can_search(user, collections_arg):
     available = list(Collection.objects_for_user(user))
     requested = set(collections_arg)
-    rv = [col for col in available if col.name in requested]
-    return rv
+    return set(col for col in available if col.name in requested)
 
 
 def ping(request):
