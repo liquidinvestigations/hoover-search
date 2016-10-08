@@ -34,13 +34,7 @@ def ping(request):
 
 
 def home(request):
-    collections_arg = request.GET.get('collections')
-    if collections_arg is not None:
-        collections_arg = collections_arg.split()
-    return render(request, 'home.html', {
-        'collections': Collection.objects_for_user(request.user),
-        'selected': set(can_search(request.user, collections_arg)),
-    })
+    return render(request, 'home.html')
 
 
 @csrf_exempt
