@@ -89,10 +89,11 @@ def search(request):
 
 @limit_user
 def doc(request, collection_name, id):
-    collection = get_object_or_404(
-        Collection.objects_for_user(request.user),
-        name=collection_name,
-    )
+    for collection in Collection.objects_for_user(request.user):
+        if collection.name == collection_name:
+            break
+    else:
+        raise Http404
     t0 = time()
     success = False
     try:
