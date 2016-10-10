@@ -88,7 +88,7 @@ def search(request):
         })
 
 @limit_user
-def doc(request, collection_name, id):
+def doc(request, collection_name, id, suffix):
     for collection in Collection.objects_for_user(request.user):
         if collection.name == collection_name:
             break
@@ -97,7 +97,7 @@ def doc(request, collection_name, id):
     t0 = time()
     success = False
     try:
-        rv = collection.get_loader().get(id).view(request)
+        rv = collection.get_loader().get(id + suffix).view(request)
         success = True
         return rv
 
