@@ -122,20 +122,23 @@ def whoami(request):
         },
     })
 
-def serve_ui(request, filename):
+def _resolve_ui_file(filename):
     ui_root = Path(settings.HOOVER_UI_ROOT)
     file = ui_root / filename
-
     if not (ui_root == file or ui_root in file.parents):
         raise Http404()
 
     if file.is_dir():
         file = file / 'index.html'
 
-    if not file.is_file():
-        raise Http404()
+    if file.is_file():
+        return file
 
-    return FileResponse(
-        file.open('rb'),
-        content_type=mimetypes.guess_type(str(file))[0] or None,
-    )
+    raise Http404()
+
+def _serve_ui_file(file):
+    content_type = mimetypes.guess_type(str(file))[0] or None
+    return FileResponse(file.open('rb'), content_type=content_type)
+
+def serve_ui(request, filename):
+    return _serve_ui_file(_resolve_ui_file(filename))
