@@ -17,7 +17,7 @@ def invite(username, duration, create=False):
     models.Invitation.objects.filter(user=user).delete()
     invitation = models.Invitation.objects.create(
         user=user,
-        expires=now() + timedelta(seconds=duration),
+        expires=now() + timedelta(minutes=duration),
     )
 
     url = "{}/invitation/{}".format(

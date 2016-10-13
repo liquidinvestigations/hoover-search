@@ -10,7 +10,7 @@ from .fixtures import listen
 
 pytestmark = pytest.mark.django_db
 
-INVITATION_DURATION = 30 * 60 # 30 minutes
+INVITATION_DURATION = 30 # minutes
 
 @pytest.yield_fixture
 def mock_time(monkeypatch):
