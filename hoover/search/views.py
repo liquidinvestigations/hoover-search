@@ -19,6 +19,8 @@ if installed.ratelimit:
 else:
     limit_user = lambda func: func
 
+NOCACHE_FILE_TYPES = ['.html']
+
 def collections_acl(user, collections_arg):
     available = list(Collection.objects_for_user(user))
     requested = set(collections_arg)
@@ -138,7 +140,10 @@ def _resolve_ui_file(filename):
 
 def _serve_ui_file(file):
     content_type = mimetypes.guess_type(str(file))[0] or None
-    return FileResponse(file.open('rb'), content_type=content_type)
+    resp = FileResponse(file.open('rb'), content_type=content_type)
+    if file.suffix not in NOCACHE_FILE_TYPES:
+        resp['Cache-Control'] = 'max-age=31556926'
+    return resp
 
 def serve_ui(request, filename):
     return _serve_ui_file(_resolve_ui_file(filename))

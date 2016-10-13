@@ -7,5 +7,6 @@ class NoReferral:
 
 class NoCache:
     def process_response(self, request, response):
-        add_never_cache_headers(response)
+        if 'Cache-Control' not in response:
+            add_never_cache_headers(response)
         return response
