@@ -4,15 +4,16 @@ import requests
 
 class Document:
 
-    def __init__(self, root_url, doc_id):
+    def __init__(self, root_url, doc_id, suffix):
         self.root_url = root_url
         self.doc_id = doc_id
+        self.suffix = suffix
 
     def _get(self):
         return requests.get(self.root_url + self.doc_id)
 
     def view(self, request):
-        url = self.root_url + self.doc_id
+        url = self.root_url + self.doc_id + self.suffix
         if request.GET.get('raw') == 'on':
             url += '?raw=on'
         if request.GET.get('embed') == 'on':
@@ -28,8 +29,8 @@ class Loader:
     def __init__(self, collection, **config):
         self.config = config
 
-    def get(self, doc_id):
+    def get(self, doc_id, suffix):
         url_root = self.config['documents']
         if not url_root.endswith('/'):
             url_root += '/'
-        return Document(url_root, doc_id)
+        return Document(url_root, doc_id, suffix)
