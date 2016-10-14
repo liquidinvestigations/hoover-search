@@ -17,7 +17,13 @@ class Document:
     def view(self, request):
         if not self.suffix:
             if self.loader.config.get('renderDocument'):
-                return ui.doc_html(request)
+                resp = requests.head(self.root_url + self.doc_id)
+                if resp.status_code < 300:
+                    return ui.doc_html(request)
+                elif resp.status_code == 404:
+                    raise Http404
+                else:
+                    raise RuntimeError
 
         url = self.root_url + self.doc_id + self.suffix
         if request.GET.get('raw') == 'on':
