@@ -1,10 +1,12 @@
 from django.conf import settings
 from django.http import HttpResponse
 import requests
+from .. import ui
 
 class Document:
 
-    def __init__(self, root_url, doc_id, suffix):
+    def __init__(self, loader, root_url, doc_id, suffix):
+        self.loader = loader
         self.root_url = root_url
         self.doc_id = doc_id
         self.suffix = suffix
@@ -13,6 +15,10 @@ class Document:
         return requests.get(self.root_url + self.doc_id)
 
     def view(self, request):
+        if not self.suffix:
+            if self.loader.config.get('renderDocument'):
+                return ui.doc_html(request)
+
         url = self.root_url + self.doc_id + self.suffix
         if request.GET.get('raw') == 'on':
             url += '?raw=on'
@@ -33,4 +39,4 @@ class Loader:
         url_root = self.config['documents']
         if not url_root.endswith('/'):
             url_root += '/'
-        return Document(url_root, doc_id, suffix)
+        return Document(self, url_root, doc_id, suffix)
