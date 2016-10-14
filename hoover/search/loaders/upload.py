@@ -80,5 +80,5 @@ class Loader:
             if item.suffix == '.pdf':
                 yield Document(self.root, str(item.relative_to(self.root)))
 
-    def get(self, doc_id):
+    def get(self, doc_id, suffix):
         return Document(self.root, Path(doc_id))

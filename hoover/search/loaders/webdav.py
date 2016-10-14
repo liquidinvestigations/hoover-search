@@ -94,7 +94,7 @@ class Loader(object):
             mime_type = file_obj.contenttype.split(';')[0]
             yield Document(dav, filename, mime_type)
 
-    def get(self, doc_id):
+    def get(self, doc_id, suffix):
         es_doc = self.collection.get_document(doc_id)
         dav = self._dav()
         return Document(dav, doc_id, es_doc['_source']['mime_type'])

@@ -92,6 +92,6 @@ class Loader(object):
                     metadata['text_url'] = doc_url.join(data['text_url']).url
                     yield Document(metadata)
 
-    def get(self, doc_id):
+    def get(self, doc_id, suffix):
         es_doc = self.collection.get_document(doc_id)
         return Document(es_doc['_source'])
