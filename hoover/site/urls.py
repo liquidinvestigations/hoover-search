@@ -2,7 +2,7 @@ from django.conf import settings
 from django.conf.urls import include, url
 from django.contrib import admin
 from ..search.admin import admin_site
-from ..search import views, uploads
+from ..search import views, uploads, ui
 from ..contrib import installed
 
 urlpatterns = [
@@ -30,7 +30,7 @@ urlpatterns += [
 
 if settings.HOOVER_UI_ROOT:
     urlpatterns += [
-        url(r'^(?P<filename>.*)$', views.serve_ui),
+        url(r'^(?P<filename>.*)$', ui.file),
     ]
 else:
     urlpatterns += [

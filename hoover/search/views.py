@@ -1,11 +1,7 @@
 import json
 from time import time
-from urllib.parse import quote
-import mimetypes
-from pathlib import Path
-from django.shortcuts import render, get_object_or_404
-from django.http import (HttpResponse, HttpResponseRedirect, Http404,
-    FileResponse, JsonResponse)
+from django.shortcuts import render
+from django.http import HttpResponse, Http404, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.core.urlresolvers import reverse
 from django.conf import settings
@@ -18,8 +14,6 @@ if installed.ratelimit:
     from ..contrib.ratelimit.decorators import limit_user
 else:
     limit_user = lambda func: func
-
-NOCACHE_FILE_TYPES = ['.html']
 
 def collections_acl(user, collections_arg):
     available = list(Collection.objects_for_user(user))
@@ -123,27 +117,3 @@ def whoami(request):
             'logout': reverse('logout') + '?next=/',
         },
     })
-
-def _resolve_ui_file(filename):
-    ui_root = Path(settings.HOOVER_UI_ROOT)
-    file = ui_root / filename
-    if not (ui_root == file or ui_root in file.parents):
-        raise Http404()
-
-    if file.is_dir():
-        file = file / 'index.html'
-
-    if file.is_file():
-        return file
-
-    raise Http404()
-
-def _serve_ui_file(file):
-    content_type = mimetypes.guess_type(str(file))[0] or None
-    resp = FileResponse(file.open('rb'), content_type=content_type)
-    if file.suffix not in NOCACHE_FILE_TYPES:
-        resp['Cache-Control'] = 'max-age=31556926'
-    return resp
-
-def serve_ui(request, filename):
-    return _serve_ui_file(_resolve_ui_file(filename))
