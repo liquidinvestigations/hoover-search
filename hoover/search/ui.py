@@ -28,3 +28,6 @@ def create_response(file):
 
 def file(request, filename):
     return create_response(resolve(filename))
+
+def doc_html(request):
+    return file(request, 'doc.html')
