@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 import requests
 from .. import ui
 
@@ -24,9 +24,15 @@ class Document:
             url += '?raw=on'
         if request.GET.get('embed') == 'on':
             url += '?embed=on'
+
         resp = requests.get(url)
-        return HttpResponse(resp.content,
-            content_type=resp.headers['Content-Type'])
+        if 200 <= resp.status_code < 300:
+            return HttpResponse(resp.content,
+                content_type=resp.headers['Content-Type'])
+        elif resp.status_code == 404:
+            raise Http404
+        else:
+            raise RuntimeError
 
 class Loader:
 
