@@ -70,3 +70,25 @@ probably want to set up a [virtualenv][] too.
 ## Development
 
 There is a test suite; run it with `./run testsuite`.
+
+
+## Runnin in production
+
+[Waitress](http://docs.pylonsproject.org/projects/waitress/) is installed as
+part of the dependencies. It's a production-quality threaded wsgi server. Pick
+a port number, say 8888, and run it like this - it doesn't daemonize so you can
+start it from supervisor or another modern daemon manager:
+
+```shell
+./run server --host=127.0.0.1 --port=8888
+```
+
+Then you probably want to set up a reverse proxy in front of the app. Here's the minimal nginx config:
+
+```nginx
+location / {
+  proxy_pass http://localhost:8888;
+  proxy_set_header Host $host;
+  proxy_set_header X-Forwarded-Proto $scheme;
+}
+```
