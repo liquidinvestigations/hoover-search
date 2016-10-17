@@ -83,7 +83,8 @@ start it from supervisor or another modern daemon manager:
 ./run server --host=127.0.0.1 --port=8888
 ```
 
-Then you probably want to set up a reverse proxy in front of the app. Here's the minimal nginx config:
+Then you probably want to set up a reverse proxy in front of the app. Here's
+the minimal nginx config:
 
 ```nginx
 location / {
