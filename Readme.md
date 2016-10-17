@@ -72,7 +72,7 @@ probably want to set up a [virtualenv][] too.
 There is a test suite; run it with `./run testsuite`.
 
 
-## Runnin in production
+## Running in production
 
 [Waitress](http://docs.pylonsproject.org/projects/waitress/) is installed as
 part of the dependencies. It's a production-quality threaded wsgi server. Pick
