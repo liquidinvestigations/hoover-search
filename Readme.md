@@ -93,3 +93,32 @@ location / {
   proxy_set_header X-Forwarded-Proto $scheme;
 }
 ```
+
+
+## Snoop and external collections
+
+For a large dataset, it's not practical to upload files through the admin UI,
+so you can use [hoover-snoop](https://github.com/hoover/snoop). It's a tool for
+pre-processing a collection, extracting metadata from emails and documents, and
+accessing the contents of archives and email attachments. Snoop comes as a
+standalone Django app, it listens on an HTTP port where it serves document
+previews and raw documents, and it handles indexing of documents in
+elasticsearch by itself.
+
+To use it with *hoover-search*, first set up the snoop service, analyze the
+data, send it to elasticsearch, then go back to *hoover-snoop* and create a new
+collection of type *External* with the following options:
+
+```json
+{
+  "documents": "http://localhost:8001/doc",
+  "renderDocument": true
+}
+```
+
+The `documents` URL is composed of the URL of *hoover-snoop*
+(`http://localhost:8001` in this example) followed by `/doc`.
+
+`renderDocument` tells *hoover-search* to use the new `doc.html` view from
+*hoover-ui* to render the document preview pages. If you're not using
+*hoover-ui* then omit this flag.
