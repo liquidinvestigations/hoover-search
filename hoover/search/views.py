@@ -5,6 +5,7 @@ from django.http import HttpResponse, Http404, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.core.urlresolvers import reverse
 from django.conf import settings
+from elasticsearch.exceptions import ConnectionError
 from ..contrib import installed
 from . import es
 from .models import Collection
@@ -35,22 +36,31 @@ def collections(request):
     ], safe=False)
 
 def _search(request, **kwargs):
-    res, counts = es.search(**kwargs)
+    success = False
+    try:
+        res, counts = es.search(**kwargs)
+        res['status'] = 'ok'
+    except ConnectionError:
+        res = {
+            'status': 'error',
+            'reason': 'Could not connect to Elasticsearch.',
+        }
+    else:
+        from .es import _index_id
+        def col_name(id):
+            return Collection.objects.get(id=id).name
 
-    from .es import _index_id
-    def col_name(id):
-        return Collection.objects.get(id=id).name
-
-    for item in res['hits']['hits']:
-        name = col_name(_index_id(item['_index']))
-        url = 'doc/{}/{}'.format(name, item['_id'])
-        item['_collection'] = name
-        item['_url'] = request.build_absolute_uri(url)
-    res['count_by_index'] = {
-        col_name(i): counts[i]
-        for i in counts
-    }
-    return JsonResponse(res)
+        for item in res['hits']['hits']:
+            name = col_name(_index_id(item['_index']))
+            url = 'doc/{}/{}'.format(name, item['_id'])
+            item['_collection'] = name
+            item['_url'] = request.build_absolute_uri(url)
+        res['count_by_index'] = {
+            col_name(i): counts[i]
+            for i in counts
+        }
+        success = True
+    return JsonResponse(res), success
 
 @csrf_exempt
 @limit_user
@@ -61,7 +71,7 @@ def search(request):
 
     success = False
     try:
-        response = _search(
+        response, success = _search(
             request,
             from_=body.get('from'),
             size=body.get('size'),
@@ -72,7 +82,6 @@ def search(request):
             highlight=body.get('highlight'),
             collections=[c.name for c in collections],
         )
-        success = True
         return response
 
     finally:
