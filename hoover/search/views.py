@@ -5,7 +5,7 @@ from django.http import HttpResponse, Http404, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.core.urlresolvers import reverse
 from django.conf import settings
-from elasticsearch.exceptions import ConnectionError
+from elasticsearch.exceptions import ConnectionError, RequestError
 from ..contrib import installed
 from . import es
 from .models import Collection
@@ -44,6 +44,19 @@ def _search(request, **kwargs):
         res = {
             'status': 'error',
             'reason': 'Could not connect to Elasticsearch.',
+        }
+    except RequestError as e:
+        def extract_info(ex):
+            reason = 'reason unknown'
+            try:
+                if ex.info:
+                    reason = ex.info['error']['root_cause'][0]['reason']
+            except LookupError:
+                pass
+            return reason
+        res = {
+            'status': 'error',
+            'reason': 'Elasticsearch failed: ' + extract_info(e)
         }
     else:
         from .es import _index_id
