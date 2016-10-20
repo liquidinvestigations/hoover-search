@@ -1,7 +1,7 @@
 from django.conf import settings
-from elasticsearch import Elasticsearch, helpers
+from elasticsearch import Elasticsearch
 from elasticsearch.client.utils import _make_path
-from elasticsearch.exceptions import NotFoundError, TransportError, RequestError, ConnectionError
+from elasticsearch.exceptions import NotFoundError, RequestError, ConnectionError
 
 es = Elasticsearch(settings.HOOVER_ELASTICSEARCH_URL)
 DOCTYPE = 'doc'
