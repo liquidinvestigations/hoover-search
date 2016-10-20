@@ -1,10 +1,14 @@
 from django.conf import settings
 from elasticsearch import Elasticsearch, helpers
 from elasticsearch.client.utils import _make_path
-from elasticsearch.exceptions import NotFoundError, TransportError
+from elasticsearch.exceptions import NotFoundError, TransportError, RequestError, ConnectionError
 
 es = Elasticsearch(settings.HOOVER_ELASTICSEARCH_URL)
 DOCTYPE = 'doc'
+
+class SearchError(Exception):
+    def __init__(self, reason):
+        self.reason = reason
 
 def create_index(collection_id, name):
     es.indices.create(index=_index_name(collection_id))
@@ -71,12 +75,25 @@ def search(query, fields, highlight, collections, from_, size, sort, aggs):
     if highlight:
         body['highlight'] = highlight
 
-    rv = es.search(
-        index=indices,
-        ignore_unavailable=True,
-        body=body,
-        request_timeout=60,
-    )
+    try:
+        rv = es.search(
+            index=indices,
+            ignore_unavailable=True,
+            body=body,
+            request_timeout=60,
+        )
+    except ConnectionError:
+        raise SearchError('Could not connect to Elasticsearch.')
+    except RequestError as e:
+        def extract_info(ex):
+            reason = 'reason unknown'
+            try:
+                if ex.info:
+                    reason = ex.info['error']['root_cause'][0]['reason']
+            except LookupError:
+                pass
+            return reason
+        raise SearchError('Elasticsearch failed: ' + extract_info(e))
 
     count_by_index = {
         _index_id(b['key']): b['doc_count']
