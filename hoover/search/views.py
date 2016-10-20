@@ -39,24 +39,9 @@ def _search(request, **kwargs):
     try:
         res, counts = es.search(**kwargs)
         res['status'] = 'ok'
-    except ConnectionError:
-        res = {
-            'status': 'error',
-            'reason': 'Could not connect to Elasticsearch.',
-        }
-    except RequestError as e:
-        def extract_info(ex):
-            reason = 'reason unknown'
-            try:
-                if ex.info:
-                    reason = ex.info['error']['root_cause'][0]['reason']
-            except LookupError:
-                pass
-            return reason
-        res = {
-            'status': 'error',
-            'reason': 'Elasticsearch failed: ' + extract_info(e)
-        }
+    except es.SearchError as e:
+        return JsonResponse({'status': 'error', 'reason': e.reason})
+
     else:
         from .es import _index_id
         def col_name(id):
