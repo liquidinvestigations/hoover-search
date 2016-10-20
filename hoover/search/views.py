@@ -36,7 +36,6 @@ def collections(request):
     ], safe=False)
 
 def _search(request, **kwargs):
-    success = False
     try:
         res, counts = es.search(**kwargs)
         res['status'] = 'ok'
@@ -72,8 +71,7 @@ def _search(request, **kwargs):
             col_name(i): counts[i]
             for i in counts
         }
-        success = True
-    return JsonResponse(res), success
+    return JsonResponse(res)
 
 @csrf_exempt
 @limit_user
@@ -84,7 +82,7 @@ def search(request):
 
     success = False
     try:
-        response, success = _search(
+        response = _search(
             request,
             from_=body.get('from'),
             size=body.get('size'),
@@ -95,6 +93,7 @@ def search(request):
             highlight=body.get('highlight'),
             collections=[c.name for c in collections],
         )
+        success = True
         return response
 
     finally:
