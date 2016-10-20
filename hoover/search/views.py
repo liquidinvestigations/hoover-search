@@ -5,7 +5,6 @@ from django.http import HttpResponse, Http404, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.core.urlresolvers import reverse
 from django.conf import settings
-from elasticsearch.exceptions import ConnectionError, RequestError
 from ..contrib import installed
 from . import es
 from .models import Collection
