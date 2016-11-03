@@ -1,11 +1,13 @@
 from django.db import transaction
 from datetime import timedelta
 from django.conf import settings
+from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import authenticate, login, get_user_model
 from django.utils.timezone import now
 from django_otp import login as otp_login
 from . import models
+from . import signals
 
 @transaction.atomic
 def invite(username, duration, create=False):
@@ -27,11 +29,23 @@ def invite(username, duration, create=False):
     return url
 
 def get_or_404(code):
-    return get_object_or_404(
-        models.Invitation.objects.select_for_update(),
-        code=code,
-        expires__gt=now(),
+    now_time = now()
+    invitations = (
+        models.Invitation.objects
+        .select_for_update()
+        .filter(code=code)
     )
+
+    invitation = None
+    for invitation in invitations:
+        if invitation.expires > now_time:
+            return invitation
+
+    if invitation:
+        signals.invitation_expired.send(models.Invitation,
+            username=invitation.user.username)
+
+    raise Http404()
 
 @transaction.atomic
 def accept(request, invitation, device, password):
