@@ -3,6 +3,7 @@ from django.contrib.auth.signals import user_login_failed
 
 invitation_open = Signal(['username'])
 invitation_accept = Signal(['username'])
+invitation_expired = Signal(['username'])
 auto_logout = Signal(['username'])
 login_failure = Signal(['otp_failure'])
 

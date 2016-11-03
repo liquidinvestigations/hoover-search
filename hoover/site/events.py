@@ -55,6 +55,10 @@ if settings.HOOVER_EVENTS_DIR:
         def on_invitation_accept(sender, username, **kw):
             save(type='invitationAccept', username=username)
 
+        @receiver(twofactor_signals.invitation_expired)
+        def on_invitation_expired(sender, username, **kw):
+            save(type='invitationExpired', username=username)
+
         @receiver(twofactor_signals.auto_logout)
         def on_auto_logout(sender, username, **kw):
             save(type='forceLogout', username=username)
