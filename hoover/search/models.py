@@ -19,6 +19,7 @@ class Collection(models.Model):
     loader = models.CharField(max_length=2048,
         default='hoover.search.loaders.upload.Loader')
     options = models.TextField(default='{}')
+    loader_state = models.TextField(default='null')
 
     def __str__(self):
         return self.name
