@@ -10,9 +10,6 @@ class Document:
         self.root_url = root_url
         self.doc_id = doc_id
 
-    def _get(self):
-        return requests.get(self.root_url + self.doc_id)
-
     def view(self, request, suffix):
         if not suffix:
             if self.loader.config.get('renderDocument'):
