@@ -5,17 +5,16 @@ from .. import ui
 
 class Document:
 
-    def __init__(self, loader, root_url, doc_id, suffix):
+    def __init__(self, loader, root_url, doc_id):
         self.loader = loader
         self.root_url = root_url
         self.doc_id = doc_id
-        self.suffix = suffix
 
     def _get(self):
         return requests.get(self.root_url + self.doc_id)
 
-    def view(self, request):
-        if not self.suffix:
+    def view(self, request, suffix):
+        if not suffix:
             if self.loader.config.get('renderDocument'):
                 url = self.root_url + self.doc_id + '/json'
                 resp = requests.get(url)
@@ -27,7 +26,7 @@ class Document:
                     raise RuntimeError("Unexpected response {!r} for {!r}"
                         .format(resp, url))
 
-        url = self.root_url + self.doc_id + self.suffix
+        url = self.root_url + self.doc_id + suffix
         if request.GET.get('raw') == 'on':
             url += '?raw=on'
         if request.GET.get('embed') == 'on':
@@ -50,8 +49,8 @@ class Loader:
     def __init__(self, collection, **config):
         self.config = config
 
-    def get(self, doc_id, suffix):
+    def get(self, doc_id):
         url_root = self.config['documents']
         if not url_root.endswith('/'):
             url_root += '/'
-        return Document(self, url_root, doc_id, suffix)
+        return Document(self, url_root, doc_id)

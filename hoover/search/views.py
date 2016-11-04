@@ -94,7 +94,7 @@ def doc(request, collection_name, id, suffix):
     t0 = time()
     success = False
     try:
-        rv = collection.get_loader().get(id, suffix).view(request)
+        rv = collection.get_loader().get(id).view(request, suffix)
         success = True
         return rv
 
