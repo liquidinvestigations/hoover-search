@@ -122,3 +122,38 @@ def whoami(request):
             'logout': reverse('logout') + '?next=/',
         },
     })
+
+@csrf_exempt
+@limit_user
+def batch(request):
+    t0 = time()
+    body = json.loads(request.body.decode('utf-8'))
+    collections = collections_acl(request.user, body['collections'])
+    query_strings = body.get('query_strings')
+    aggs = body.get('aggs')
+
+    if not collections:
+        return JsonResponse({'status': 'error', 'reason': "No collections selected."})
+    if not query_strings:
+        return JsonResponse({'status': 'error', 'reason': "No items to be searched."})
+
+    success = False
+    try:
+        res = es.batch_count(
+            query_strings,
+            collections,
+            aggs
+        )
+        res['status'] = 'ok'
+        return JsonResponse(res)
+
+    except es.SearchError as e:
+        return JsonResponse({'status': 'error', 'reason': e.reason})
+
+    finally:
+        signals.search.send('hoover.batch', **{
+            'request': request,
+            'collections': collections,
+            'duration': time() - t0,
+            'success': success,
+        })

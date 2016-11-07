@@ -1,3 +1,4 @@
+import json
 from django.conf import settings
 from elasticsearch import Elasticsearch
 from elasticsearch.client.utils import _make_path
@@ -43,13 +44,70 @@ def get(collection_id, doc_id):
         id=doc_id,
     )
 
-
-def search(query, fields, highlight, collections, from_, size, sort, aggs):
+def _get_indices(collections):
     from .models import Collection
     indices = ','.join(
         c.index for c in
         Collection.objects.filter(name__in=collections)
     )
+    return indices
+
+def batch_count(query_strings, collections, aggs=None):
+    def _serialize(object):
+        if object:
+            return json.dumps(
+                object,
+                separators=(',', ':'),
+            ).replace('\n', '')
+        return '{}'
+
+    def _build_query_lines(meta, query_string, aggs):
+        query = {
+            "query": {
+                "query_string": {
+                    "query": query_string,
+                    "default_operator": "AND",
+                }
+            }
+        }
+        if aggs:
+            query['aggs'] = aggs
+        return _serialize(meta) + "\n" + _serialize(query) + "\n"
+
+    indices = _get_indices(collections)
+
+    body = "".join([
+        _build_query_lines(None, q, aggs)
+        for q in query_strings
+    ])
+
+    try:
+        rv = es.msearch(
+            index=indices,
+            body=body,
+            doc_type=DOCTYPE,
+            search_type='count'
+        )
+    except ConnectionError:
+        raise SearchError('Could not connect to Elasticsearch.')
+    except RequestError as e:
+        def extract_info(ex):
+            reason = 'reason unknown'
+            try:
+                if ex.info:
+                    reason = ex.info['error']['root_cause'][0]['reason']
+            except LookupError:
+                pass
+            return reason
+        raise SearchError('Elasticsearch failed: ' + extract_info(e))
+
+    for query_string, response in zip(query_strings, rv.get('responses', [])):
+        response['_query_string'] = query_string
+
+    return rv
+
+def search(query, fields, highlight, collections, from_, size, sort, aggs):
+    indices = _get_indices(collections)
 
     if not indices:
         # if index='', elasticsearch will search in all indices, so we make
