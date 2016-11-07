@@ -11,6 +11,26 @@ class SearchError(Exception):
     def __init__(self, reason):
         self.reason = reason
 
+def convert_es_errors(func):
+    from functools import wraps
+    @wraps(func)
+    def wrapped(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except ConnectionError:
+            raise SearchError('Could not connect to Elasticsearch.')
+        except RequestError as e:
+            def extract_info(ex):
+                reason = 'reason unknown'
+                try:
+                    if ex.info:
+                        reason = ex.info['error']['root_cause'][0]['reason']
+                except LookupError:
+                    pass
+                return reason
+            raise SearchError('Elasticsearch failed: ' + extract_info(e))
+    return wrapped
+
 def create_index(collection_id, name):
     es.indices.create(index=_index_name(collection_id))
 
@@ -52,6 +72,7 @@ def _get_indices(collections):
     )
     return indices
 
+@convert_es_errors
 def batch_count(query_strings, collections, aggs=None):
     def _serialize(object):
         if object:
@@ -81,31 +102,19 @@ def batch_count(query_strings, collections, aggs=None):
         for q in query_strings
     ])
 
-    try:
-        rv = es.msearch(
-            index=indices,
-            body=body,
-            doc_type=DOCTYPE,
-            search_type='count'
-        )
-    except ConnectionError:
-        raise SearchError('Could not connect to Elasticsearch.')
-    except RequestError as e:
-        def extract_info(ex):
-            reason = 'reason unknown'
-            try:
-                if ex.info:
-                    reason = ex.info['error']['root_cause'][0]['reason']
-            except LookupError:
-                pass
-            return reason
-        raise SearchError('Elasticsearch failed: ' + extract_info(e))
+    rv = es.msearch(
+        index=indices,
+        body=body,
+        doc_type=DOCTYPE,
+        search_type='count'
+    )
 
     for query_string, response in zip(query_strings, rv.get('responses', [])):
         response['_query_string'] = query_string
 
     return rv
 
+@convert_es_errors
 def search(query, fields, highlight, collections, from_, size, sort, aggs):
     indices = _get_indices(collections)
 
@@ -133,25 +142,12 @@ def search(query, fields, highlight, collections, from_, size, sort, aggs):
     if highlight:
         body['highlight'] = highlight
 
-    try:
-        rv = es.search(
-            index=indices,
-            ignore_unavailable=True,
-            body=body,
-            request_timeout=60,
-        )
-    except ConnectionError:
-        raise SearchError('Could not connect to Elasticsearch.')
-    except RequestError as e:
-        def extract_info(ex):
-            reason = 'reason unknown'
-            try:
-                if ex.info:
-                    reason = ex.info['error']['root_cause'][0]['reason']
-            except LookupError:
-                pass
-            return reason
-        raise SearchError('Elasticsearch failed: ' + extract_info(e))
+    rv = es.search(
+        index=indices,
+        ignore_unavailable=True,
+        body=body,
+        request_timeout=60,
+    )
 
     count_by_index = {
         _index_id(b['key']): b['doc_count']
