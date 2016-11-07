@@ -136,6 +136,8 @@ def batch(request):
         return JsonResponse({'status': 'error', 'reason': "No collections selected."})
     if not query_strings:
         return JsonResponse({'status': 'error', 'reason': "No items to be searched."})
+    if len(query_strings) > 100:
+        query_strings = query_strings[:100]
 
     success = False
     try:
