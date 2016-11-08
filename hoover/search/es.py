@@ -74,15 +74,7 @@ def _get_indices(collections):
 
 @convert_es_errors
 def batch_count(query_strings, collections, aggs=None):
-    def _serialize(object):
-        if object:
-            return json.dumps(
-                object,
-                separators=(',', ':'),
-            ).replace('\n', '')
-        return '{}'
-
-    def _build_query_lines(meta, query_string, aggs):
+    def _build_query_lines(query_string, meta={}, aggs=None):
         query = {
             "query": {
                 "query_string": {
@@ -93,14 +85,14 @@ def batch_count(query_strings, collections, aggs=None):
         }
         if aggs:
             query['aggs'] = aggs
-        return _serialize(meta) + "\n" + _serialize(query) + "\n"
+        return json.dumps(meta) + "\n" + json.dumps(query) + "\n"
 
     indices = _get_indices(collections)
 
-    body = "".join([
-        _build_query_lines(None, q, aggs)
+    body = "".join(
+        _build_query_lines(q, {}, aggs)
         for q in query_strings
-    ])
+    )
 
     rv = es.msearch(
         index=indices,
