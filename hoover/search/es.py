@@ -18,15 +18,13 @@ def elasticsearch():
     except ConnectionError:
         raise SearchError('Could not connect to Elasticsearch.')
     except RequestError as e:
-        def extract_info(ex):
-            reason = 'reason unknown'
-            try:
-                if ex.info:
-                    reason = ex.info['error']['root_cause'][0]['reason']
-            except LookupError:
-                pass
-            return reason
-        raise SearchError('Elasticsearch failed: ' + extract_info(e))
+        reason = 'reason unknown'
+        try:
+            if e.info:
+                reason = e.info['error']['root_cause'][0]['reason']
+        except LookupError:
+            pass
+        raise SearchError('Elasticsearch failed: ' + reason)
     except NotFoundError:
         raise SearchError("Elasticsearch failed: Not found.")
 
