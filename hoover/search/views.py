@@ -137,7 +137,7 @@ def batch(request):
     if not query_strings:
         return JsonResponse({'status': 'error', 'reason': "No items to be searched."})
     if len(query_strings) > 100:
-        query_strings = query_strings[:100]
+        return JsonResponse({'status': 'error', 'reason': "Too many queries. Limit is 100."})
 
     success = False
     try:
