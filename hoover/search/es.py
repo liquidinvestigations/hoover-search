@@ -1,38 +1,38 @@
 import json
+from contextlib import contextmanager
 from django.conf import settings
 from elasticsearch import Elasticsearch
 from elasticsearch.client.utils import _make_path
 from elasticsearch.exceptions import NotFoundError, RequestError, ConnectionError
 
-es = Elasticsearch(settings.HOOVER_ELASTICSEARCH_URL)
 DOCTYPE = 'doc'
 
 class SearchError(Exception):
     def __init__(self, reason):
         self.reason = reason
 
-def convert_es_errors(func):
-    from functools import wraps
-    @wraps(func)
-    def wrapped(*args, **kwargs):
-        try:
-            return func(*args, **kwargs)
-        except ConnectionError:
-            raise SearchError('Could not connect to Elasticsearch.')
-        except RequestError as e:
-            def extract_info(ex):
-                reason = 'reason unknown'
-                try:
-                    if ex.info:
-                        reason = ex.info['error']['root_cause'][0]['reason']
-                except LookupError:
-                    pass
-                return reason
-            raise SearchError('Elasticsearch failed: ' + extract_info(e))
-    return wrapped
+@contextmanager
+def elasticsearch():
+    try:
+        yield Elasticsearch(settings.HOOVER_ELASTICSEARCH_URL)
+    except ConnectionError:
+        raise SearchError('Could not connect to Elasticsearch.')
+    except RequestError as e:
+        def extract_info(ex):
+            reason = 'reason unknown'
+            try:
+                if ex.info:
+                    reason = ex.info['error']['root_cause'][0]['reason']
+            except LookupError:
+                pass
+            return reason
+        raise SearchError('Elasticsearch failed: ' + extract_info(e))
+    except NotFoundError:
+        raise SearchError("Elasticsearch failed: Not found.")
 
 def create_index(collection_id, name):
-    es.indices.create(index=_index_name(collection_id))
+    with elasticsearch() as es:
+        es.indices.create(index=_index_name(collection_id))
 
 def _index_name(collection_id):
     from .models import Collection
@@ -43,26 +43,29 @@ def _index_id(index):
     return Collection.objects.get(index=index).id
 
 def index(collection_id, doc):
-    resp = es.index(
-        index=_index_name(collection_id),
-        doc_type=DOCTYPE,
-        id=doc['id'],
-        body=doc,
-    )
+    with elasticsearch() as es:
+        resp = es.index(
+            index=_index_name(collection_id),
+            doc_type=DOCTYPE,
+            id=doc['id'],
+            body=doc,
+        )
 
 
 def exists(collection_id, doc_id):
     path = _make_path(_index_name(collection_id), DOCTYPE, doc_id)
-    (status, _) = es.transport.perform_request('HEAD', path, {'ignore': 404})
-    return status == 200
+    with elasticsearch() as es:
+        (status, _) = es.transport.perform_request('HEAD', path, {'ignore': 404})
+        return status == 200
 
 
 def get(collection_id, doc_id):
-    return es.get(
-        index=_index_name(collection_id),
-        doc_type=DOCTYPE,
-        id=doc_id,
-    )
+    with elasticsearch() as es:
+        return es.get(
+            index=_index_name(collection_id),
+            doc_type=DOCTYPE,
+            id=doc_id,
+        )
 
 def _get_indices(collections):
     from .models import Collection
@@ -72,7 +75,6 @@ def _get_indices(collections):
     )
     return indices
 
-@convert_es_errors
 def batch_count(query_strings, collections, aggs=None):
     def _build_query_lines(query_string, meta={}, aggs=None):
         query = {
@@ -94,19 +96,19 @@ def batch_count(query_strings, collections, aggs=None):
         for q in query_strings
     )
 
-    rv = es.msearch(
-        index=indices,
-        body=body,
-        doc_type=DOCTYPE,
-        search_type='count'
-    )
+    with elasticsearch() as es:
+        rv = es.msearch(
+            index=indices,
+            body=body,
+            doc_type=DOCTYPE,
+            search_type='count'
+        )
 
     for query_string, response in zip(query_strings, rv.get('responses', [])):
         response['_query_string'] = query_string
 
     return rv
 
-@convert_es_errors
 def search(query, fields, highlight, collections, from_, size, sort, aggs):
     indices = _get_indices(collections)
 
@@ -114,7 +116,8 @@ def search(query, fields, highlight, collections, from_, size, sort, aggs):
         # if index='', elasticsearch will search in all indices, so we make
         # sure to return an empty result set
         empty_query = {'query': {'bool': {'must_not': {'match_all': {}}}}}
-        return (es.search(body=empty_query), {})
+        with elasticsearch() as es:
+            return (es.search(body=empty_query), {})
 
     body = {
         'from': from_,
@@ -134,12 +137,13 @@ def search(query, fields, highlight, collections, from_, size, sort, aggs):
     if highlight:
         body['highlight'] = highlight
 
-    rv = es.search(
-        index=indices,
-        ignore_unavailable=True,
-        body=body,
-        request_timeout=60,
-    )
+    with elasticsearch() as es:
+        rv = es.search(
+            index=indices,
+            ignore_unavailable=True,
+            body=body,
+            request_timeout=60,
+        )
 
     count_by_index = {
         _index_id(b['key']): b['doc_count']
@@ -149,23 +153,27 @@ def search(query, fields, highlight, collections, from_, size, sort, aggs):
 
 
 def delete_index(collection_id, ok_missing=False):
-    es.indices.delete(
-        index=_index_name(collection_id),
-        ignore=[404] if ok_missing else [],
-    )
+    with elasticsearch() as es:
+        es.indices.delete(
+            index=_index_name(collection_id),
+            ignore=[404] if ok_missing else [],
+        )
 
 
 def delete_all():
-    for index in es.indices.get(index='*'):
-        if index.startswith(settings.ELASTICSEARCH_INDEX_PREFIX):
-            es.indices.delete(index=index)
+    with elasticsearch() as es:
+        for index in es.indices.get(index='*'):
+            if index.startswith(settings.ELASTICSEARCH_INDEX_PREFIX):
+                es.indices.delete(index=index)
 
 
 def refresh():
-    es.indices.refresh()
+    with elasticsearch() as es:
+        es.indices.refresh()
 
 
 def count(collection_id):
+    es = Elasticsearch(settings.HOOVER_ELASTICSEARCH_URL)
     try:
         return es.count(index=_index_name(collection_id))['count']
     except NotFoundError:
@@ -173,12 +181,14 @@ def count(collection_id):
 
 
 def aliases(collection_id):
+    es = Elasticsearch(settings.HOOVER_ELASTICSEARCH_URL)
     name = _index_name(collection_id)
     alias_map = es.indices.get_aliases(index=name)
     return set(alias_map.get(name, {}).get('aliases', {}))
 
 
 def create_alias(collection_id, name):
+    es = Elasticsearch(settings.HOOVER_ELASTICSEARCH_URL)
     try:
         es.indices.put_alias(index=_index_name(collection_id), name=name)
     except NotFoundError:
@@ -187,33 +197,37 @@ def create_alias(collection_id, name):
 
 
 def delete_aliases(collection_id):
-    es.indices.delete_alias(index=_index_name(collection_id), name='*')
+    with elasticsearch() as es:
+        es.indices.delete_alias(index=_index_name(collection_id), name='*')
 
 
 def set_mapping(collection_id, properties):
-    es.indices.put_mapping(
-        index=_index_name(collection_id),
-        doc_type=DOCTYPE,
-        body={'properties': properties},
-    )
+    with elasticsearch() as es:
+        es.indices.put_mapping(
+            index=_index_name(collection_id),
+            doc_type=DOCTYPE,
+            body={'properties': properties},
+        )
 
 
 def status():
-    return {
-        index: {
-            'aliases': list(amap['aliases']),
-            'documents': es.count(index=index)['count'],
+    with elasticsearch() as es:
+        return {
+            index: {
+                'aliases': list(amap['aliases']),
+                'documents': es.count(index=index)['count'],
+            }
+            for index, amap in es.indices.get_aliases().items()
         }
-        for index, amap in es.indices.get_aliases().items()
-    }
 
 
 def list_indices():
-    for index in es.indices.get(index='*'):
-        if index.startswith(settings.ELASTICSEARCH_INDEX_PREFIX):
-            suffix = index[len(settings.ELASTICSEARCH_INDEX_PREFIX):]
-            try:
-                collection_id = int(suffix)
-            except ValueError:
-                continue
-            yield collection_id
+    with elasticsearch() as es:
+        for index in es.indices.get(index='*'):
+            if index.startswith(settings.ELASTICSEARCH_INDEX_PREFIX):
+                suffix = index[len(settings.ELASTICSEARCH_INDEX_PREFIX):]
+                try:
+                    collection_id = int(suffix)
+                except ValueError:
+                    continue
+                yield collection_id
