@@ -129,20 +129,20 @@ def batch(request):
     t0 = time()
     body = json.loads(request.body.decode('utf-8'))
     collections = collections_acl(request.user, body['collections'])
-    query_strings = body.get('query_strings')
+    queries = body.get('queries')
     aggs = body.get('aggs')
 
     if not collections:
         return JsonResponse({'status': 'error', 'reason': "No collections selected."})
-    if not query_strings:
+    if not queries:
         return JsonResponse({'status': 'error', 'reason': "No items to be searched."})
-    if len(query_strings) > 100:
+    if len(queries) > 100:
         return JsonResponse({'status': 'error', 'reason': "Too many queries. Limit is 100."})
 
     success = False
     try:
         res = es.batch_count(
-            query_strings,
+            queries,
             collections,
             aggs
         )
