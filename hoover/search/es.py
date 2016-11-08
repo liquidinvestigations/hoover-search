@@ -25,8 +25,6 @@ def elasticsearch():
         except LookupError:
             pass
         raise SearchError('Elasticsearch failed: ' + reason)
-    except NotFoundError:
-        raise SearchError("Elasticsearch failed: Not found.")
 
 def create_index(collection_id, name):
     with elasticsearch() as es:
@@ -174,19 +172,20 @@ def count(collection_id):
 
 
 def aliases(collection_id):
-    es = Elasticsearch(settings.HOOVER_ELASTICSEARCH_URL)
-    name = _index_name(collection_id)
-    alias_map = es.indices.get_aliases(index=name)
-    return set(alias_map.get(name, {}).get('aliases', {}))
+    with elasticsearch() as es:
+        name = _index_name(collection_id)
+        alias_map = es.indices.get_aliases(index=name)
+        return set(alias_map.get(name, {}).get('aliases', {}))
 
 
 def create_alias(collection_id, name):
-    es = Elasticsearch(settings.HOOVER_ELASTICSEARCH_URL)
-    try:
-        es.indices.put_alias(index=_index_name(collection_id), name=name)
-    except NotFoundError:
-        es.indices.create(index=_index_name(collection_id))
-        es.indices.put_alias(index=_index_name(collection_id), name=name)
+    index = _index_name(collection_id)
+    with elasticsearch() as es:
+        try:
+            es.indices.put_alias(index=index, name=name)
+        except NotFoundError:
+            es.indices.create(index=index)
+            es.indices.put_alias(index=index, name=name)
 
 
 def delete_aliases(collection_id):
