@@ -17,13 +17,15 @@ class Document:
     def view(self, request):
         if not self.suffix:
             if self.loader.config.get('renderDocument'):
-                resp = requests.head(self.root_url + self.doc_id)
+                url = self.root_url + self.doc_id
+                resp = requests.head(url)
                 if resp.status_code < 300:
                     return ui.doc_html(request)
                 elif resp.status_code == 404:
                     raise Http404
                 else:
-                    raise RuntimeError
+                    raise RuntimeError("Unexpected response {!r} for {!r}"
+                        .format(resp, url))
 
         url = self.root_url + self.doc_id + self.suffix
         if request.GET.get('raw') == 'on':
@@ -38,7 +40,8 @@ class Document:
         elif resp.status_code == 404:
             raise Http404
         else:
-            raise RuntimeError
+            raise RuntimeError("Unexpected response {!r} for {!r}"
+                .format(resp, url))
 
 class Loader:
 
