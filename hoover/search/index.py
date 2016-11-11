@@ -23,10 +23,6 @@ def index(collection, doc):
 
 def index_from_queue(queue, collection):
     for doc in queue:
-        doc_slug = doc.metadata['id']
-        if es.exists(collection.id, doc_slug):
-            logger.debug('%s skipped', doc_slug)
-            continue
         index(collection, doc)
 
 
