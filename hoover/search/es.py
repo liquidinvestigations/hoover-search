@@ -140,9 +140,15 @@ def search(query, fields, highlight, collections, from_, size, sort, aggs):
             request_timeout=60,
         )
 
+    aggs = (
+        rv
+        .get('aggregations', {})
+        .get('count_by_index', {})
+        .get('buckets', [])
+    )
     count_by_index = {
         _index_id(b['key']): b['doc_count']
-        for b in rv['aggregations']['count_by_index']['buckets']
+        for b in aggs
     }
     return (rv, count_by_index)
 
