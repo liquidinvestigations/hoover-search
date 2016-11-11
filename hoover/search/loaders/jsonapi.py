@@ -4,6 +4,7 @@ Loader for https://github.com/hoover/search/wiki/Collections-API
 
 from urllib.parse import urljoin
 from functools import lru_cache
+import re
 from django.http import HttpResponse, Http404
 import requests
 from .. import ui, models
@@ -35,6 +36,13 @@ class Api:
                 break
             url = urljoin(url, next_url)
 
+    def data(self, id):
+        meta = self.meta()
+        m = re.match(meta['id_pattern'], id)
+        id_parts = dict(m.groupdict(), id=id)
+        data_url = meta['data_urls'].format(**id_parts)
+        return get_json(urljoin(self.meta_url, data_url))
+
 class Document:
 
     def __init__(self, loader, id):
@@ -43,6 +51,13 @@ class Document:
 
     def view(self, request, suffix):
         raise NotImplementedError
+
+    @property
+    def metadata(self):
+        return self.loader.api.data(self.id)
+
+    def text(self):
+        return self.metadata.get('text')
 
 class Loader:
 
@@ -53,8 +68,7 @@ class Loader:
 
     def documents(self):
         for item in self.api.feed():
-            print(item)
-        return iter([])
+            yield Document(self, item['id'])
 
     def get(self, doc_id):
         return Document(self, doc_id)
