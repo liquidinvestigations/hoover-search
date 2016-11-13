@@ -153,9 +153,10 @@ def batch(request):
         return JsonResponse({'status': 'error', 'reason': e.reason})
 
     finally:
-        signals.search.send('hoover.batch', **{
+        signals.batch.send('hoover.batch', **{
             'request': request,
             'collections': collections,
             'duration': time() - t0,
             'success': success,
+            'queries': len(queries),
         })
