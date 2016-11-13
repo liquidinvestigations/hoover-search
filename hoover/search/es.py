@@ -71,10 +71,14 @@ def _get_indices(collections):
     )
     return indices
 
-def batch_count(queries, collections, aggs=None):
-    def _build_query_lines(query, meta={}, aggs=None):
+def batch_count(query_strings, collections, aggs=None):
+    def _build_query_lines(query_string, meta={}, aggs=None):
         query_body = {
-            "query": query
+            "query": {
+                "query_string": {
+                    "query": query_string,
+                }
+            }
         }
         if aggs:
             query_body['aggs'] = aggs
@@ -84,7 +88,7 @@ def batch_count(queries, collections, aggs=None):
 
     body = "".join(
         _build_query_lines(q, {}, aggs)
-        for q in queries
+        for q in query_strings
     )
 
     with elasticsearch() as es:
@@ -95,8 +99,8 @@ def batch_count(queries, collections, aggs=None):
             search_type='count'
         )
 
-    for query, response in zip(queries, rv.get('responses', [])):
-        response['_query'] = query
+    for query_string, response in zip(query_strings, rv.get('responses', [])):
+        response['_query_string'] = query_string
 
     return rv
 
