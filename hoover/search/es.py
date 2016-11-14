@@ -47,14 +47,6 @@ def index(collection_id, doc):
             body=doc,
         )
 
-
-def exists(collection_id, doc_id):
-    path = _make_path(_index_name(collection_id), DOCTYPE, doc_id)
-    with elasticsearch() as es:
-        (status, _) = es.transport.perform_request('HEAD', path, {'ignore': 404})
-        return status == 200
-
-
 def get(collection_id, doc_id):
     with elasticsearch() as es:
         return es.get(
