@@ -47,6 +47,18 @@ def index(collection_id, doc):
             body=doc,
         )
 
+def versions(collection_id, doc_id_list):
+    res = es.search(
+        index=_index_name(collection_id),
+        body={
+            'query': {'ids': {'values': doc_id_list}},
+            'fields': ['_version'],
+        },
+    )
+    hits = res['hits']['hits']
+    assert len(hits) == res['hits']['total']
+    return {hit['_id']: hit.get('_version') for hit in hits}
+
 def get(collection_id, doc_id):
     with elasticsearch() as es:
         return es.get(

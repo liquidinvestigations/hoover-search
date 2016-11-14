@@ -62,7 +62,7 @@ class Loader:
 
     def documents(self):
         for item in self.api.feed():
-            yield Document(self, item['id'])
+            yield Document(self, item['id']), item['version']
 
     def get(self, doc_id):
         return Document(self, doc_id)

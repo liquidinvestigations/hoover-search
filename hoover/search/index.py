@@ -22,5 +22,8 @@ def index(collection, doc):
 def update_collection(collection):
     logger.info('updating %r', collection)
     queue = collection.get_loader().documents()
-    for doc in queue:
+    for doc, version in queue:
+        es_versions = es.versions(collection.id, [doc.id])
+        if doc.id in es_versions and es_versions[doc.id] == version:
+            continue
         index(collection, doc)
