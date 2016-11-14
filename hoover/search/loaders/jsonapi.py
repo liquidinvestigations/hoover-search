@@ -60,6 +60,9 @@ class Loader:
     def __init__(self, collection, **config):
         self.api = Api(config['url'])
 
+    def get_metadata(self):
+        return {}
+
     def documents(self):
         for item in self.api.feed():
             yield Document(self, item['id']), item['version']

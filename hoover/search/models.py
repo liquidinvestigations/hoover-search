@@ -46,7 +46,6 @@ class Collection(models.Model):
     def set_mapping(self):
         loader = self.get_loader()
         fields = loader.get_metadata().get('fields', {})
-        fields.setdefault('id', {'type': 'string', 'not_analyzed': True})
         es.set_mapping(self.id, fields)
 
     def reset(self):
