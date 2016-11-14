@@ -50,16 +50,8 @@ class Document:
     def view(self, request, suffix):
         raise NotImplementedError
 
-    def _get_data(self):
+    def get_data(self):
         return self.loader.api.data(self.id)
-
-    @property
-    def metadata(self):
-        content = self._get_data().get('content', {})
-        return dict(content, id=self.id)
-
-    def text(self):
-        return self.metadata.get('text')
 
 class Loader:
 

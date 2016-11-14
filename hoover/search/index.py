@@ -10,13 +10,13 @@ class TextMissing(RuntimeError):
 
 
 def index(collection, doc):
-    data = dict(
-        doc.metadata,
-        text=doc.text(),
-        collection=collection.name,
+    data = doc.get_data()
+    index_doc = dict(
+        data.get('content'),
+        _version=data['version'],
     )
-    es.index(collection.id, data)
-    logger.debug('%s ok', data['id'])
+    es.index(collection.id, index_doc)
+    logger.debug('%s ok', doc.id)
 
 
 def update_collection(collection):
