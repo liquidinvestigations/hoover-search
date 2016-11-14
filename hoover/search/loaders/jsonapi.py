@@ -38,9 +38,7 @@ class Api:
 
     def data(self, id):
         meta = self.meta()
-        m = re.match(meta['id_pattern'], id)
-        id_parts = dict(m.groupdict(), id=id)
-        data_url = meta['data_urls'].format(**id_parts)
+        data_url = meta['data_urls'].replace('{id}', id)
         return get_json(urljoin(self.meta_url, data_url))
 
 class Document:
