@@ -1,8 +1,6 @@
 import logging
-import threading
 from django.db import transaction
 from . import es
-from .utils import now, threadsafe
 
 logger = logging.getLogger(__name__)
 
@@ -21,22 +19,8 @@ def index(collection, doc):
     logger.debug('%s ok', data['id'])
 
 
-def index_from_queue(queue, collection):
+def update_collection(collection):
+    logger.info('updating %r', collection)
+    queue = collection.get_loader().documents()
     for doc in queue:
         index(collection, doc)
-
-
-def update_collection(collection, threads=1):
-    logger.info('updating %r', collection)
-    queue = threadsafe(collection.get_loader().documents())
-
-    thread_list = [
-        threading.Thread(target=index_from_queue, args=(queue, collection))
-        for _ in range(threads)
-    ]
-
-    for thread in thread_list:
-        thread.start()
-
-    for thread in thread_list:
-        thread.join()
