@@ -25,16 +25,15 @@ class Api:
     def meta(self):
         return get_json(self.meta_url)
 
-    def feed(self):
-        url = urljoin(self.meta_url, self.meta()['feed'])
-        while True:
-            resp = get_json(url)
-            yield from resp['documents']
+    def feed(self, url):
+        if url is None:
+            url = urljoin(self.meta_url, self.meta()['feed'])
 
-            next_url = resp.get('next')
-            if not next_url:
-                break
-            url = urljoin(url, next_url)
+        resp = get_json(url)
+        next_url = resp.get('next')
+        if next_url:
+            next_url = urljoin(url, next_url)
+        return (resp['documents'], next_url)
 
     def data(self, id):
         meta = self.meta()
@@ -63,9 +62,13 @@ class Loader:
     def get_metadata(self):
         return {}
 
-    def documents(self):
-        for item in self.api.feed():
-            yield Document(self, item['id']), item['version']
+    def feed_page(self, url):
+        (documents, next_url) = self.api.feed(url)
+        documents_with_data = [
+            doc['content'] if 'content' in doc else self.api.data(doc['id'])
+            for doc in documents
+        ]
+        return (documents_with_data, next_url)
 
     def get(self, doc_id):
         return Document(self, doc_id)

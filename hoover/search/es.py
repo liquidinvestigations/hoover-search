@@ -38,26 +38,31 @@ def _index_id(index):
     from .models import Collection
     return Collection.objects.get(index=index).id
 
-def index(collection_id, doc):
+def index(collection_id, doc_id, body):
     with elasticsearch() as es:
         resp = es.index(
             index=_index_name(collection_id),
             doc_type=DOCTYPE,
-            id=doc['id'],
-            body=doc,
+            id=doc_id,
+            body=body,
         )
 
 def versions(collection_id, doc_id_list):
-    res = es.search(
-        index=_index_name(collection_id),
-        body={
-            'query': {'ids': {'values': doc_id_list}},
-            'fields': ['_version'],
-        },
-    )
+    with elasticsearch() as es:
+        res = es.search(
+            index=_index_name(collection_id),
+            body={
+                'size': len(doc_id_list),
+                'query': {'ids': {'values': doc_id_list}},
+                'fields': ['_hoover.version'],
+            },
+        )
     hits = res['hits']['hits']
     assert len(hits) == res['hits']['total']
-    return {hit['_id']: hit.get('_version') for hit in hits}
+    return {
+        hit['_id']: hit['fields'].get('_hoover.version', [None])[0]
+        for hit in hits
+    }
 
 def get(collection_id, doc_id):
     with elasticsearch() as es:
