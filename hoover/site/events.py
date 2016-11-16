@@ -40,11 +40,11 @@ if settings.HOOVER_EVENTS_DIR:
         )
 
     @receiver(search_signals.batch)
-    def on_batch(sender, request, collection, duration, success, queries, **kw):
+    def on_batch(sender, request, collections, duration, success, queries, **kw):
         save(
             type='batch',
             username=request.user.get_username(),
-            collections=[collection.name],
+            collections=[c.name for c in collections],
             duration=duration,
             success=success,
             queries=queries,

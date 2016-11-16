@@ -147,6 +147,7 @@ def batch(request):
             aggs
         )
         res['status'] = 'ok'
+        success = True
         return JsonResponse(res)
 
     except es.SearchError as e:
