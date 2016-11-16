@@ -159,5 +159,5 @@ def batch(request):
             'collections': collections,
             'duration': time() - t0,
             'success': success,
-            'queries': len(query_strings),
+            'query_count': len(query_strings),
         })
