@@ -50,6 +50,8 @@ class Collection(models.Model):
         es.set_mapping(self.id, fields)
 
     def reset(self):
+        self.loader_state = json.dumps(None)
+        self.save()
         es.delete_index(self.id, ok_missing=True)
         es.create_index(self.id, self.name)
         self.set_mapping()
