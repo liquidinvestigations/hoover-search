@@ -4,6 +4,7 @@ from django.conf import settings
 from elasticsearch import Elasticsearch
 from elasticsearch.client.utils import _make_path
 from elasticsearch.exceptions import NotFoundError, RequestError, ConnectionError
+from elasticsearch.helpers import bulk
 
 DOCTYPE = 'doc'
 
@@ -46,6 +47,20 @@ def index(collection_id, doc_id, body):
             id=doc_id,
             body=body,
         )
+
+def bulk_index(collection_id, docs):
+    def index(id, data):
+        return dict(
+            data,
+            _op_type='index',
+            _index=_index_name(collection_id),
+            _type=DOCTYPE,
+            _id=id,
+        )
+
+    _, err = bulk(es, (index(id, data) for id, data in docs), stats_only=True)
+    if err:
+        raise RuntimeError("Bulk indexing failed on %d documents" % err)
 
 def versions(collection_id, doc_id_list):
     with elasticsearch() as es:

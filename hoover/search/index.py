@@ -40,8 +40,8 @@ def update_collection(collection):
         collection.loader_state = json.dumps(new_state)
         collection.save()
 
-    def count(key):
-        report[key] = report.get(key, 0) + 1
+    def count(key, n=1):
+        report[key] = report.get(key, 0) + n
 
     while True:
         logger.debug('page %s', feed_state)
@@ -54,6 +54,7 @@ def update_collection(collection):
             doc_id_list = [doc['id'] for doc in page]
             es_versions = es.versions(collection.id, doc_id_list)
 
+        docs = []
         for doc in page:
             assert doc['version'] is not None
             if es_versions.get(doc['id']) == doc['version']:
@@ -63,9 +64,12 @@ def update_collection(collection):
                 break
 
             body = dict(doc['content'], _hoover={'version': doc['version']})
-            es.index(collection.id, doc['id'], body)
-            logger.debug('%s indexed', doc['id'])
-            count('indexed')
+            docs.append((doc['id'], body))
+
+        if docs:
+            es.bulk_index(collection.id, docs)
+            logger.debug('%r indexed', [id for id, _ in docs])
+            count('indexed', len(docs))
 
         if not feed_state:
             break
