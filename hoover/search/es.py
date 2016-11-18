@@ -168,11 +168,11 @@ def refresh():
 
 
 def count(collection_id):
-    es = Elasticsearch(settings.HOOVER_ELASTICSEARCH_URL)
-    try:
-        return es.count(index=_index_name(collection_id))['count']
-    except NotFoundError:
-        return None
+    with elasticsearch() as es:
+        try:
+            return es.count(index=_index_name(collection_id))['count']
+        except NotFoundError:
+            return None
 
 
 def aliases(collection_id):
