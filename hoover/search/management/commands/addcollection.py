@@ -4,20 +4,18 @@ from ... import models
 
 class Command(BaseCommand):
 
-    help = "Register a new collection"
+    help = "Register a collection"
 
     def add_arguments(self, parser):
         parser.add_argument('name')
+        parser.add_argument('url')
         parser.add_argument('--index')
-        parser.add_argument('--loader')
-        parser.add_argument('--options')
 
-    def handle(self, name, index, loader, options, **kwargs):
-        json.loads(options or '{}')  # make sure it's valid json
+    def handle(self, name, url, index, **kwargs):
         models.Collection.objects.create(
             title=name.title(),
             name=name,
             index=index or name,
-            loader=loader or 'hoover.search.loaders.upload.Loader',
-            options=options or '{}',
+            loader='hoover.search.loaders.jsonapi.Loader',
+            options=json.dumps({'url': url}),
         )
