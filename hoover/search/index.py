@@ -37,6 +37,7 @@ def update_collection(collection):
         resume = False
 
     def save_state(new_state):
+        collection.refresh_from_db()
         collection.loader_state = json.dumps(new_state)
         collection.save()
 
