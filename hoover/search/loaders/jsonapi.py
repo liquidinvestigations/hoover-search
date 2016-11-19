@@ -65,7 +65,7 @@ class Loader:
     def feed_page(self, url):
         (documents, next_url) = self.api.feed(url)
         documents_with_data = [
-            doc['content'] if 'content' in doc else self.api.data(doc['id'])
+            doc if 'content' in doc else self.api.data(doc['id'])
             for doc in documents
         ]
         return (documents_with_data, next_url)
