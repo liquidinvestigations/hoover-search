@@ -39,6 +39,17 @@ if settings.HOOVER_EVENTS_DIR:
             success=success,
         )
 
+    @receiver(search_signals.batch)
+    def on_batch(sender, request, collections, duration, success, query_count, **kw):
+        save(
+            type='batch',
+            username=request.user.get_username(),
+            collections=[c.name for c in collections],
+            duration=duration,
+            success=success,
+            query_count=query_count,
+        )
+
     if installed.twofactor:
         from django.contrib.auth import signals as auth_signals
         from ..contrib.twofactor import signals as twofactor_signals
