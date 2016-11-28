@@ -1,7 +1,9 @@
 from pathlib import Path
+import json
 import mimetypes
 from django.conf import settings
-from django.http import FileResponse, Http404
+from django.http import HttpResponse, FileResponse, Http404
+from django.utils.html import escapejs
 
 NOCACHE_FILE_TYPES = ['.html']
 
@@ -29,5 +31,12 @@ def create_response(file):
 def file(request, filename):
     return create_response(resolve(filename))
 
-def doc_html(request):
-    return file(request, 'doc.html')
+def doc_html(request, data):
+    with resolve('doc.html').open('rt', encoding='utf-8') as f:
+        html = f.read()
+
+    data_json = escapejs(json.dumps(data))
+    return HttpResponse(html.replace(
+        '/* HOOVER HYDRATION PLACEHOLDER */',
+        'window.HOOVER_HYDRATE_DOC = JSON.parse(\'{}\')'.format(data_json),
+    ))

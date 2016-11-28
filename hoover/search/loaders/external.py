@@ -17,10 +17,10 @@ class Document:
     def view(self, request):
         if not self.suffix:
             if self.loader.config.get('renderDocument'):
-                url = self.root_url + self.doc_id
-                resp = requests.head(url)
-                if resp.status_code < 300:
-                    return ui.doc_html(request)
+                url = self.root_url + self.doc_id + '/json'
+                resp = requests.get(url)
+                if 200 <= resp.status_code < 300:
+                    return ui.doc_html(request, resp.json())
                 elif resp.status_code == 404:
                     raise Http404
                 else:
