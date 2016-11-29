@@ -50,6 +50,10 @@ if settings.HOOVER_EVENTS_DIR:
             query_count=query_count,
         )
 
+    @receiver(search_signals.rate_limit_exceeded)
+    def on_rate_limit_exceeded(sender, username, **kw):
+        save(type='forceLogout', username=username)
+
     if installed.twofactor:
         from django.contrib.auth import signals as auth_signals
         from ..contrib.twofactor import signals as twofactor_signals
@@ -77,13 +81,3 @@ if settings.HOOVER_EVENTS_DIR:
         @receiver(twofactor_signals.login_failure)
         def on_login_failure(sender, otp_failure, **kw):
             save(type='loginFailed', otp_failure=otp_failure)
-
-    if installed.ratelimit:
-        from ..contrib.ratelimit import signals as ratelimit_signals
-
-        @receiver(ratelimit_signals.rate_limit_exceeded)
-        def on_rate_limit_exceeded(sender, request, **kw):
-            save(
-                type='forceLogout',
-                username=request.user.get_username(),
-            )

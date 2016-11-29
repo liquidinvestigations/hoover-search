@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 import pytest
 from django.utils.timezone import utc, now
 from .fixtures import skip_twofactor, listen
-from hoover.contrib.ratelimit import signals
+from hoover.search import signals
 from hoover.search.ratelimit import limit_user, HttpLimitExceeded
 
 pytestmark = pytest.mark.django_db
@@ -48,7 +48,7 @@ def test_rate_limit(skip_twofactor, mock_time, listen):
 
     assert len(rate_limit_exceeded) == 10
     print(rate_limit_exceeded[0])
-    assert rate_limit_exceeded[0]['request'].user.get_username() == 'john'
+    assert rate_limit_exceeded[0]['username'] == 'john'
 
     mock_time(t0 + timedelta(minutes=1))
     for _ in range(20):

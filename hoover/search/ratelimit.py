@@ -2,7 +2,7 @@ from django.conf import settings
 
 if settings.HOOVER_RATELIMIT_USER:
     from django.http import HttpResponse
-    from hoover.contrib.ratelimit import signals, models
+    from . import signals
     from hoover.contrib.ratelimit.limit import RateLimit
 
     class HttpLimitExceeded(HttpResponse):
@@ -18,11 +18,12 @@ if settings.HOOVER_RATELIMIT_USER:
 
     def limit_user(view):
         def wrapper(request, *args, **kwargs):
-            key = 'user:' + request.user.get_username()
+            username = request.user.get_username()
+            key = 'user:' + username
             if _user_limit.access(key):
                 signals.rate_limit_exceeded.send(
-                    models.Count,
-                    request=request,
+                    'hoover.search',
+                    username=username,
                 )
                 return HttpLimitExceeded()
             return view(request, *args, **kwargs)
