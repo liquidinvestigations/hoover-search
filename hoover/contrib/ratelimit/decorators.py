@@ -20,8 +20,8 @@ class RateLimit:
         self.name = name
 
     def access(self, key):
-        counter = models.Count.inc(key, self.interval)
-        return counter.n > self.limit
+        n = models.Count.inc(key, self.interval)
+        return n > self.limit
 
     def __call__(self, view):
         def wrapper(request, *args, **kwargs):

@@ -25,4 +25,4 @@ class Count(models.Model):
 
         counter.n += 1
         counter.save()
-        return counter
+        return counter.n
