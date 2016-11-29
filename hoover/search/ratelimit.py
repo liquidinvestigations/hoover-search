@@ -3,7 +3,7 @@ from django.conf import settings
 if settings.HOOVER_RATELIMIT_USER:
     from django.http import HttpResponse
     from hoover.contrib.ratelimit import signals, models
-    from hoover.contrib.ratelimit.decorators import RateLimit
+    from hoover.contrib.ratelimit.limit import RateLimit
 
     class HttpLimitExceeded(HttpResponse):
 
