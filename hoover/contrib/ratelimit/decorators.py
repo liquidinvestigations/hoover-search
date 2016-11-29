@@ -26,7 +26,6 @@ class RateLimit:
             if counter.n > self.limit:
                 signals.rate_limit_exceeded.send(
                     models.Count,
-                    counter=counter,
                     request=request,
                 )
                 return HttpLimitExceeded()

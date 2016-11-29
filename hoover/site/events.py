@@ -82,9 +82,8 @@ if settings.HOOVER_EVENTS_DIR:
         from ..contrib.ratelimit import signals as ratelimit_signals
 
         @receiver(ratelimit_signals.rate_limit_exceeded)
-        def on_rate_limit_exceeded(sender, counter, request, **kw):
+        def on_rate_limit_exceeded(sender, request, **kw):
             save(
                 type='forceLogout',
-                key=counter.key,
                 username=request.user.get_username(),
             )
