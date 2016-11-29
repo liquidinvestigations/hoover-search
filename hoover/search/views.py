@@ -9,11 +9,7 @@ from ..contrib import installed
 from . import es
 from .models import Collection
 from . import signals
-
-if installed.ratelimit:
-    from ..contrib.ratelimit.decorators import limit_user
-else:
-    limit_user = lambda func: func
+from .ratelimit import limit_user
 
 def collections_acl(user, collections_arg):
     available = list(Collection.objects_for_user(user))

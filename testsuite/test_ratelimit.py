@@ -2,7 +2,8 @@ from datetime import datetime, timedelta
 import pytest
 from django.utils.timezone import utc, now
 from .fixtures import skip_twofactor, listen
-from hoover.contrib.ratelimit import decorators, signals
+from hoover.contrib.ratelimit import signals
+from hoover.search.ratelimit import limit_user, HttpLimitExceeded
 
 pytestmark = pytest.mark.django_db
 
@@ -25,7 +26,7 @@ def test_rate_limit(skip_twofactor, mock_time, listen):
         class user:
             get_username = staticmethod(lambda: 'john')
 
-    @decorators.limit_user
+    @limit_user
     def func(r):
         return 'ok'
 
@@ -33,7 +34,7 @@ def test_rate_limit(skip_twofactor, mock_time, listen):
         rv = func(request)
         if rv == 'ok':
             assert not exception, "HttpLimitExceeded should have been returned"
-        elif isinstance(rv, decorators.HttpLimitExceeded):
+        elif isinstance(rv, HttpLimitExceeded):
             assert exception, "HttpLimitExceeded should not have been returned"
         else:
             assert False, "unexpected return value %r" % rv
