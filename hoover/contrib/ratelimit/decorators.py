@@ -13,27 +13,25 @@ class HttpLimitExceeded(HttpResponse):
 
 class RateLimit:
 
-    def __init__(self, name, limit, interval, keyfunc):
+    def __init__(self, limit, interval):
         self.limit = limit
         self.interval = interval
-        self.keyfunc = keyfunc
-        self.name = name
 
     def access(self, key):
         n = models.Count.inc(key, self.interval)
         return n > self.limit
 
-    def __call__(self, view):
-        def wrapper(request, *args, **kwargs):
-            key = self.name + ':' + self.keyfunc(request)
-            if self.access(key):
-                signals.rate_limit_exceeded.send(
-                    models.Count,
-                    request=request,
-                )
-                return HttpLimitExceeded()
-            return view(request, *args, **kwargs)
-        return wrapper
-
 (_l, _i) = settings.HOOVER_RATELIMIT_USER
-limit_user = RateLimit('user', _l, _i, lambda r: r.user.get_username())
+_user_limit = RateLimit(_l, _i)
+
+def limit_user(view):
+    def wrapper(request, *args, **kwargs):
+        key = 'user:' + request.user.get_username()
+        if _user_limit.access(key):
+            signals.rate_limit_exceeded.send(
+                models.Count,
+                request=request,
+            )
+            return HttpLimitExceeded()
+        return view(request, *args, **kwargs)
+    return wrapper
