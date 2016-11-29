@@ -19,11 +19,14 @@ class RateLimit:
         self.keyfunc = keyfunc
         self.name = name
 
+    def access(self, key):
+        counter = models.Count.inc(key, self.interval)
+        return counter.n > self.limit
+
     def __call__(self, view):
         def wrapper(request, *args, **kwargs):
             key = self.name + ':' + self.keyfunc(request)
-            counter = models.Count.inc(key, self.interval)
-            if counter.n > self.limit:
+            if self.access(key):
                 signals.rate_limit_exceeded.send(
                     models.Count,
                     request=request,
