@@ -1,8 +1,7 @@
-from hoover.contrib import installed
+from django.conf import settings
 
-if installed.ratelimit:
+if settings.HOOVER_RATELIMIT_USER:
     from django.http import HttpResponse
-    from django.conf import settings
     from hoover.contrib.ratelimit import signals, models
     from hoover.contrib.ratelimit.decorators import RateLimit
 
