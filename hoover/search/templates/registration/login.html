@@ -5,9 +5,9 @@
 
 <h1>Login</h1>
 
-{% if form.errors %}
-  <p>Your username and password didn't match. Please try again.</p>
-{% endif %}
+{% for message in form.non_field_errors %}
+  <p class="alert-danger">{{ message }}</p>
+{% endfor %}
 
 {% if next %}
   {% if user.is_authenticated %}
@@ -21,26 +21,35 @@
 <form method="post" action="{% url 'login' %}">
   {% csrf_token %}
 
-  <fieldset class="form-group row">
+  <fieldset class="form-group row{% if form.errors.username %} has-danger{% endif %}">
     {{ form.username.label_tag }}
     <div class="col-sm-4">
       {{ form.username }}
     </div>
+    {% for message in form.errors.username %}
+      <div class="form-control-feedback">{{ message }}</div>
+    {% endfor %}
   </fieldset>
 
-  <fieldset class="form-group row">
+  <fieldset class="form-group row{% if form.errors.password %} has-danger{% endif %}">
     {{ form.password.label_tag }}
     <div class="col-sm-4">
       {{ form.password }}
     </div>
+    {% for message in form.errors.password %}
+      <div class="form-control-feedback">{{ message }}</div>
+    {% endfor %}
   </fieldset>
 
   {% if HOOVER_INSTALLED.twofactor %}
-  <fieldset class="form-group row">
+  <fieldset class="form-group row{% if form.errors.otp_token %} has-danger{% endif %}">
     {{ form.otp_token.label_tag }}
     <div class="col-sm-4">
       {{ form.otp_token }}
     </div>
+    {% for message in form.errors.otp_token %}
+      <div class="form-control-feedback">{{ message }}</div>
+    {% endfor %}
   </fieldset>
   {% endif %}
 
