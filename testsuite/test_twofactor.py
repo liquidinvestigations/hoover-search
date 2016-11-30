@@ -149,6 +149,7 @@ def test_auto_logout(client, mock_time, listen):
     assert auto_logout == [{'username': 'john'}]
 
 def test_rate_limit(client, mock_time, listen):
+    rate_limit_exceeded = listen(signals.rate_limit_exceeded)
     t0 = datetime(2016, 6, 13, 12, 0, 0, tzinfo=utc)
     now = None
 
@@ -192,3 +193,5 @@ def test_rate_limit(client, mock_time, listen):
     # one minute later, try again, it should work
     set_time(t0 + timedelta(minutes=1))
     try_login(correct_otp=True, expect_limit=False, expect_success=True)
+
+    assert rate_limit_exceeded == [{'username': 'john'}] * 6

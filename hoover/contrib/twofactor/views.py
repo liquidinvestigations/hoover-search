@@ -29,6 +29,10 @@ class AuthenticationForm(OTPAuthenticationForm):
         if user:
             username = user.get_username()
             if rate_limit(username):
+                signals.rate_limit_exceeded.send(
+                    'hoover.contrib.twofactor',
+                    username=username,
+                )
                 raise ValidationError("Your account is temporarily locked "
                     "because of too many login failures. Please try again "
                     "in a few minutes.", code='ratelimit')
