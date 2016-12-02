@@ -21,20 +21,22 @@ def delete_all(user, keep=None):
             continue
         old_device.delete()
 
-@contextmanager
-def setup(user, id):
+def device_for_invitation(user, request):
+    device_id = request.session.get('invitation_device_id')
     device = None
-    if id:
-        device = get(user, id)
+    if device_id:
+        device = get(user, device_id)
 
     if not device:
         username = user.get_username()
         device = create(user, username)
 
-    def setup_successful():
-        delete_all(user, keep=device)
+    request.session['invitation_device_id'] = device.id
 
-    yield device, setup_successful
+    return device
+
+def setup_successful(user, device):
+    delete_all(user, keep=device)
 
 def qrencode(data):
     return subprocess.check_output(['qrencode', data, '-s', '5', '-o', '-'])

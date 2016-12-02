@@ -30,28 +30,26 @@ def invitation(request, code):
 
     signals.invitation_open.send(models.Invitation, username=username)
 
-    device_id = request.session.get('invitation_device_id')
-    with devices.setup(user, device_id) as (device, setup_successful):
-        request.session['invitation_device_id'] = device.id
+    device = devices.device_for_invitation(user, request)
 
-        if request.method == 'POST':
-            code = request.POST['code']
-            if not device.verify_token(code):
-                bad_token = True
+    if request.method == 'POST':
+        code = request.POST['code']
+        if not device.verify_token(code):
+            bad_token = True
 
-            if request.POST['username'] != username:
-                bad_username = True
+        if request.POST['username'] != username:
+            bad_username = True
 
-            if request.POST['password'] != request.POST['password-confirm']:
-                bad_password = True
+        if request.POST['password'] != request.POST['password-confirm']:
+            bad_password = True
 
-            if not (bad_username or bad_password or bad_token):
-                password = request.POST['password']
-                invitations.accept(request, invitation, device, password)
-                setup_successful()
-                signals.invitation_accept.send(models.Invitation,
-                    username=username)
-                success = True
+        if not (bad_username or bad_password or bad_token):
+            password = request.POST['password']
+            invitations.accept(request, invitation, device, password)
+            devices.setup_successful(user, device)
+            signals.invitation_accept.send(models.Invitation,
+                username=username)
+            success = True
 
     png_data = b64encode(devices.qr_png(device, username)).decode('utf8')
     otp_png = 'data:image/png;base64,' + png_data

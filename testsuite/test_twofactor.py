@@ -97,9 +97,9 @@ def _accept(invitation, password):
     from django.contrib.sessions.backends.db import SessionStore
     request = HttpRequest()
     request.session = SessionStore()
-    with devices.setup(invitation.user, None) as (device, setup_successful):
-        invitations.accept(request, invitation, device, password)
-        setup_successful()
+    device = devices.device_for_invitation(invitation.user, request)
+    invitations.accept(request, invitation, device, password)
+    devices.setup_successful(invitation.user, device)
     return device
 
 @pytest.mark.parametrize('username,password,interval,success', [
