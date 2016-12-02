@@ -52,7 +52,7 @@ if settings.HOOVER_EVENTS_DIR:
 
     @receiver(search_signals.rate_limit_exceeded)
     def on_rate_limit_exceeded(sender, username, **kw):
-        save(type='forceLogout', username=username)
+        save(type='rateLimitExceeded', username=username)
 
     if installed.twofactor:
         from django.contrib.auth import signals as auth_signals
