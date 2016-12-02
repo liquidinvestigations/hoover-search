@@ -88,26 +88,3 @@ if settings.HOOVER_EVENTS_DIR:
                 key=counter.key,
                 username=request.user.get_username(),
             )
-
-class ViewCounter:
-
-    def __init__(self, name, analyze):
-        self.analyze = analyze
-        self.name = name
-
-    def __call__(self, view):
-        def wrapper(request, *args, **kwargs):
-            self.add(request)
-            return view(request, *args, **kwargs)
-        return wrapper
-
-    def add(self, request, **extra):
-        data = self.analyze(request)
-        data.update(extra)
-        save(self.name, data)
-
-def analyze(request):
-    return {'user': request.user.get_username()}
-
-count_searches = ViewCounter('search', analyze)
-count_documents = ViewCounter('document', analyze)
