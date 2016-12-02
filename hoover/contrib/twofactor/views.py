@@ -31,18 +31,17 @@ def invitation(request, code):
     device = invitations.device_for_session(request, invitation)
 
     if request.method == 'POST':
-        code = request.POST['code']
-        if not device.verify_token(code):
+        if not device.verify_token(request.POST['code']):
             bad_token = True
 
         if request.POST['username'] != username:
             bad_username = True
 
-        if request.POST['password'] != request.POST['password-confirm']:
+        password = request.POST['password']
+        if password != request.POST['password-confirm']:
             bad_password = True
 
         if not (bad_username or bad_password or bad_token):
-            password = request.POST['password']
             invitations.accept(request, invitation, device, password)
             signals.invitation_accept.send(models.Invitation,
                 username=username)

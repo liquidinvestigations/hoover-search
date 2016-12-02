@@ -44,7 +44,7 @@ def get_or_404(code):
 
     if invitation:
         signals.invitation_expired.send(models.Invitation,
-            username=invitation.user.username)
+            username=invitation.user.get_username())
 
     raise Http404()
 
@@ -61,14 +61,13 @@ def device_for_session(request, invitation):
 @transaction.atomic
 def accept(request, invitation, device, password):
     user = invitation.user
-    username = user.get_username()
     user.set_password(password)
     user.save()
     device.confirmed = True
     device.save()
     devices.delete_all(user, keep=device)
     invitation.delete()
-    user2 = authenticate(username=username, password=password)
+    user2 = authenticate(username=user.get_username(), password=password)
     assert user2
     login(request, user2)
     otp_login(request, device)
