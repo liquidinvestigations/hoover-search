@@ -25,12 +25,11 @@ def invitation(request, code):
     bad_token = None
     bad_username = False
     bad_password = False
-    user = invitation.user
-    username = user.get_username()
+    username = invitation.user.get_username()
 
     signals.invitation_open.send(models.Invitation, username=username)
 
-    device = devices.device_for_invitation(user, request)
+    device = invitations.device_for_session(request, invitation)
 
     if request.method == 'POST':
         code = request.POST['code']
@@ -46,7 +45,6 @@ def invitation(request, code):
         if not (bad_username or bad_password or bad_token):
             password = request.POST['password']
             invitations.accept(request, invitation, device, password)
-            devices.setup_successful(user, device)
             signals.invitation_accept.send(models.Invitation,
                 username=username)
             success = True
