@@ -1,0 +1,70 @@
+{% extends "auth_base.html" %}
+
+
+{% block content %}
+
+<h1>Set up two-factor authentication</h1>
+
+<form method="post">
+  {% csrf_token %}
+
+  <p class="text-muted">Step 1: Enter your username &ndash; it's
+  <code>{{ username }}</code></p>
+
+  <fieldset class="form-group row">
+    <label>Username</label>
+    <div class="col-sm-4">
+      <input name="username">
+    </div>
+  </fieldset>
+
+  <p class="text-muted">Step 2: Choose a password</p>
+
+  <fieldset class="form-group row">
+    <label>Password</label>
+    <div class="col-sm-4">
+      <input type="password" name="password">
+    </div>
+  </fieldset>
+
+  <fieldset class="form-group row">
+    <label>Confirm password</label>
+    <div class="col-sm-4">
+      <input type="password" name="password-confirm">
+    </div>
+  </fieldset>
+
+  <p class="text-muted">Step 3: Install <em>Google Authenticator</em> or
+  <em>Duo Mobile</em> on a smartphone</p>
+
+  <p class="text-muted">Step 4: Follow the directions on the phone to scan
+  this barcode:</p>
+
+  <p><img src="{{ otp_png }}"></p>
+
+  <p class="text-muted">Step 5: This will create a six-digit number, which
+  you should type below:</p>
+
+  <fieldset class="form-group row">
+    <label>Otp token</label>
+    <div class="col-sm-4">
+      <input name="code">
+    </div>
+  </fieldset>
+
+  {% if bad_username %}
+    <p>Username is wrong.</p>
+  {% endif %}
+
+  {% if bad_password %}
+    <p>Passwords don't match.</p>
+  {% endif %}
+
+  {% if bad_token %}
+    <p>Invalid token, please try again.</p>
+  {% endif %}
+
+  <button type="submit" class="btn btn-primary">login</button>
+</form>
+
+{% endblock %}

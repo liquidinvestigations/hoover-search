@@ -21,7 +21,6 @@ class AuthenticationForm(OTPAuthenticationForm):
 @transaction.atomic
 def invitation(request, code):
     invitation = invitations.get_or_404(code)
-    success = False
     bad_token = None
     bad_username = False
     bad_password = False
@@ -47,15 +46,15 @@ def invitation(request, code):
             invitations.accept(request, invitation, device, password)
             signals.invitation_accept.send(models.Invitation,
                 username=username)
-            success = True
+
+            return render(request, 'totp-invitation-success.html')
 
     png_data = b64encode(devices.qr_png(device, username)).decode('utf8')
     otp_png = 'data:image/png;base64,' + png_data
 
-    return render(request, 'totp-invitation.html', {
+    return render(request, 'totp-invitation-form.html', {
         'username': username,
         'otp_png': otp_png,
-        'success': success,
         'bad_username': bad_username,
         'bad_password': bad_password,
         'bad_token': bad_token,
