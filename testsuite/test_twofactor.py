@@ -5,7 +5,7 @@ import pytest
 from django.utils.timezone import utc, now
 from django_otp.oath import TOTP
 from django_otp.plugins.otp_totp.models import TOTPDevice
-from hoover.contrib.twofactor import invitations, models, devices, signals
+from hoover.contrib.twofactor import invitations, models, signals
 from .fixtures import listen
 
 pytestmark = pytest.mark.django_db
@@ -97,9 +97,8 @@ def _accept(invitation, password):
     from django.contrib.sessions.backends.db import SessionStore
     request = HttpRequest()
     request.session = SessionStore()
-    with devices.setup(invitation.user, None) as (device, setup_successful):
-        invitations.accept(request, invitation, device, password)
-        setup_successful()
+    device = invitations.device_for_session(request, invitation)
+    invitations.accept(request, invitation, device, password)
     return device
 
 @pytest.mark.parametrize('username,password,interval,success', [

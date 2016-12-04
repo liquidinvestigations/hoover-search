@@ -3,8 +3,8 @@ import math
 from django.conf import settings
 from django.db import models
 
-VOCABULARY = u'abcdefghijklmnopqrstuvwxyz0123456789'
-REQUIRED_ENTROPY = 40
+VOCABULARY = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+REQUIRED_ENTROPY = 256
 
 def random_code():
     entropy_per_char = math.log(len(VOCABULARY), 2)

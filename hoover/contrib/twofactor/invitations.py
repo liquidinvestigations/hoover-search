@@ -8,6 +8,7 @@ from django.utils.timezone import now
 from django_otp import login as otp_login
 from . import models
 from . import signals
+from . import devices
 
 @transaction.atomic
 def invite(username, duration, create=False):
@@ -43,20 +44,30 @@ def get_or_404(code):
 
     if invitation:
         signals.invitation_expired.send(models.Invitation,
-            username=invitation.user.username)
+            username=invitation.user.get_username())
 
     raise Http404()
+
+def device_for_session(request, invitation):
+    user = invitation.user
+    device_id = request.session.get('invitation_device_id')
+    if device_id:
+        return devices.get(user, device_id)
+
+    device = devices.create(user)
+    request.session['invitation_device_id'] = device.id
+    return device
 
 @transaction.atomic
 def accept(request, invitation, device, password):
     user = invitation.user
-    username = user.get_username()
     user.set_password(password)
     user.save()
     device.confirmed = True
     device.save()
+    devices.delete_all(user, keep=device)
     invitation.delete()
-    user2 = authenticate(username=username, password=password)
+    user2 = authenticate(username=user.get_username(), password=password)
     assert user2
     login(request, user2)
     otp_login(request, device)
