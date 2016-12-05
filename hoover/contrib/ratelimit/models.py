@@ -14,13 +14,15 @@ class Count(models.Model):
         t1 = t0 + interval
         try:
             with transaction.atomic():
-                counter = cls.objects.create(key=key, expires=t1)
+                cls.objects.create(key=key, expires=t1)
         except IntegrityError:
-            counter = cls.objects.select_for_update().get(key=key)
-            if counter.expires <= t0:
-                counter.expires = t1
-                counter.n = 0
+            pass
+
+        counter = cls.objects.select_for_update().get(key=key)
+        if counter.expires <= t0:
+            counter.expires = t1
+            counter.n = 0
 
         counter.n += 1
         counter.save()
-        return counter
+        return counter.n

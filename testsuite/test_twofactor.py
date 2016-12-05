@@ -20,6 +20,7 @@ def mock_time(monkeypatch):
     patch = monkeypatch.setattr
     patch('hoover.contrib.twofactor.invitations.now', lambda: t)
     patch('hoover.contrib.twofactor.middleware.time', mock_time.time)
+    patch('hoover.contrib.ratelimit.models.time', mock_time.time)
     patch('django_otp.plugins.otp_totp.models.time', mock_time)
     def set_time(value):
         nonlocal t
@@ -146,3 +147,51 @@ def test_auto_logout(client, mock_time, listen):
     mock_time(t0 + timedelta(hours=3, minutes=0, seconds=5))
     assert not _access_homepage(client)
     assert auto_logout == [{'username': 'john'}]
+
+def test_rate_limit(client, mock_time, listen):
+    rate_limit_exceeded = listen(signals.rate_limit_exceeded)
+    t0 = datetime(2016, 6, 13, 12, 0, 0, tzinfo=utc)
+    now = None
+
+    def set_time(t):
+        nonlocal now
+        now = t
+        mock_time(t)
+
+    def try_login(correct_otp, expect_limit, expect_success):
+        device.last_t = -1
+        device.save()
+        resp = client.post('/accounts/login/', {
+            'username': 'john',
+            'password': 'pw',
+            'otp_token': _totp(device, now) if correct_otp else '123456',
+        })
+        is_rate_limit = ('Your account is temporarily locked'
+            in resp.content.decode('utf8'))
+        assert expect_limit == is_rate_limit, \
+            "rate limit shoud be {}".format(expect_limit)
+
+        if expect_success:
+            assert resp.status_code == 302
+            assert resp.url == '/'
+        else:
+            assert resp.status_code == 200
+
+    invitations.invite('john', INVITATION_DURATION, create=True)
+    device = _accept(models.Invitation.objects.get(), 'pw')
+
+    set_time(t0)
+    # 3 failures and we should get locked out
+    for _ in range(3):
+        try_login(correct_otp=False, expect_limit=False, expect_success=False)
+
+    # try some correct and incorrect logins, they should not work
+    for _ in range(3):
+        try_login(correct_otp=True, expect_limit=True, expect_success=False)
+        try_login(correct_otp=False, expect_limit=True, expect_success=False)
+
+    # one minute later, try again, it should work
+    set_time(t0 + timedelta(minutes=1))
+    try_login(correct_otp=True, expect_limit=False, expect_success=True)
+
+    assert rate_limit_exceeded == [{'username': 'john'}] * 6

@@ -1,4 +1,5 @@
 from base64 import b64encode
+from django.conf import settings
 from django.db import transaction
 from django.forms import ValidationError
 from django.shortcuts import render
@@ -8,12 +9,37 @@ from . import invitations
 from . import signals
 from . import models
 
+if settings.HOOVER_TWOFACTOR_RATELIMIT:
+    from hoover.contrib.ratelimit.limit import RateLimit
+
+    (_l, _i) = settings.HOOVER_TWOFACTOR_RATELIMIT
+    _login_limit = RateLimit(_l, _i)
+
+    def rate_limit(username):
+        key = 'hoover.contrib.twofactor:' + username
+        return _login_limit.access(key)
+
+else:
+    def rate_limit(username):
+        return False
+
 class AuthenticationForm(OTPAuthenticationForm):
 
     def clean_otp(self, user):
+        if user:
+            username = user.get_username()
+            if rate_limit(username):
+                signals.rate_limit_exceeded.send(
+                    'hoover.contrib.twofactor',
+                    username=username,
+                )
+                raise ValidationError("Your account is temporarily locked "
+                    "because of too many login failures. Please try again "
+                    "in a few minutes.", code='ratelimit')
+
         try:
             return super().clean_otp(user)
-        except ValidationError:
+        except ValidationError as e:
             signals.login_failure.send('hoover.contrib.twofactor',
                 otp_failure=True)
             raise

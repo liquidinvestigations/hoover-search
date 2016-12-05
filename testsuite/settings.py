@@ -20,5 +20,7 @@ del HOOVER_ELASTICSEARCH_URL
 SECRET_KEY = 'testing secret key'
 HOOVER_UPLOADS_ROOT = str(testsuite_dir / 'uploads')
 HOOVER_BASE_URL = 'http://testserver'
+HOOVER_RATELIMIT_USER = (30, 60) # 30 per minute
+HOOVER_TWOFACTOR_RATELIMIT = (3, 60) # 3 per minute
 
 from hoover.site.settings.testing_local import *
