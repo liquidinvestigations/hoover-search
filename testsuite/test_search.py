@@ -17,6 +17,9 @@ class MockDoc:
     def text(self):
         return self.metadata.get('text')
 
+    def get_data(self):
+        return self.metadata
+
 @pytest.yield_fixture
 def finally_cleanup_index():
     id_list = []
@@ -88,16 +91,15 @@ def test_all_the_things(finally_cleanup_index, listen, api):
     assert {c['name'] for c in api.collections()} == {'testcol'}
 
     finally_cleanup_index(_index_name(col.id))
-    doc = MockDoc('mock1', {'foo': "bar"})
+    doc = MockDoc('mock1', {"content":{"id": "mock1", 'foo': "bar"}, "version": "1.12"})
     index.index(col, doc)
     es_index_id = _index_name(col.id)
     data = es.get(index=es_index_id, doc_type=DOCTYPE, id='mock1')
     assert data['_id'] == 'mock1'
     assert data['_source'] == dict(
-        id='mock1',
+        id="mock1",
         foo='bar',
-        collection='testcol',
-        text=None,
+        _hoover={'version': "1.12"},
     )
 
     es.indices.refresh()
