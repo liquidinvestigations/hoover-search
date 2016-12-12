@@ -58,7 +58,8 @@ def bulk_index(collection_id, docs):
             _id=id,
         )
 
-    _, err = bulk(es, (index(id, data) for id, data in docs), stats_only=True)
+    with elasticsearch() as es:
+        _, err = bulk(es, (index(id, data) for id, data in docs), stats_only=True)
     if err:
         raise RuntimeError("Bulk indexing failed on %d documents" % err)
 
