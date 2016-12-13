@@ -95,7 +95,6 @@ HOOVER_LOADERS = [
     'hoover.search.loaders.webdav.Loader',
     'hoover.search.loaders.collectible.Loader',
     'hoover.search.loaders.external.Loader',
-    'hoover.search.loaders.jsonapi.Loader',
 ]
 
 HOOVER_PDFJS_URL = None
