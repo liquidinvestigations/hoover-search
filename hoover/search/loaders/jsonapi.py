@@ -5,7 +5,7 @@ Loader for https://github.com/hoover/search/wiki/Collections-API
 from urllib.parse import urljoin
 from functools import lru_cache
 import re
-from django.http import HttpResponse, Http404
+from django.http import JsonResponse
 import requests
 from .. import ui, models
 
@@ -47,7 +47,7 @@ class Document:
         self.id = id
 
     def view(self, request, suffix):
-        raise NotImplementedError
+        return JsonResponse(self.get_data())
 
     def get_data(self):
         return self.loader.api.data(self.id)
