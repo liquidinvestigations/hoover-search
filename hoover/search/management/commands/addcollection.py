@@ -16,6 +16,6 @@ class Command(BaseCommand):
             title=name.title(),
             name=name,
             index=index or name,
-            loader='hoover.search.loaders.jsonapi.Loader',
+            loader='hoover.search.loaders.external.Loader',
             options=json.dumps({'url': url}),
         )
