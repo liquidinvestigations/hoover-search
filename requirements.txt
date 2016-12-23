@@ -8,7 +8,7 @@ click==6.6                # via pip-tools
 django-otp==0.3.8
 Django==1.10.4            # via django-otp
 easywebdav==1.2.0
-elasticsearch==2.4.0
+elasticsearch==5.0.1
 first==2.0.1              # via pip-tools
 pip-tools==1.8.0
 psycopg2==2.6.2

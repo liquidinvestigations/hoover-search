@@ -4,6 +4,7 @@ from django.conf import settings
 from elasticsearch import Elasticsearch
 from elasticsearch.client.utils import _make_path
 from elasticsearch.exceptions import NotFoundError, RequestError, ConnectionError
+from elasticsearch.helpers import bulk
 
 DOCTYPE = 'doc'
 
@@ -38,22 +39,46 @@ def _index_id(index):
     from .models import Collection
     return Collection.objects.get(index=index).id
 
-def index(collection_id, doc):
+def index(collection_id, doc_id, body):
     with elasticsearch() as es:
         resp = es.index(
             index=_index_name(collection_id),
             doc_type=DOCTYPE,
-            id=doc['id'],
-            body=doc,
+            id=doc_id,
+            body=body,
         )
 
+def bulk_index(collection_id, docs):
+    def index(id, data):
+        return dict(
+            data,
+            _op_type='index',
+            _index=_index_name(collection_id),
+            _type=DOCTYPE,
+            _id=id,
+        )
 
-def exists(collection_id, doc_id):
-    path = _make_path(_index_name(collection_id), DOCTYPE, doc_id)
     with elasticsearch() as es:
-        (status, _) = es.transport.perform_request('HEAD', path, {'ignore': 404})
-        return status == 200
+        _, err = bulk(es, (index(id, data) for id, data in docs), stats_only=True)
+    if err:
+        raise RuntimeError("Bulk indexing failed on %d documents" % err)
 
+def versions(collection_id, doc_id_list):
+    with elasticsearch() as es:
+        res = es.search(
+            index=_index_name(collection_id),
+            body={
+                'size': len(doc_id_list),
+                'query': {'ids': {'values': doc_id_list}},
+                'fields': ['_hoover.version'],
+            },
+        )
+    hits = res['hits']['hits']
+    assert len(hits) == res['hits']['total']
+    return {
+        hit['_id']: hit['fields'].get('_hoover.version', [None])[0]
+        for hit in hits
+    }
 
 def get(collection_id, doc_id):
     with elasticsearch() as es:
@@ -140,9 +165,15 @@ def search(query, fields, highlight, collections, from_, size, sort, aggs):
             request_timeout=60,
         )
 
+    aggs = (
+        rv
+        .get('aggregations', {})
+        .get('count_by_index', {})
+        .get('buckets', [])
+    )
     count_by_index = {
         _index_id(b['key']): b['doc_count']
-        for b in rv['aggregations']['count_by_index']['buckets']
+        for b in aggs
     }
     return (rv, count_by_index)
 

@@ -53,7 +53,7 @@ class Document(object):
         tmp.seek(0)
         return tmp
 
-    def view(self, request):
+    def view(self, request, suffix):
         if request.GET.get('raw') == 'on':
             with self._open() as tmp:
                 return HttpResponse(tmp.read(),
@@ -92,6 +92,6 @@ class Loader(object):
                     metadata['text_url'] = doc_url.join(data['text_url']).url
                     yield Document(metadata)
 
-    def get(self, doc_id, suffix):
+    def get(self, doc_id):
         es_doc = self.collection.get_document(doc_id)
         return Document(es_doc['_source'])

@@ -40,7 +40,7 @@ class Document(object):
         with self._open() as tmp:
             return tika.text(tmp)
 
-    def view(self, request):
+    def view(self, request, suffix):
         if request.GET.get('raw') == 'on':
             with self._open() as tmp:
                 return HttpResponse(tmp.read(),
@@ -94,7 +94,7 @@ class Loader(object):
             mime_type = file_obj.contenttype.split(';')[0]
             yield Document(dav, filename, mime_type)
 
-    def get(self, doc_id, suffix):
+    def get(self, doc_id):
         es_doc = self.collection.get_document(doc_id)
         dav = self._dav()
         return Document(dav, doc_id, es_doc['_source']['mime_type'])

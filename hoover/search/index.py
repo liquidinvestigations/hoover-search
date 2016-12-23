@@ -1,8 +1,7 @@
 import logging
-import threading
+import json
 from django.db import transaction
 from . import es
-from .utils import now, threadsafe
 
 logger = logging.getLogger(__name__)
 
@@ -12,35 +11,72 @@ class TextMissing(RuntimeError):
 
 
 def index(collection, doc):
-    data = dict(
-        doc.metadata,
-        text=doc.text(),
-        collection=collection.name,
+    data = doc.get_data()
+    index_doc = dict(
+        data.get('content', {}),
+        _hoover={'version': data['version']},
     )
-    es.index(collection.id, data)
-    logger.debug('%s ok', data['id'])
+    es.index(collection.id, doc.id, index_doc)
+    logger.debug('%s ok', doc.id)
 
 
-def index_from_queue(queue, collection):
-    for doc in queue:
-        doc_slug = doc.metadata['id']
-        if es.exists(collection.id, doc_slug):
-            logger.debug('%s skipped', doc_slug)
-            continue
-        index(collection, doc)
-
-
-def update_collection(collection, threads=1):
+def update_collection(collection):
     logger.info('updating %r', collection)
-    queue = threadsafe(collection.get_loader().documents())
+    loader = collection.get_loader()
 
-    thread_list = [
-        threading.Thread(target=index_from_queue, args=(queue, collection))
-        for _ in range(threads)
-    ]
+    state = json.loads(collection.loader_state)
+    if state:
+        print('resuming load:', state)
+        feed_state = state['feed_state']
+        report = state['report']
+        resume = True
 
-    for thread in thread_list:
-        thread.start()
+    else:
+        feed_state = None
+        report = {}
+        resume = False
 
-    for thread in thread_list:
-        thread.join()
+    def save_state(new_state):
+        collection.refresh_from_db()
+        collection.loader_state = json.dumps(new_state)
+        collection.save()
+
+    def count(key, n=1):
+        report[key] = report.get(key, 0) + n
+
+    while True:
+        logger.debug('page %s', feed_state)
+        (page, feed_state) = loader.feed_page(feed_state)
+
+        if resume:
+            resume = False
+            es_versions = {}
+        else:
+            doc_id_list = [doc['id'] for doc in page]
+            es_versions = es.versions(collection.id, doc_id_list)
+
+        docs = []
+        for doc in page:
+            assert doc['version'] is not None
+            if es_versions.get(doc['id']) == doc['version']:
+                logger.info('reached known document %r %r, stopping',
+                    doc['id'], doc['version'])
+                feed_state = None
+                break
+
+            body = dict(doc['content'], _hoover={'version': doc['version']})
+            docs.append((doc['id'], body))
+
+        if docs:
+            es.bulk_index(collection.id, docs)
+            logger.debug('%r indexed', [id for id, _ in docs])
+            count('indexed', len(docs))
+
+        if not feed_state:
+            break
+
+        save_state({'feed_state': feed_state, 'report': report})
+        print(report)
+
+    save_state(None)
+    print(report)

@@ -19,6 +19,7 @@ class Collection(models.Model):
     loader = models.CharField(max_length=2048,
         default='hoover.search.loaders.upload.Loader')
     options = models.TextField(default='{}')
+    loader_state = models.TextField(default='null')
 
     def __str__(self):
         return self.name
@@ -46,10 +47,11 @@ class Collection(models.Model):
     def set_mapping(self):
         loader = self.get_loader()
         fields = loader.get_metadata().get('fields', {})
-        fields.setdefault('id', {'type': 'string', 'not_analyzed': True})
         es.set_mapping(self.id, fields)
 
     def reset(self):
+        self.loader_state = json.dumps(None)
+        self.save()
         es.delete_index(self.id, ok_missing=True)
         es.create_index(self.id, self.name)
         self.set_mapping()

@@ -32,7 +32,7 @@ class Document:
     def _open(self):
         return self.path.open('rb')
 
-    def view(self, request):
+    def view(self, request, suffix):
         if self.path.suffix == '.pdf':
             mime_type = 'application/pdf'
         else:
@@ -80,5 +80,5 @@ class Loader:
             if item.suffix == '.pdf':
                 yield Document(self.root, str(item.relative_to(self.root)))
 
-    def get(self, doc_id, suffix):
+    def get(self, doc_id):
         return Document(self.root, Path(doc_id))

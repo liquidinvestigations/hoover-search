@@ -1,5 +1,5 @@
 Django
-elasticsearch==2.4.0
+elasticsearch
 pip-tools
 psycopg2
 pytest
