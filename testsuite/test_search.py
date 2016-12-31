@@ -70,6 +70,16 @@ class Response:
         for k, v in dict({'status_code': 200}, **kwargs).items():
             setattr(self, k, v)
 
+class JsonResponse(Response):
+    def __init__(self, data, **kwargs):
+        headers = dict(kwargs.pop('headers', {}))
+        headers['Content-Type'] = 'application/json'
+        content = json.dumps(data).encode('utf8')
+        super().__init__(content=content, headers=headers, **kwargs)
+
+    def json(self):
+        return json.loads(self.content.decode('utf8'))
+
 @pytest.fixture
 def external(monkeypatch):
     class mock_requests:
@@ -127,17 +137,22 @@ def test_external_loader(finally_cleanup_index, listen, api, external):
         index='hoover-testcol',
         public=True,
         loader='hoover.search.loaders.external.Loader',
-        options='{"documents": "https://example.com/doc/"}',
+        options='{"url": "https://example.com/doc/json"}',
     )
 
-    external['https://example.com/doc/mock1'] = Response(
-        headers={'Content-Type': 'text/plain'},
-        content=b"hello world",
-    )
+    external['https://example.com/doc/json'] = JsonResponse({
+        'data_urls': '{id}/json',
+    })
+
+    external['https://example.com/doc/mock1/json'] = JsonResponse({
+        'id': 'mock1',
+        'version': '1',
+        'content': {'text': "hello world"},
+    })
 
     res = api.doc('testcol', 'mock1')
     assert res.status_code == 200
-    assert res.content == b'hello world'
+    assert b'hello world' in res.content
 
     assert len(doc_events) == 1
     assert doc_events[0]['collection'] == col
