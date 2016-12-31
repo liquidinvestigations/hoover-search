@@ -12,11 +12,11 @@ elasticsearch==5.0.1
 first==2.0.1              # via pip-tools
 pip-tools==1.8.0
 psycopg2==2.6.2
-py==1.4.31                # via pytest
+py==1.4.32                # via pytest
 pytest-django==3.1.2
-pytest==3.0.4
+pytest==3.0.5
 pyyaml==3.12
-requests==2.12.3
+requests==2.12.4
 six==1.10.0               # via pip-tools
 urllib3==1.19.1           # via elasticsearch
 waitress==1.0.1
