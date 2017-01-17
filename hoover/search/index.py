@@ -26,7 +26,7 @@ def update_collection(collection):
 
     state = json.loads(collection.loader_state)
     if state:
-        print('resuming load:', state)
+        logger.info('resuming load: %r', state)
         feed_state = state['feed_state']
         report = state['report']
         resume = True
@@ -76,7 +76,7 @@ def update_collection(collection):
             break
 
         save_state({'feed_state': feed_state, 'report': report})
-        print(report)
+        logger.info('page %r', report)
 
     save_state(None)
-    print(report)
+    logger.info('done %r', report)
