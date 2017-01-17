@@ -1,11 +1,8 @@
 from django.http import HttpResponse, Http404
 import requests
 from urllib.parse import urljoin
-from functools import lru_cache
 from .. import ui
 
-
-@lru_cache(maxsize=32)
 def get_json(url):
     resp = requests.get(url)
     if resp.status_code != 200:
@@ -17,9 +14,12 @@ class Api:
 
     def __init__(self, meta_url):
         self.meta_url = meta_url
+        self._meta = None
 
     def meta(self):
-        return get_json(self.meta_url)
+        if self._meta is None:
+            self._meta = get_json(self.meta_url)
+        return self._meta
 
     def feed(self, url):
         if url is None:
