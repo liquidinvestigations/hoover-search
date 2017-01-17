@@ -80,3 +80,5 @@ def update_collection(collection):
 
     save_state(None)
     logger.info('done %r', report)
+
+    return report
