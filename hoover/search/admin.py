@@ -83,7 +83,7 @@ class CollectionAdmin(admin.ModelAdmin):
         name = user.get_full_name()
         username = user.username
         if name and name != username:
-            return "{} ({})".format(name, username)
+            return "{} ({})".format(username, name)
         else:
             return username
 
