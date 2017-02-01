@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404
 from django.conf.urls import url
 from django.conf import settings
 from django.contrib import admin
+from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import User, Group, UserAdmin, GroupAdmin
 from django.contrib.auth.forms import UserCreationForm
 from django.utils.module_loading import import_string
@@ -38,6 +39,7 @@ class CollectionAdmin(admin.ModelAdmin):
 
     list_display = ['__str__', 'count', 'access_list', 'public', 'upload']
     fields = ['title', 'name', 'index', 'public', 'users', 'loader', 'options']
+    filter_horizontal = ['users']
 
     form = CollectionAdminForm
 
@@ -70,6 +72,20 @@ class CollectionAdmin(admin.ModelAdmin):
         return [
             url(r'^(.+)/upload$', self.admin_site.admin_view(self.upload_view)),
         ] + super(CollectionAdmin, self).get_urls()
+
+    def formfield_for_manytomany(self, db_field, request=None, **kwargs):
+        field = super().formfield_for_manytomany(db_field, request, **kwargs)
+        if db_field.rel.to == get_user_model():
+            field.label_from_instance = self.get_user_label
+        return field
+
+    def get_user_label(self, user):
+        name = user.get_full_name()
+        username = user.username
+        if name and name != username:
+            return "{} ({})".format(name, username)
+        else:
+            return username
 
 class HooverUserCreateForm(UserCreationForm):
 
