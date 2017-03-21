@@ -4,6 +4,7 @@ from django.shortcuts import render
 from django.http import HttpResponse, Http404, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.core.urlresolvers import reverse
+from django.urls.exceptions import NoReverseMatch
 from django.conf import settings
 from ..contrib import installed
 from . import es
@@ -108,15 +109,21 @@ def doc(request, collection_name, id, suffix):
         })
 
 def whoami(request):
+    urls = {
+        'login': settings.LOGIN_URL,
+        'admin': reverse('admin:index'),
+        'logout': reverse('logout') + '?next=/',
+    }
+    try:
+        password_change = reverse('password_change')
+    except NoReverseMatch:
+        pass
+    else:
+        urls['password_change'] = password_change
     return JsonResponse({
         'username': request.user.username,
         'admin': request.user.is_superuser,
-        'urls': {
-            'login': settings.LOGIN_URL,
-            'admin': reverse('admin:index'),
-            'password_change': reverse('password_change'),
-            'logout': reverse('logout') + '?next=/',
-        },
+        'urls': urls,
     })
 
 @csrf_exempt
