@@ -22,10 +22,23 @@ if installed.twofactor:
         url(r'^invitation/(?P<code>.*)$', twofactor_views.invitation),
         url(r'^accounts/login/$', auth_views.login, kwargs={
             'authentication_form': twofactor_views.AuthenticationForm}),
+        url(r'^accounts/', include('django.contrib.auth.urls')),
+    ]
+
+elif installed.oauth2:
+    from ..contrib.oauth2 import views as oauth2_views
+    urlpatterns += [
+        url(r'^accounts/login/$', oauth2_views.oauth2_login),
+        url(r'^accounts/oauth2-exchange/$', oauth2_views.oauth2_exchange),
+        url(r'^accounts/logout/$', oauth2_views.oauth2_logout, name='logout'),
+    ]
+
+else:
+    urlpatterns += [
+        url(r'^accounts/', include('django.contrib.auth.urls')),
     ]
 
 urlpatterns += [
-    url(r'^accounts/', include('django.contrib.auth.urls')),
     url(r'^uploads/(?P<filename>.+)$', uploads.serve_file),
 ]
 
