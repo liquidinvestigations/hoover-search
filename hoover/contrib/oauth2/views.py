@@ -8,6 +8,9 @@ LIQUID_URL = settings.HOOVER_OAUTH_LIQUID_URL
 LIQUID_CLIENT_ID = settings.HOOVER_OAUTH_LIQUID_CLIENT_ID
 LIQUID_CLIENT_SECRET = settings.HOOVER_OAUTH_LIQUID_CLIENT_SECRET
 
+class ClientError(Exception):
+    pass
+
 def oauth2_login(request):
     authorize_url = LIQUID_URL + '/o/authorize/'
     return redirect(
@@ -28,18 +31,30 @@ def oauth2_exchange(request):
         },
         auth=(LIQUID_CLIENT_ID, LIQUID_CLIENT_SECRET),
     )
-    assert token_resp.status_code == 200
+    if token_resp.status_code != 200:
+        raise ClientError(
+            "Could not get token from {}: {!r}"
+            .format(token_url, token_resp)
+        )
     token_data = token_resp.json()
     access_token = token_data['access_token']
     token_type = token_data['token_type']
-    assert token_type == 'Bearer'
+    if token_type != 'Bearer':
+        raise ClientError(
+            "Expected token_type='Bearer', got {!r}"
+            .format(token_type)
+        )
     refresh_token = token_data['refresh_token']
     profile_url = LIQUID_URL + '/accounts/profile'
     profile_resp = requests.get(
         profile_url,
         headers={'Authorization': 'Bearer {}'.format(access_token)},
     )
-    assert profile_resp.status_code == 200
+    if profile_resp.status_code != 200:
+        raise ClientError(
+            "Could not get profile from {}: {!r}"
+            .format(profile_url, profile_resp)
+        )
     profile = profile_resp.json()
     user, created = User.objects.get_or_create(username=profile['login'])
     login(request, user)
