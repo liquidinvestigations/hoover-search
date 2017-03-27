@@ -16,6 +16,8 @@ urlpatterns = [
 ]
 
 if installed.twofactor:
+    assert not installed.oauth2, \
+        "hoover.contrib.twofactor and hoover.contrib.oauth2 are not compatible"
     from ..contrib.twofactor import views as twofactor_views
     from django.contrib.auth import views as auth_views
     urlpatterns += [
