@@ -9,9 +9,6 @@ from django.conf import settings
 from django.db import connections
 from django.db.utils import OperationalError
 
-ELASTICSEARCH_MIN_VERSION = (2, 0, 0)
-ELASTICSEARCH_MAX_VERSION = (2, 4, 4)
-
 
 def http_get_content(link):
     try:
@@ -92,11 +89,9 @@ class Command(BaseCommand):
         version_string = re.sub(r'[^\d\.]+', '', version_string)
         version = tuple(int(x) for x in version_string.split('.'))
 
-        if not ELASTICSEARCH_MIN_VERSION <= version <= ELASTICSEARCH_MAX_VERSION:
+        if version[0] != 2:
             self.print_error("elasticsearch is version {}, but".format(version))
-            self.print_error("Hoover needs elasticsearch to be in between versions")
-            self.print_error("{} and {}".format(ELASTICSEARCH_MIN_VERSION,
-                                                ELASTICSEARCH_MAX_VERSION))
+            self.print_error("Hoover needs elasticsearch to version 2.*.")
             return False
         return True
 
