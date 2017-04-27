@@ -36,7 +36,16 @@ def doc_html(request, data):
         html = f.read()
 
     data_json = escapejs(json.dumps(data))
-    return HttpResponse(html.replace(
+    html = html.replace(
         '/* HOOVER HYDRATION PLACEHOLDER */',
         'window.HOOVER_HYDRATE_DOC = JSON.parse(\'{}\')'.format(data_json),
-    ))
+    )
+
+    scripts = ''
+    if settings.HOOVER_HYPOTHESIS_EMBED_URL:
+        url = settings.HOOVER_HYPOTHESIS_EMBED_URL
+        scripts += '<script src="{}"></script>'.format(url)
+
+    html = html.replace('<!-- HOOVER SCRIPT PLACEHOLDER -->', scripts)
+
+    return HttpResponse(html)

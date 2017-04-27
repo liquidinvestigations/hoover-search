@@ -94,6 +94,14 @@ location / {
 }
 ```
 
+## Configuration
+
+To customize hoover's behaviour you can set the following Django settings in
+`hoover/site/settings/local.py`:
+
+* `HOOVER_HYPOTHESIS_EMBED_URL`: The URL to embed the Hypothesis client, e.g.
+  `https://hypothes.is/embed.js`
+
 
 ## Snoop and external collections
 
