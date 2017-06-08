@@ -20,6 +20,7 @@ class Collection(models.Model):
         default='hoover.search.loaders.upload.Loader')
     options = models.TextField(default='{}')
     loader_state = models.TextField(default='null')
+    crawl_state = models.TextField(default='null')
 
     def __str__(self):
         return self.name
