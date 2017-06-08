@@ -3,8 +3,13 @@ import requests
 from urllib.parse import urljoin
 from .. import ui
 
+class DigestError(RuntimeError):
+    pass
+
 def get_json(url):
     resp = requests.get(url)
+    if resp.status_code == 503 and resp.headers.get('X-Snoop-Digest-Error'):
+        raise DigestError
     if resp.status_code != 200:
         raise RuntimeError("Unexpected response from {}: {!r}"
             .format(url, resp))
@@ -75,6 +80,8 @@ class Document:
 class Loader:
 
     label = "External"
+
+    DigestError = DigestError
 
     def __init__(self, collection, **config):
         self.api = Api(config['url'])

@@ -22,8 +22,12 @@ def iter_collection(collection):
         while state['stack']:
             doc_id = state['stack'].pop()
             doc = loader.get(doc_id)
-            data = doc.get_data()
-            yield (doc, data)
+            try:
+                data = doc.get_data()
+            except loader.DigestError:
+                continue
+            else:
+                yield (doc, data)
             state['stack'].extend(child['id'] for child in data['children'])
             save_state()
 
