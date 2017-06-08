@@ -45,6 +45,9 @@ class Document:
         self.loader = loader
         self.doc_id = doc_id
 
+    def get_data(self):
+        return self.loader.api.data(str(self.doc_id))
+
     def view(self, request, suffix):
         url = self.loader.api.data_url(self.doc_id)
 
@@ -87,6 +90,9 @@ class Loader:
 
     def get(self, doc_id):
         return Document(self, doc_id)
+
+    def get_root_id(self):
+        return self.api.meta()['root_document']
 
     def get_metadata(self):
         return {}
