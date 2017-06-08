@@ -2,6 +2,10 @@ import json
 from django.db import transaction
 from . import es
 
+def reset_crawl(collection):
+    collection.crawl_state = 'null'
+    collection.save()
+
 def iter_collection(collection):
     while True:
         with transaction.atomic():
@@ -34,6 +38,9 @@ def iter_collection(collection):
 
             collection.crawl_state = json.dumps(state)
             collection.save()
+
+            if not state:
+                break
 
 
 def crawl_collection(collection):
