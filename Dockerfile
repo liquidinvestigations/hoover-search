@@ -12,7 +12,7 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 RUN mkdir -p /opt/hoover/search
 WORKDIR /opt/hoover/search
 
-ADD requirements.txt /opt/hoover/search/
+ADD requirements.txt ./
 RUN pip install -r requirements.txt
 
-ADD . /opt/hoover/search/
+COPY . .
