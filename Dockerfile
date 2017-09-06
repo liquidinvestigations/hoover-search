@@ -16,3 +16,8 @@ ADD requirements.txt ./
 RUN pip install -r requirements.txt
 
 COPY . .
+
+RUN ./manage.py downloadassets
+RUN ./manage.py collectstatic --noinput
+
+CMD waitress-serve --port 80 hoover.site.wsgi:application
