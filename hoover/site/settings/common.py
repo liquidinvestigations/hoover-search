@@ -1,3 +1,7 @@
+from pathlib import Path
+
+base_dir = Path(__file__).absolute().parent.parent.parent.parent
+
 INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.auth',
@@ -90,6 +94,9 @@ LOGOUT_REDIRECT_URL = '/'
 HOOVER_ELASTICSEARCH_URL = 'http://localhost:9200'
 
 HOOVER_UPLOADS_URL = '/uploads/'
+
+STATIC_ROOT = str(base_dir / 'static')
+HOOVER_UPLOADS_ROOT = str(base_dir / 'uploads')
 
 HOOVER_LOADERS = [
     'hoover.search.loaders.upload.Loader',
