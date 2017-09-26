@@ -17,7 +17,9 @@ RUN pip install -r requirements.txt
 
 COPY . .
 
+RUN echo 'SECRET_KEY="a"' > hoover/site/settings/local.py
 RUN ./manage.py downloadassets
 RUN ./manage.py collectstatic --noinput
+RUN rm hoover/site/settings/local.py
 
 CMD waitress-serve --port 80 hoover.site.wsgi:application
