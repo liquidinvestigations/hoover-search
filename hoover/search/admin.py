@@ -86,6 +86,9 @@ class CollectionAdmin(admin.ModelAdmin):
 
 class HooverUserAdmin(UserAdmin):
     actions = []
+    if installed.twofactor:
+        from ..contrib.twofactor.admin import create_invitations
+        actions.append(create_invitations)
 
 
 admin_site = HooverAdminSite(name='hoover-admin')
