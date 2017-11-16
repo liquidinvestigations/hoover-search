@@ -1,18 +1,14 @@
 from django import forms
-from django.core.mail import send_mail
-from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404
 from django.conf.urls import url
 from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import User, Group, UserAdmin, GroupAdmin
-from django.contrib.auth.forms import UserCreationForm
 from django.utils.module_loading import import_string
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from ..contrib import installed
 from . import models
-from . import es
 from . import uploads
 
 if installed.twofactor:
@@ -87,51 +83,9 @@ class CollectionAdmin(admin.ModelAdmin):
         else:
             return username
 
-class HooverUserCreateForm(UserCreationForm):
-
-    send_email = forms.BooleanField()
-    email = forms.EmailField(label="Email", required=True, max_length=254)
-
-    def save(self, *args, **kwargs):
-        user = super(HooverUserCreateForm, self).save(*args, **kwargs)
-
-        if self.cleaned_data['send_email']:
-            message = (
-                "Your username is '{}' and the password is '{}'."
-                .format(user.username, self.cleaned_data['password1'])
-            )
-            send_mail(
-                subject="Welcome to Hoover",
-                message=message,
-                from_email=None,
-                recipient_list=[user.email],
-            )
-
-        return user
-
-    class Meta:
-        model = User
-        fields = ['username', 'first_name', 'last_name', 'send_email']
-
 
 class HooverUserAdmin(UserAdmin):
-
-    add_form = HooverUserCreateForm
-    prepopulated_fields = {'username': ['first_name', 'last_name']}
-    add_fieldsets = [
-        (None, {
-            'classes': ['wide'],
-            'fields': [
-                'first_name',
-                'last_name',
-                'username',
-                'email',
-                'password1',
-                'password2',
-                'send_email',
-            ],
-        }),
-    ]
+    actions = []
 
 
 admin_site = HooverAdminSite(name='hoover-admin')
