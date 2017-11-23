@@ -7,6 +7,7 @@ from ..contrib import installed
 
 urlpatterns = [
     url(r'^_ping$', views.ping, name='ping'),
+    url(r'^_is_staff', views.is_staff),
     url(r'^admin/', include(admin_site.urls)),
     url(r'^search$', views.search, name='search'),
     url(r'^whoami$', views.whoami, name='whoami'),

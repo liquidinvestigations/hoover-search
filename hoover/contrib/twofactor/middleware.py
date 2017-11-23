@@ -36,6 +36,7 @@ class RequireAuth:
             r'^/invitation/',
             r'^/static/',
             r'^/_ping$',
+            r'^/_is_staff$',
         ]
         for pattern in WHITELIST:
             if re.match(pattern, request.path):

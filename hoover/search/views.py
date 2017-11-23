@@ -164,3 +164,11 @@ def batch(request):
             'success': success,
             'query_count': len(query_strings),
         })
+
+
+def is_staff(request):
+    print(repr(request))
+    if request.user.is_staff:
+        return JsonResponse({'is_staff': True}, status=200)
+    else:
+        return JsonResponse({'is_staff': False}, status=403)
