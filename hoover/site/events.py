@@ -62,6 +62,10 @@ if settings.HOOVER_EVENTS_DIR:
         def on_login(sender, user, **kw):
             save(type='login', username=user.get_username())
 
+        @receiver(twofactor_signals.invitation_create)
+        def on_invitation_create(sender, username, operator, **kw):
+            save(type='invitationCreate', username=username, operator=operator)
+
         @receiver(twofactor_signals.invitation_open)
         def on_invitation_open(sender, username, **kw):
             save(type='invitationOpen', username=username)

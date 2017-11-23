@@ -1,6 +1,7 @@
 from django.dispatch import Signal
 from django.contrib.auth.signals import user_login_failed
 
+invitation_create = Signal(['username', 'operator'])
 invitation_open = Signal(['username'])
 invitation_accept = Signal(['username'])
 invitation_expired = Signal(['username'])

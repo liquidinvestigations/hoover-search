@@ -11,7 +11,7 @@ from . import signals
 from . import devices
 
 @transaction.atomic
-def invite(username, duration, create=False):
+def invite(username, duration, operator=None, create=False):
     if create:
         user = get_user_model().objects.create(username=username)
     else:
@@ -21,6 +21,12 @@ def invite(username, duration, create=False):
     invitation = models.Invitation.objects.create(
         user=user,
         expires=now() + timedelta(minutes=duration),
+    )
+
+    signals.invitation_create.send(
+        models.Invitation,
+        username=invitation.user.get_username(),
+        operator=operator and operator.get_username(),
     )
 
     url = "{}/invitation/{}".format(
