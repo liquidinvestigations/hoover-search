@@ -11,11 +11,7 @@ class Count(models.Model):
     def open(cls, key, interval, lock):
         t0 = interval * int(time() / interval)
         t1 = t0 + interval
-        try:
-            with transaction.atomic():
-                cls.objects.create(key=key, expires=t1)
-        except IntegrityError:
-            pass
+        cls.objects.get_or_create(key=key, defaults={'expires': t1})
 
         query = cls.objects
         if lock:
