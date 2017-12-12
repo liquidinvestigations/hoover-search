@@ -13,8 +13,8 @@ from . import signals
 from .ratelimit import limit_user
 
 
-def JsonErrorResponse(reason):
-    return JsonResponse({'status': 'error', 'reason': reason})
+def JsonErrorResponse(reason, status=400):
+    return JsonResponse({'status': 'error', 'reason': reason}, status=status)
 
 def collections_acl(user, collections_arg):
     available = list(Collection.objects_for_user(user))
