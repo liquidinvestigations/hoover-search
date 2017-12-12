@@ -12,6 +12,10 @@ from .models import Collection
 from . import signals
 from .ratelimit import limit_user
 
+
+def JsonErrorResponse(reason):
+    return JsonResponse({'status': 'error', 'reason': reason})
+
 def collections_acl(user, collections_arg):
     available = list(Collection.objects_for_user(user))
     requested = set(collections_arg)
@@ -36,7 +40,7 @@ def _search(request, **kwargs):
         res, counts = es.search(**kwargs)
         res['status'] = 'ok'
     except es.SearchError as e:
-        return JsonResponse({'status': 'error', 'reason': e.reason})
+        return JsonErrorResponse(e.reason)
 
     else:
         from .es import _index_id
@@ -136,11 +140,13 @@ def batch(request):
     aggs = body.get('aggs')
 
     if not collections:
-        return JsonResponse({'status': 'error', 'reason': "No collections selected."})
+        return JsonErrorResponse("No collections selected.")
+
     if not query_strings:
-        return JsonResponse({'status': 'error', 'reason': "No items to be searched."})
+        return JsonErrorResponse("No items to be searched.")
+
     if len(query_strings) > 100:
-        return JsonResponse({'status': 'error', 'reason': "Too many queries. Limit is 100."})
+        return JsonErrorResponse("Too many queries. Limit is 100.")
 
     success = False
     try:
@@ -154,7 +160,7 @@ def batch(request):
         return JsonResponse(res)
 
     except es.SearchError as e:
-        return JsonResponse({'status': 'error', 'reason': e.reason})
+        return JsonErrorResponse(e.reason)
 
     finally:
         signals.batch.send('hoover.batch', **{
