@@ -9,3 +9,6 @@ class RateLimit:
     def access(self, key):
         n = models.Count.inc(key, self.interval)
         return n > self.limit
+
+    def get(self, key):
+        return models.Count.get(key, self.interval)

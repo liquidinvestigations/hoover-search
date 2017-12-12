@@ -10,7 +10,7 @@ from ..contrib import installed
 from . import es
 from .models import Collection
 from . import signals
-from .ratelimit import limit_user
+from .ratelimit import limit_user, get_user_limit
 
 
 def JsonErrorResponse(reason, status=400):
@@ -179,3 +179,11 @@ def is_staff(request):
         return JsonResponse({'is_staff': True}, status=200)
     else:
         return JsonResponse({'is_staff': False}, status=403)
+
+
+def limits(request):
+    """ Get rate limits """
+    return JsonResponse({
+        'batch': settings.HOOVER_BATCH_LIMIT,
+        'requests': get_user_limit(request.user),
+    })
