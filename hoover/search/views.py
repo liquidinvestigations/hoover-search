@@ -173,7 +173,6 @@ def batch(request):
 
 
 def is_staff(request):
-    print(repr(request))
     if request.user.is_staff:
         return JsonResponse({'is_staff': True}, status=200)
     else:
