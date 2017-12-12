@@ -145,8 +145,10 @@ def batch(request):
     if not query_strings:
         return JsonErrorResponse("No items to be searched.")
 
-    if len(query_strings) > 100:
-        return JsonErrorResponse("Too many queries. Limit is 100.")
+    batch_limit = settings.HOOVER_BATCH_LIMIT
+    if len(query_strings) > batch_limit:
+        reason = "Too many queries. Limit is {}.".format(batch_limit)
+        return JsonErrorResponse(reason)
 
     success = False
     try:
