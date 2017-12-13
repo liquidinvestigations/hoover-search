@@ -29,7 +29,7 @@ if settings.HOOVER_RATELIMIT_USER:
             return view(request, *args, **kwargs)
         return wrapper
 
-    def get_user_limit(user):
+    def get_request_limits(user):
         if user.is_anonymous():
             return None
 
@@ -44,5 +44,5 @@ else:
     def limit_user(view):
         return view
 
-    def get_user_limit(user):
+    def get_request_limits(user):
         return None
