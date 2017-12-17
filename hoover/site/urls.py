@@ -12,6 +12,7 @@ urlpatterns = [
     url(r'^search$', views.search, name='search'),
     url(r'^whoami$', views.whoami, name='whoami'),
     url(r'^batch$', views.batch, name='batch'),
+    url(r'^limits$', views.limits, name='limits'),
     url(r'^collections$', views.collections, name='collections'),
     url(r'^(?s)doc/(?P<collection_name>[^/]+)/(?P<id>[^/]+)(?P<suffix>.*)$', views.doc),
 ]

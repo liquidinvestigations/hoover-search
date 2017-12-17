@@ -10,7 +10,11 @@ from ..contrib import installed
 from . import es
 from .models import Collection
 from . import signals
-from .ratelimit import limit_user
+from .ratelimit import limit_user, get_request_limits
+
+
+def JsonErrorResponse(reason, status=400):
+    return JsonResponse({'status': 'error', 'reason': reason}, status=status)
 
 def collections_acl(user, collections_arg):
     available = list(Collection.objects_for_user(user))
@@ -36,7 +40,7 @@ def _search(request, **kwargs):
         res, counts = es.search(**kwargs)
         res['status'] = 'ok'
     except es.SearchError as e:
-        return JsonResponse({'status': 'error', 'reason': e.reason})
+        return JsonErrorResponse(e.reason)
 
     else:
         from .es import _index_id
@@ -136,11 +140,15 @@ def batch(request):
     aggs = body.get('aggs')
 
     if not collections:
-        return JsonResponse({'status': 'error', 'reason': "No collections selected."})
+        return JsonErrorResponse("No collections selected.")
+
     if not query_strings:
-        return JsonResponse({'status': 'error', 'reason': "No items to be searched."})
-    if len(query_strings) > 100:
-        return JsonResponse({'status': 'error', 'reason': "Too many queries. Limit is 100."})
+        return JsonErrorResponse("No items to be searched.")
+
+    batch_limit = settings.HOOVER_BATCH_LIMIT
+    if len(query_strings) > batch_limit:
+        reason = "Too many queries. Limit is {}.".format(batch_limit)
+        return JsonErrorResponse(reason)
 
     success = False
     try:
@@ -154,7 +162,7 @@ def batch(request):
         return JsonResponse(res)
 
     except es.SearchError as e:
-        return JsonResponse({'status': 'error', 'reason': e.reason})
+        return JsonErrorResponse(e.reason)
 
     finally:
         signals.batch.send('hoover.batch', **{
@@ -167,8 +175,15 @@ def batch(request):
 
 
 def is_staff(request):
-    print(repr(request))
     if request.user.is_staff:
         return JsonResponse({'is_staff': True}, status=200)
     else:
         return JsonResponse({'is_staff': False}, status=403)
+
+
+def limits(request):
+    """ Get rate limits """
+    return JsonResponse({
+        'batch': settings.HOOVER_BATCH_LIMIT,
+        'requests': get_request_limits(request.user),
+    })
