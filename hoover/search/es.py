@@ -107,6 +107,7 @@ def batch_count(query_strings, collections, aggs=None):
             "query": {
                 "query_string": {
                     "query": query_string,
+                    "default_operator": "AND",
                 }
             }
         }
