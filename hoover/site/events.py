@@ -11,6 +11,9 @@ if settings.HOOVER_EVENTS_DIR:
 
     root = Path(settings.HOOVER_EVENTS_DIR)
 
+    if not root.exists():
+        root.mkdir(parents=True)
+
     def save(**data):
         t = time()
         data['time'] = t
