@@ -127,7 +127,8 @@ def batch_count(query_strings, collections, aggs=None):
             index=indices,
             body=body,
             doc_type=DOCTYPE,
-            search_type='count'
+            search_type='count',
+            request_timeout=120,
         )
 
     for query_string, response in zip(query_strings, rv.get('responses', [])):
