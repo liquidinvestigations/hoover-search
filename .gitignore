@@ -5,3 +5,4 @@
 *.pyc
 /.cache
 /hoover/search/static
+/.idea
