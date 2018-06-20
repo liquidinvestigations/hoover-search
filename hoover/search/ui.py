@@ -32,7 +32,7 @@ def file(request, filename):
     return create_response(resolve(filename))
 
 def doc_html(request, data):
-    with resolve('doc.html').open('rt', encoding='utf-8') as f:
+    with resolve('doc/index.html').open('rt', encoding='utf-8') as f:
         html = f.read()
 
     data_json = escapejs(json.dumps(data))
