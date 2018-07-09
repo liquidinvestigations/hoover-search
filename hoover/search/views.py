@@ -73,6 +73,7 @@ def search(request):
             size=body.get('size'),
             query=body['query'],
             fields=body.get('fields'),
+            post_filter=body.get('post_filter', {}),
             sort=body.get('sort', ['_score']),
             aggs=body.get('aggs', {}),
             highlight=body.get('highlight'),
