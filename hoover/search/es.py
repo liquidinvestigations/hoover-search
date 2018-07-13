@@ -136,7 +136,7 @@ def batch_count(query_strings, collections, aggs=None):
 
     return rv
 
-def search(query, fields, highlight, collections, from_, size, sort, aggs):
+def search(query, fields, highlight, collections, from_, size, sort, aggs, post_filter):
     indices = _get_indices(collections)
 
     if not indices:
@@ -150,6 +150,7 @@ def search(query, fields, highlight, collections, from_, size, sort, aggs):
         'from': from_,
         'size': size,
         'query': query,
+        'post_filter': post_filter,
         'fields': fields,
         'sort': sort,
         'aggs': dict(aggs, **{
