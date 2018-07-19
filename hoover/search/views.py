@@ -69,11 +69,11 @@ def search(request):
     try:
         response = _search(
             request,
-            from_=body.get('from'),
-            size=body.get('size'),
+            from_=body.get('from', 0),
+            size=body.get('size', 10),
             query=body['query'],
-            fields=body.get('fields'),
-            post_filter=body.get('post_filter', {}),
+            _source=body.get('_source'),
+            post_filter=body.get('post_filter'),
             sort=body.get('sort', ['_score']),
             aggs=body.get('aggs', {}),
             highlight=body.get('highlight'),

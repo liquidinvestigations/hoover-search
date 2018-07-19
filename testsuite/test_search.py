@@ -113,6 +113,7 @@ def test_all_the_things(finally_cleanup_index, listen, api):
     )
 
     es.indices.refresh()
+
     hits = api.search({'match_all': {}}, ['testcol'])['hits']['hits']
     assert {hit['_id'] for hit in hits} == {'mock1'}
     assert hits[0]['_collection'] == 'testcol'

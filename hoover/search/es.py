@@ -109,7 +109,8 @@ def batch_count(query_strings, collections, aggs=None):
                     "query": query_string,
                     "default_operator": "AND",
                 }
-            }
+            },
+            "size": 0
         }
         if aggs:
             query_body['aggs'] = aggs
@@ -127,7 +128,6 @@ def batch_count(query_strings, collections, aggs=None):
             index=indices,
             body=body,
             doc_type=DOCTYPE,
-            search_type='count',
             request_timeout=120,
         )
 
@@ -136,7 +136,7 @@ def batch_count(query_strings, collections, aggs=None):
 
     return rv
 
-def search(query, fields, highlight, collections, from_, size, sort, aggs, post_filter):
+def search(query, _source, highlight, collections, from_, size, sort, aggs, post_filter):
     indices = _get_indices(collections)
 
     if not indices:
@@ -150,8 +150,6 @@ def search(query, fields, highlight, collections, from_, size, sort, aggs, post_
         'from': from_,
         'size': size,
         'query': query,
-        'post_filter': post_filter,
-        'fields': fields,
         'sort': sort,
         'aggs': dict(aggs, **{
             'count_by_index': {
@@ -161,6 +159,12 @@ def search(query, fields, highlight, collections, from_, size, sort, aggs, post_
             },
         }),
     }
+
+    if _source:
+        body['_source'] = _source
+
+    if post_filter:
+        body['post_filter'] = post_filter
 
     if highlight:
         body['highlight'] = highlight
