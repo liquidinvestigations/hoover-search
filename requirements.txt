@@ -4,26 +4,20 @@
 #
 #    pip-compile --output-file requirements.txt requirements.in
 #
-appdirs==1.4.3            # via setuptools
 click==6.7                # via pip-tools
 django-otp==0.3.11
-django==1.10.6            # via django-otp
+django==1.10.6
 easywebdav==1.2.0
-elasticsearch==5.2.0
+elasticsearch==6.3.0
 first==2.0.1              # via pip-tools
-packaging==16.8           # via setuptools
 pip-tools==1.8.1
 psycopg2==2.7.1
 py==1.4.33                # via pytest
-pyparsing==2.2.0          # via packaging
 pytest-django==3.1.2
 pytest==3.0.7
-pyyaml==3.12
+pyyaml==3.13
 requests==2.13.0
-six==1.10.0               # via packaging, pip-tools, setuptools
-urllib3==1.20             # via elasticsearch
+six==1.10.0               # via pip-tools
+urllib3==1.23             # via elasticsearch
 waitress==1.0.2
 whitenoise==3.3.0
-
-# The following packages are considered to be unsafe in a requirements file:
-# setuptools                # via pytest
