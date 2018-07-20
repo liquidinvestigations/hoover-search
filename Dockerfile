@@ -23,10 +23,11 @@ RUN set -e \
  && ./manage.py collectstatic --noinput \
  && rm hoover/site/settings/local.py
 
+ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.3.0/wait /wait
+
 RUN set -e \
- && curl https://raw.githubusercontent.com/vishnubob/wait-for-it/8ed92e8c/wait-for-it.sh -o /wait-for-it \
  && echo '#!/bin/bash -e' > /runserver \
  && echo 'waitress-serve --port 80 hoover.site.wsgi:application' >> /runserver \
- && chmod +x /runserver /wait-for-it
+ && chmod +x /runserver /wait
 
-CMD /runserver
+CMD /wait && /runserver
