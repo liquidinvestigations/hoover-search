@@ -136,7 +136,7 @@ def batch_count(query_strings, collections, aggs=None):
 
     return rv
 
-def search(query, _source, highlight, collections, from_, size, sort, aggs, post_filter):
+def search(query, _source, highlight, collections, from_, size, sort, aggs, post_filter, search_after):
     indices = _get_indices(collections)
 
     if not indices:
@@ -165,6 +165,12 @@ def search(query, _source, highlight, collections, from_, size, sort, aggs, post
 
     if post_filter:
         body['post_filter'] = post_filter
+
+    if search_after and len(search_after) > 0:
+        body['search_after'] = search_after
+        # remove 'from' when 'search_after' is present
+        if 'from' in body:
+            del body['from']
 
     if highlight:
         body['highlight'] = highlight
