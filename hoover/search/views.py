@@ -78,6 +78,7 @@ def search(request):
             aggs=body.get('aggs', {}),
             highlight=body.get('highlight'),
             collections=[c.name for c in collections],
+            search_after=body.get('search_after'),
         )
         success = True
         return response
