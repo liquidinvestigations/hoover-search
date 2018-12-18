@@ -7,13 +7,11 @@ install:
   - mkdir -p volumes volumes/metrics volumes/metrics/users collections volumes/search-es-snapshots volumes/search-es/data
   - chmod 777 volumes/search-es-snapshots volumes/search-es/data
   - docker build .. --tag hoover-search-testing
+  - cp ../testsuite/docker-compose.travis.yml docker-compose.yml
   - cp ../testsuite/docker-compose.override.travis.yml docker-compose.override.yml
-  - cp snoop.testing.env snoop.env
-  - cp search.testing.env search.env
   - docker-compose up -d
-  - git clone https://github.com/hoover/testdata collections/testdata
 script:
-  - docker-compose run --rm search bash -c '/wait && py.test -v'
+  - docker-compose run --rm search bash -c '/wait && py.test --ignore=docker-setup -v'
 
 notifications:
   email: false

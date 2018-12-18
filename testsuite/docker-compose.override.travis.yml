@@ -1,8 +1,5 @@
-version: "2"
+version: "3.3"
 
 services:
-  snoop:
-    image: hoover-search-testing
-
-  snoop-worker:
+  search:
     image: hoover-search-testing
