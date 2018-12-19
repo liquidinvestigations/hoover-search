@@ -1,0 +1,37 @@
+version: "3.3"
+
+services:
+  search-pg:
+    image: postgres:9.6
+    volumes:
+      - ./volumes/search-pg/data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: search
+      POSTGRES_DATABASE: search
+
+  search-es:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.2.4
+    volumes:
+      - ./volumes/search-es/data:/usr/share/elasticsearch/data
+      - ./volumes/search-es-snapshots:/opt/hoover/es-snapshots
+    environment:
+      discovery.type: single-node
+      path.repo: /opt/hoover/es-snapshots
+
+  search:
+    image: liquidinvestigations/hoover-search
+    volumes:
+      - ./ui/build:/opt/hoover/ui/build
+      - ./volumes/metrics:/opt/hoover/metrics
+      - ./settings/search-settings.py:/opt/hoover/search/hoover/site/settings/local.py
+      - ./settings/search-settings-testing.py:/opt/hoover/search/hoover/site/settings/testing_local.py
+    depends_on:
+      - search-pg
+      - search-es
+    env_file:
+      - ./settings/search.env
+    ports:
+      - "45024:80"
+    environment:
+      WAIT_HOSTS: search-es:9200, search-pg:5432
+      WAIT_HOSTS_TIMEOUT: 60
