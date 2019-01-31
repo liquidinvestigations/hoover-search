@@ -91,6 +91,8 @@ STATIC_URL = '/static/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
+OTP_TOTP_SYNC = False
+
 HOOVER_ELASTICSEARCH_URL = 'http://localhost:9200'
 
 HOOVER_UPLOADS_URL = '/uploads/'
