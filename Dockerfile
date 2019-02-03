@@ -20,7 +20,8 @@ COPY . .
 ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.3.0/wait /wait
 
 RUN set -e \
- && echo 'SECRET_KEY="a"' > hoover/site/settings/local.py \
+ && cp hoover/site/settings/docker_local.py hoover/site/settings/local.py \
+ && export SECRET_KEY=temp \
  && ./manage.py downloadassets \
  && ./manage.py collectstatic --noinput \
  && echo '#!/bin/bash -e' > /runserver \
