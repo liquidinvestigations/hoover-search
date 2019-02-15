@@ -155,6 +155,7 @@ def search(query, _source, highlight, collections, from_, size, sort, aggs, post
             'count_by_index': {
                 'terms': {
                     'field': '_index',
+                    'size': len(indices)
                 },
             },
         }),
