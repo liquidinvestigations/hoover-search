@@ -33,9 +33,9 @@ class CollectionAdminForm(forms.ModelForm):
 
 class CollectionAdmin(admin.ModelAdmin):
 
-    list_display = ['__str__', 'count', 'access_list', 'public', 'upload']
-    fields = ['title', 'name', 'index', 'public', 'users', 'loader', 'options']
-    filter_horizontal = ['users']
+    list_display = ['__str__', 'count', 'user_access_list', 'group_access_list', 'public', 'upload']
+    fields = ['title', 'name', 'index', 'public', 'users', 'groups', 'loader', 'options']
+    filter_horizontal = ['users', 'groups']
 
     form = CollectionAdminForm
 
