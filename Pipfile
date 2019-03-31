@@ -1,0 +1,21 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+elasticsearch = "*"
+psycopg2 = "*"
+pytest = "*"
+pytest-django = "*"
+requests = "*"
+waitress = "*"
+django-otp = "*"
+whitenoise = "*"
+Django = "*"
+PyYAML = "*"
+
+[requires]
+python_version = "3.7"

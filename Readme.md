@@ -28,7 +28,7 @@ probably want to set up a [virtualenv][] too.
    ```shell
    git clone https://github.com/hoover/search.git
    cd hoover
-   pip install -r requirements.txt
+   pipenv install
    ```
 
 2. Copy and customize the configuration file
