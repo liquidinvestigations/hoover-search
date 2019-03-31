@@ -14,6 +14,9 @@ def random_code():
 
 class Invitation(models.Model):
 
-    user = models.OneToOneField(settings.AUTH_USER_MODEL)
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
     code = models.CharField(max_length=200, default=random_code)
     expires = models.DateTimeField()

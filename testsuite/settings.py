@@ -1,18 +1,18 @@
 from pathlib import Path
 from hoover.site.settings.common import *
 
-INSTALLED_APPS = INSTALLED_APPS + (
+INSTALLED_APPS = INSTALLED_APPS + [
     'hoover.contrib.twofactor',
     'django_otp',
     'django_otp.plugins.otp_totp',
     'hoover.contrib.ratelimit',
-)
+]
 
-MIDDLEWARE_CLASSES = MIDDLEWARE_CLASSES + (
+MIDDLEWARE = MIDDLEWARE + [
     'django_otp.middleware.OTPMiddleware',
     'hoover.contrib.twofactor.middleware.AutoLogout',
     'hoover.contrib.twofactor.middleware.RequireAuth',
-)
+]
 
 testsuite_dir = Path(__file__).absolute().parent
 
