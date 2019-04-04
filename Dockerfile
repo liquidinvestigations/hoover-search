@@ -2,9 +2,9 @@ FROM python:3
 ENV PYTHONUNBUFFERED 1
 
 RUN set -e \
- && echo 'deb http://deb.debian.org/debian jessie non-free' >> /etc/apt/sources.list \
- && echo 'deb http://deb.debian.org/debian jessie-updates non-free' >> /etc/apt/sources.list \
- && echo 'deb http://security.debian.org jessie/updates non-free' >> /etc/apt/sources.list \
+ && echo 'deb http://deb.debian.org/debian stable non-free' >> /etc/apt/sources.list \
+ && echo 'deb http://deb.debian.org/debian stable-updates non-free' >> /etc/apt/sources.list \
+ && echo 'deb http://security.debian.org stable/updates non-free' >> /etc/apt/sources.list \
  && apt-get update \
  && apt-get install -y --no-install-recommends qrencode \
  && apt-get clean && rm -rf /var/lib/apt/lists/* \
