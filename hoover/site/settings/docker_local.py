@@ -3,6 +3,8 @@ from pathlib import Path
 from urllib.parse import urlparse
 import re
 
+from .common import *
+
 base_dir = Path(__file__).absolute().parent.parent.parent.parent
 
 SECRET_KEY = os.environ.get('SECRET_KEY')
