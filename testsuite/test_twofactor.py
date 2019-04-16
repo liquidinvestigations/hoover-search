@@ -94,14 +94,26 @@ def test_flow(client, listen,
         assert invitation_accept == []
         assert not _access_homepage(client)
 
-def _accept(invitation, password):
-    from django.http import HttpRequest
-    from django.contrib.sessions.backends.db import SessionStore
-    request = HttpRequest()
-    request.session = SessionStore()
-    device = invitations.device_for_session(request, invitation)
-    invitations.accept(request, invitation, device, password)
+def _accept(client, invitation, password):
+    client.get(f'/invitation/{invitation.code}')
+    [device] = invitation.user.totpdevice_set.all()
+
+    resp = client.post(f'/invitation/{invitation.code}', {
+        'username': invitation.user.username,
+        'password': password,
+        'password-confirm': password,
+        'code': _totp(device, now()),
+    })
+    assert "Verification successful." in resp.content.decode('utf8')
+
     return device
+
+
+def _reset_last_use(device):
+    device.refresh_from_db()
+    device.last_t = -1
+    device.save()
+
 
 @pytest.mark.parametrize('username,password,interval,success', [
     ('john', 'pw', timedelta(0), True),
@@ -112,7 +124,10 @@ def _accept(invitation, password):
 def test_login(client, listen, username, password, interval, success):
     login_failure = listen(signals.login_failure)
     invitations.invite('john', INVITATION_DURATION, create=True)
-    device = _accept(models.Invitation.objects.get(), 'pw')
+    device = _accept(client, models.Invitation.objects.get(), 'pw')
+    assert _access_homepage(client)
+    client.logout()
+    _reset_last_use(device)
     assert not _access_homepage(client)
     client.post('/accounts/login/', {
         'username': username,
@@ -132,7 +147,7 @@ def test_auto_logout(client, mock_time, listen):
 
     mock_time(t0)
     invitations.invite('john', INVITATION_DURATION, create=True)
-    device = _accept(models.Invitation.objects.get(), 'pw')
+    device = _accept(client, models.Invitation.objects.get(), 'pw')
     assert not _access_homepage(client)
     client.post('/accounts/login/', {
         'username': 'john',
@@ -179,7 +194,7 @@ def test_rate_limit(client, mock_time, listen):
             assert resp.status_code == 200
 
     invitations.invite('john', INVITATION_DURATION, create=True)
-    device = _accept(models.Invitation.objects.get(), 'pw')
+    device = _accept(client, models.Invitation.objects.get(), 'pw')
 
     set_time(t0)
     # 3 failures and we should get locked out

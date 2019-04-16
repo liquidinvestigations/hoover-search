@@ -22,12 +22,12 @@ if installed.twofactor:
         "hoover.contrib.twofactor and hoover.contrib.oauth2 are not compatible"
     from ..contrib.twofactor import views as twofactor_views
     from django.contrib.auth import views as auth_views
+    login_view = auth_views.LoginView.as_view(
+        authentication_form=twofactor_views.AuthenticationForm,
+    )
     urlpatterns += [
         url(r'^invitation/(?P<code>.*)$', twofactor_views.invitation),
-        url(r'^accounts/login/$',
-            auth_views.LoginView.as_view(),
-            kwargs={'authentication_form': twofactor_views.AuthenticationForm},
-        ),
+        url(r'^accounts/login/$', login_view),
         url(r'^accounts/', include('django.contrib.auth.urls')),
     ]
 
