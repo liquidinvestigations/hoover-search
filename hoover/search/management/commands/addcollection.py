@@ -1,6 +1,7 @@
 import json
 from django.core.management.base import BaseCommand
 from ... import models
+from hoover.search.es import create_index, CONFIG
 
 class Command(BaseCommand):
 
@@ -21,3 +22,5 @@ class Command(BaseCommand):
             loader='hoover.search.loaders.external.Loader',
             options=json.dumps({'url': url}),
         )
+        collection = models.Collection.objects.get(name=name)
+        create_index(collection.id, CONFIG)

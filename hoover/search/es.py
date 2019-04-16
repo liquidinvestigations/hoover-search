@@ -6,7 +6,50 @@ from elasticsearch.client.utils import _make_path
 from elasticsearch.exceptions import NotFoundError, RequestError, ConnectionError
 from elasticsearch.helpers import bulk
 
+
 DOCTYPE = 'doc'
+
+MAPPINGS = {
+    "doc": {
+        "properties": {
+            "attachments": {"type": "boolean"},
+            "content-type": {"type": "keyword"},
+            "date": {"type": "date"},
+            "date-created": {"type": "date"},
+            "email-domains": {"type": "keyword"},
+            "filetype": {"type": "keyword"},
+            "id": {"type": "keyword"},
+            "in-reply-to": {"type": "keyword"},
+            "lang": {"type": "keyword"},
+            "md5": {"type": "keyword"},
+            "message": {"type": "keyword"},
+            "message-id": {"type": "keyword"},
+            "path": {"type": "keyword"},
+            "path-parts": {"type": "keyword"},
+            "references": {"type": "keyword"},
+            "rev": {"type": "integer"},
+            "sha1": {"type": "keyword"},
+            "size": {"type": "integer"},
+            "suffix": {"type": "keyword"},
+            "thread-index": {"type": "keyword"},
+            "word-count": {"type": "integer"},
+        }
+    }
+}
+
+SETTINGS = {
+    "analysis": {
+        "analyzer": {
+            "default": {
+                "tokenizer": "standard",
+                "filter": ["standard", "lowercase", "asciifolding"],
+            }
+        }
+    }
+}
+
+CONFIG = {'mappings': MAPPINGS, 'settings': SETTINGS}
+
 
 class SearchError(Exception):
     def __init__(self, reason):
@@ -27,9 +70,9 @@ def elasticsearch():
             pass
         raise SearchError('Elasticsearch failed: ' + reason)
 
-def create_index(collection_id, name):
+def create_index(collection_id, body=None):
     with elasticsearch() as es:
-        es.indices.create(index=_index_name(collection_id))
+        es.indices.create(index=_index_name(collection_id), body=body)
 
 def _index_name(collection_id):
     from .models import Collection

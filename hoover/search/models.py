@@ -60,7 +60,7 @@ class Collection(models.Model):
         self.loader_state = json.dumps(None)
         self.save()
         es.delete_index(self.id, ok_missing=True)
-        es.create_index(self.id, self.name)
+        es.create_index(self.id)
         self.set_mapping()
 
     def get_document(self, doc_id):
