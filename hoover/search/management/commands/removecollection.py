@@ -11,5 +11,5 @@ class Command(BaseCommand):
 
     def handle(self, name, **kwargs):
         collection = models.Collection.objects.get(name=name)
-        delete_index(collection.id)
+        delete_index(collection.id, ok_missing=True)
         collection.delete()
