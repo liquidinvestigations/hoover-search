@@ -10,3 +10,4 @@ waitress
 easywebdav
 django-otp
 whitenoise
+logzero
