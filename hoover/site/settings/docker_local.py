@@ -20,9 +20,6 @@ def bool_env(value):
 DEBUG = bool_env(os.environ.get('DEBUG'))
 
 if bool_env(os.environ.get('HOOVER_TWOFACTOR_ENABLED')):
-    from hoover.site.settings.common import INSTALLED_APPS
-    from hoover.site.settings.common import MIDDLEWARE_CLASSES
-
     INSTALLED_APPS += (
         'hoover.contrib.twofactor',
         'django_otp',
@@ -46,6 +43,14 @@ if bool_env(os.environ.get('HOOVER_TWOFACTOR_ENABLED')):
 
     HOOVER_RATELIMIT_USER = (30, 60)  # 30 per minute
     HOOVER_TWOFACTOR_RATELIMIT = (3, 60)  # 3 per minute
+
+if os.environ.get('LIQUID_URL'):
+    INSTALLED_APPS += (
+        'hoover.contrib.oauth2',
+    )
+    HOOVER_OAUTH_LIQUID_URL = os.environ.get('LIQUID_URL')
+    HOOVER_OAUTH_LIQUID_CLIENT_ID = os.environ.get('LIQUID_CLIENT_ID')
+    HOOVER_OAUTH_LIQUID_CLIENT_SECRET = os.environ.get('LIQUID_CLIENT_SECRET')
 
 DATABASES = {
     'default': {
