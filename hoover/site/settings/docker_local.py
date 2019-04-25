@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from urllib.parse import urlparse
 import re
+from logzero import logger as log
 
 from .common import *
 
@@ -18,11 +19,10 @@ def bool_env(value):
     return (value or '').lower() in ['on', 'true']
 
 DEBUG = bool_env(os.environ.get('DEBUG'))
+if DEBUG:
+    log.warn('DEBUG mode on')
 
 if bool_env(os.environ.get('HOOVER_TWOFACTOR_ENABLED')):
-    from hoover.site.settings.common import INSTALLED_APPS
-    from hoover.site.settings.common import MIDDLEWARE_CLASSES
-
     INSTALLED_APPS += (
         'hoover.contrib.twofactor',
         'django_otp',
@@ -36,6 +36,8 @@ if bool_env(os.environ.get('HOOVER_TWOFACTOR_ENABLED')):
         'hoover.contrib.twofactor.middleware.RequireAuth',
     )
 
+    log.info("Enabling 2FA")
+
     _twofactor_invitation_valid = os.environ.get('HOOVER_TWOFACTOR_INVITATION_VALID')
     if _twofactor_invitation_valid:
         HOOVER_TWOFACTOR_INVITATION_VALID = int(_twofactor_invitation_valid)
@@ -46,6 +48,18 @@ if bool_env(os.environ.get('HOOVER_TWOFACTOR_ENABLED')):
 
     HOOVER_RATELIMIT_USER = (30, 60)  # 30 per minute
     HOOVER_TWOFACTOR_RATELIMIT = (3, 60)  # 3 per minute
+
+if os.environ.get('LIQUID_AUTH_CLIENT_ID'):
+    INSTALLED_APPS += (
+        'hoover.contrib.oauth2',
+    )
+
+    LIQUID_AUTH_PUBLIC_URL = os.environ.get('LIQUID_AUTH_PUBLIC_URL')
+    LIQUID_AUTH_INTERNAL_URL = os.environ.get('LIQUID_AUTH_INTERNAL_URL')
+    LIQUID_AUTH_CLIENT_ID = os.environ.get('LIQUID_AUTH_CLIENT_ID')
+    LIQUID_AUTH_CLIENT_SECRET = os.environ.get('LIQUID_AUTH_CLIENT_SECRET')
+
+    log.info("Enabling Liquid OAuth2 at %s", LIQUID_AUTH_PUBLIC_URL)
 
 DATABASES = {
     'default': {
@@ -76,3 +90,5 @@ HOOVER_UPLOADS_ROOT = str(base_dir / 'uploads')
 HOOVER_UI_ROOT = str(base_dir.parent / 'ui' / 'build')
 HOOVER_EVENTS_DIR = str(base_dir.parent / 'metrics' / 'users')
 HOOVER_ELASTICSEARCH_URL = os.environ.get('HOOVER_ES_URL')
+
+log.info('hoover-search configuration loaded')
