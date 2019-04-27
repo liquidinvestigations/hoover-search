@@ -2,8 +2,8 @@ from django.core.management.base import BaseCommand
 from django.db.migrations.executor import MigrationExecutor
 from django.db import connections, DEFAULT_DB_ALIAS
 
-def is_database_synchronized(database):
-    connection = connections[database]
+def is_database_synchronized():
+    connection = connections[DEFAULT_DB_ALIAS]
     connection.prepare_database()
     executor = MigrationExecutor(connection)
     targets = executor.loader.graph.leaf_nodes()
@@ -14,5 +14,5 @@ class Command(BaseCommand):
     help = "Check service health: migrations, dependencies"
 
     def handle(self, **options):
-        assert is_database_synchronized(DEFAULT_DB_ALIAS), 'Migrations not run'
+        assert is_database_synchronized(), 'Migrations not run'
         print('database ok')
