@@ -4,12 +4,15 @@
 #
 #    pip-compile 
 #
+certifi==2019.3.9         # via requests
+chardet==3.0.4            # via requests
 click==6.7                # via pip-tools
 django-otp==0.3.11
 django==1.10.6
 easywebdav==1.2.0
 elasticsearch==6.3.0
 first==2.0.1              # via pip-tools
+idna==2.7                 # via requests
 logzero==1.5.0
 pip-tools==1.8.1
 psycopg2==2.7.1
@@ -17,8 +20,8 @@ py==1.4.33                # via pytest
 pytest-django==3.1.2
 pytest==3.0.7
 pyyaml==3.13
-requests==2.13.0
+requests==2.20.0
 six==1.10.0               # via pip-tools
-urllib3==1.24.2           # via elasticsearch
+urllib3==1.24.2           # via elasticsearch, requests
 waitress==1.0.2
 whitenoise==3.3.0
