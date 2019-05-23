@@ -99,7 +99,6 @@ HOOVER_UPLOADS_ROOT = str(base_dir / 'uploads')
 
 HOOVER_LOADERS = [
     'hoover.search.loaders.upload.Loader',
-    'hoover.search.loaders.webdav.Loader',
     'hoover.search.loaders.collectible.Loader',
     'hoover.search.loaders.external.Loader',
 ]
