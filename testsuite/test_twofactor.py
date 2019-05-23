@@ -94,7 +94,7 @@ def test_flow(client, listen,
         assert invitation_accept == []
         assert not _access_homepage(client)
 
-def _accept(client, invitation, password):
+def _accept(client, invitation, password, mock_now=None):
     client.get(f'/invitation/{invitation.code}')
     [device] = invitation.user.totpdevice_set.all()
 
@@ -102,7 +102,7 @@ def _accept(client, invitation, password):
         'username': invitation.user.username,
         'password': password,
         'password-confirm': password,
-        'code': _totp(device, now()),
+        'code': _totp(device, mock_now or now()),
     })
     assert "Verification successful." in resp.content.decode('utf8')
 
@@ -147,13 +147,7 @@ def test_auto_logout(client, mock_time, listen):
 
     mock_time(t0)
     invitations.invite('john', INVITATION_DURATION, create=True)
-    device = _accept(client, models.Invitation.objects.get(), 'pw')
-    assert not _access_homepage(client)
-    client.post('/accounts/login/', {
-        'username': 'john',
-        'password': 'pw',
-        'otp_token': _totp(device, t0),
-    })
+    device = _accept(client, models.Invitation.objects.get(), 'pw', t0)
     assert _access_homepage(client)
 
     mock_time(t0 + timedelta(hours=2, minutes=59))
