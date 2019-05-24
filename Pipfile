@@ -16,6 +16,7 @@ django-otp = "*"
 whitenoise = "*"
 Django = "*"
 PyYAML = "*"
+logzero = "*"
 
 [requires]
 python_version = "3.7"
