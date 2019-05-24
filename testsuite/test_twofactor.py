@@ -3,7 +3,7 @@
 from datetime import datetime, timedelta
 import pytest
 from django.utils.timezone import utc, now
-from django_otp.oath import TOTP
+from django_otp.oath import hotp
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from hoover.contrib.twofactor import invitations, models, signals
 from .fixtures import listen
@@ -29,9 +29,8 @@ def mock_time(monkeypatch):
     yield set_time
 
 def _totp(device, now):
-    totp = TOTP(device.bin_key, device.step, device.t0, device.digits)
-    totp.time = now.timestamp()
-    return totp.token()
+    counter = int(now.timestamp() - device.t0) // device.step
+    return hotp(device.bin_key, counter)
 
 def _access_homepage(client):
     resp = client.get('/', follow=False)
@@ -106,6 +105,7 @@ def _accept(client, invitation, password, mock_now=None):
     })
     assert "Verification successful." in resp.content.decode('utf8')
 
+    device.refresh_from_db()
     return device
 
 
@@ -171,15 +171,15 @@ def test_rate_limit(client, mock_time, listen):
     def try_login(correct_otp, expect_limit, expect_success):
         device.last_t = -1
         device.save()
+        otp_token = _totp(device, now) if correct_otp else '123456'
         resp = client.post('/accounts/login/', {
             'username': 'john',
             'password': 'pw',
-            'otp_token': _totp(device, now) if correct_otp else '123456',
+            'otp_token': otp_token,
         })
-        is_rate_limit = ('Your account is temporarily locked'
-            in resp.content.decode('utf8'))
-        assert expect_limit == is_rate_limit, \
-            "rate limit shoud be {}".format(expect_limit)
+        html = resp.content.decode('utf8')
+        is_rate_limit = 'Your account is temporarily locked' in html
+        assert expect_limit == is_rate_limit
 
         if expect_success:
             assert resp.status_code == 302
@@ -189,6 +189,8 @@ def test_rate_limit(client, mock_time, listen):
 
     invitations.invite('john', INVITATION_DURATION, create=True)
     device = _accept(client, models.Invitation.objects.get(), 'pw')
+    client.logout()
+    assert not _access_homepage(client)
 
     set_time(t0)
     # 3 failures and we should get locked out
