@@ -1,15 +1,15 @@
 from django.utils.cache import add_never_cache_headers
-from .utils import Middleware
+from django.utils.deprecation import MiddlewareMixin
 
 
-class NoReferral(Middleware):
+class NoReferral(MiddlewareMixin):
 
     def process_response(self, request, response):
         response['X-Content-Type-Options'] = 'nosniff'
         return response
 
 
-class NoCache(Middleware):
+class NoCache(MiddlewareMixin):
 
     def process_response(self, request, response):
         if 'Cache-Control' not in response:

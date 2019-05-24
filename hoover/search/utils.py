@@ -23,19 +23,3 @@ def open_url(url):
         yield f
     finally:
         f.close()
-
-
-class Middleware:
-
-    def __init__(self, get_response):
-        self.get_response = get_response
-
-    def __call__(self, request):
-        response = self.process_request(request) or self.get_response(request)
-        return self.process_response(request, response)
-
-    def process_request(self, request):
-        pass
-
-    def process_response(self, request, response):
-        return response

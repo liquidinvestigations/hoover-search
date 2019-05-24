@@ -4,11 +4,11 @@ from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.shortcuts import resolve_url
 from django.dispatch import receiver
+from django.utils.deprecation import MiddlewareMixin
 from django.contrib.auth import logout
 from django.contrib.auth.views import redirect_to_login
 from django.contrib.auth.signals import user_logged_in
 from . import signals
-from ...search.utils import Middleware
 
 LOGIN_TIME_SESSION_KEY = 'hoover.contrib.twofactor.login_time'
 
@@ -18,7 +18,7 @@ def on_login_success(sender, request, **kwargs):
     request.session[LOGIN_TIME_SESSION_KEY] = time()
 
 
-class AutoLogout(Middleware):
+class AutoLogout(MiddlewareMixin):
 
     def process_request(self, request):
         if not settings.HOOVER_TWOFACTOR_AUTOLOGOUT:
@@ -35,7 +35,7 @@ class AutoLogout(Middleware):
                 return HttpResponseRedirect(login)
 
 
-class RequireAuth(Middleware):
+class RequireAuth(MiddlewareMixin):
 
     def process_request(self, request):
         WHITELIST = [
