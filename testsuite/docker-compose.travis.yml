@@ -35,3 +35,5 @@ services:
     environment:
       WAIT_HOSTS: search-es:9200, search-pg:5432
       WAIT_HOSTS_TIMEOUT: 60
+      DJANGO_SETTINGS_MODULE: testsuite.settings
+      SECRET_KEY: secret-key-for-testing

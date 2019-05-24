@@ -15,6 +15,8 @@ class Collection(models.Model):
     public = models.BooleanField(default=False)
     users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True,
         related_name='hoover_search_collections')
+    groups = models.ManyToManyField('auth.Group', blank=True,
+        related_name='hoover_search_collections')
 
     loader = models.CharField(max_length=2048,
         default='hoover.search.loaders.upload.Loader')
@@ -35,14 +37,19 @@ class Collection(models.Model):
     def objects_for_user(cls, user):
         rv = set(cls.objects.filter(public=True))
         if user.id is not None:
+            for group in user.groups.all():
+                rv |= set(group.hoover_search_collections.all())
             rv |= set(cls.objects.filter(users__id=user.id))
         return rv
 
     def count(self):
         return es.count(self.id)
 
-    def access_list(self):
+    def user_access_list(self):
         return ', '.join(u.username for u in self.users.all())
+
+    def group_access_list(self):
+        return ', '.join(g.name for g in self.groups.all())
 
     def set_mapping(self):
         loader = self.get_loader()

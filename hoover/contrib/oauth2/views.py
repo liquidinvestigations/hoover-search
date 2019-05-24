@@ -4,22 +4,23 @@ from django.contrib.auth import login, logout
 from django.conf import settings
 import requests
 
-LIQUID_URL = settings.HOOVER_OAUTH_LIQUID_URL
-LIQUID_CLIENT_ID = settings.HOOVER_OAUTH_LIQUID_CLIENT_ID
-LIQUID_CLIENT_SECRET = settings.HOOVER_OAUTH_LIQUID_CLIENT_SECRET
+PUBLIC_URL = settings.LIQUID_AUTH_PUBLIC_URL
+INTERNAL_URL = settings.LIQUID_AUTH_INTERNAL_URL
+CLIENT_ID = settings.LIQUID_AUTH_CLIENT_ID
+CLIENT_SECRET = settings.LIQUID_AUTH_CLIENT_SECRET
 
 class ClientError(Exception):
     pass
 
 def oauth2_login(request):
-    authorize_url = LIQUID_URL + '/o/authorize/'
+    authorize_url = PUBLIC_URL + '/o/authorize/'
     return redirect(
         '{}?response_type=code&client_id={}'
-        .format(authorize_url, LIQUID_CLIENT_ID)
+        .format(authorize_url, CLIENT_ID)
     )
 
 def oauth2_exchange(request):
-    token_url = LIQUID_URL + '/o/token/'
+    token_url = INTERNAL_URL + '/o/token/'
     redirect_uri = request.build_absolute_uri('/accounts/oauth2-exchange/')
     code = request.GET.get('code')
     token_resp = requests.post(
@@ -29,7 +30,7 @@ def oauth2_exchange(request):
             'grant_type': 'authorization_code',
             'code': code,
         },
-        auth=(LIQUID_CLIENT_ID, LIQUID_CLIENT_SECRET),
+        auth=(CLIENT_ID, CLIENT_SECRET),
     )
     if token_resp.status_code != 200:
         raise ClientError(
@@ -45,7 +46,7 @@ def oauth2_exchange(request):
             .format(token_type)
         )
     refresh_token = token_data['refresh_token']
-    profile_url = LIQUID_URL + '/accounts/profile'
+    profile_url = INTERNAL_URL + '/accounts/profile'
     profile_resp = requests.get(
         profile_url,
         headers={'Authorization': 'Bearer {}'.format(access_token)},
