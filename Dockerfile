@@ -7,13 +7,14 @@ RUN set -e \
  && echo 'deb http://security.debian.org jessie/updates non-free' >> /etc/apt/sources.list \
  && apt-get update \
  && apt-get install -y --no-install-recommends qrencode \
- && apt-get clean && rm -rf /var/lib/apt/lists/*
+ && apt-get clean && rm -rf /var/lib/apt/lists/* \
+ && pip install pipenv
 
 RUN mkdir -p /opt/hoover/search
 WORKDIR /opt/hoover/search
 
-ADD requirements.txt ./
-RUN pip install -r requirements.txt
+ADD Pipfile Pipfile.lock ./
+RUN pipenv install --system --deploy --ignore-pipfile
 
 COPY . .
 
