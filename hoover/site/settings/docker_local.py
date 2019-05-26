@@ -91,4 +91,8 @@ HOOVER_UI_ROOT = str(base_dir.parent / 'ui' / 'build')
 HOOVER_EVENTS_DIR = str(base_dir.parent / 'metrics' / 'users')
 HOOVER_ELASTICSEARCH_URL = os.environ.get('HOOVER_ES_URL')
 
+_secure_header = os.environ.get('SECURE_PROXY_SSL_HEADER')
+if _secure_header:
+    SECURE_PROXY_SSL_HEADER = (_secure_header, 'https')
+
 log.info('hoover-search configuration loaded')
