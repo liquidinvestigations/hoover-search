@@ -23,15 +23,13 @@ def oauth2_exchange(request):
     token_url = INTERNAL_URL + '/o/token/'
     redirect_uri = request.build_absolute_uri('/accounts/oauth2-exchange/')
     code = request.GET.get('code')
-    token_resp = requests.post(
-        token_url,
-        data={
-            'redirect_uri': redirect_uri,
-            'grant_type': 'authorization_code',
-            'code': code,
-        },
-        auth=(CLIENT_ID, CLIENT_SECRET),
-    )
+    data = {
+        'redirect_uri': redirect_uri,
+        'grant_type': 'authorization_code',
+        'code': code,
+    }
+    auth = (CLIENT_ID, CLIENT_SECRET)
+    token_resp = requests.post(token_url, data=data, auth=auth)
     if token_resp.status_code != 200:
         raise ClientError(
             "Could not get token from {}: {!r}"
