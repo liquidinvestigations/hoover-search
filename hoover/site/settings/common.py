@@ -2,7 +2,7 @@ from pathlib import Path
 
 base_dir = Path(__file__).absolute().parent.parent.parent.parent
 
-INSTALLED_APPS = (
+INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -10,20 +10,19 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'hoover.search',
-)
+]
 
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'hoover.search.middleware.NoReferral',
     'hoover.search.middleware.NoCache',
-)
+]
 
 ROOT_URLCONF = 'hoover.site.urls'
 
@@ -102,7 +101,6 @@ HOOVER_UPLOADS_ROOT = str(base_dir / 'uploads')
 
 HOOVER_LOADERS = [
     'hoover.search.loaders.upload.Loader',
-    'hoover.search.loaders.webdav.Loader',
     'hoover.search.loaders.collectible.Loader',
     'hoover.search.loaders.external.Loader',
 ]

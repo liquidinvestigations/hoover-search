@@ -2,7 +2,7 @@ from datetime import datetime
 import urllib.request
 from contextlib import contextmanager
 import logging
-from django.utils.timezone import UTC
+from django.utils.timezone import utc
 
 LOG_LEVEL = {
     0: logging.ERROR,
@@ -13,7 +13,7 @@ LOG_LEVEL = {
 
 
 def now():
-    return datetime.utcnow().replace(tzinfo=UTC())
+    return datetime.utcnow().replace(tzinfo=utc())
 
 
 @contextmanager

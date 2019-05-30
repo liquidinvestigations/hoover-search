@@ -8,13 +8,13 @@ from ..contrib import installed
 urlpatterns = [
     url(r'^_ping$', views.ping, name='ping'),
     url(r'^_is_staff', views.is_staff),
-    url(r'^admin/', include(admin_site.urls)),
+    url(r'^admin/', include(admin_site.get_urls())),
     url(r'^search$', views.search, name='search'),
     url(r'^whoami$', views.whoami, name='whoami'),
     url(r'^batch$', views.batch, name='batch'),
     url(r'^limits$', views.limits, name='limits'),
     url(r'^collections$', views.collections, name='collections'),
-    url(r'^(?s)doc/(?P<collection_name>[^/]+)/(?P<id>[^/]+)(?P<suffix>.*)$', views.doc),
+    url(r'^doc/(?P<collection_name>[^/]+)/(?P<id>[^/]+)(?P<suffix>.*)$', views.doc),
 ]
 
 if installed.twofactor:
@@ -22,10 +22,12 @@ if installed.twofactor:
         "hoover.contrib.twofactor and hoover.contrib.oauth2 are not compatible"
     from ..contrib.twofactor import views as twofactor_views
     from django.contrib.auth import views as auth_views
+    login_view = auth_views.LoginView.as_view(
+        authentication_form=twofactor_views.AuthenticationForm,
+    )
     urlpatterns += [
         url(r'^invitation/(?P<code>.*)$', twofactor_views.invitation),
-        url(r'^accounts/login/$', auth_views.login, kwargs={
-            'authentication_form': twofactor_views.AuthenticationForm}),
+        url(r'^accounts/login/$', login_view),
         url(r'^accounts/', include('django.contrib.auth.urls')),
     ]
 

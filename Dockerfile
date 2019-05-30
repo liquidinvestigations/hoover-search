@@ -8,12 +8,13 @@ RUN set -e \
  && apt-get update \
  && apt-get install -y --no-install-recommends qrencode \
  && apt-get clean && rm -rf /var/lib/apt/lists/* \
+ && pip install pipenv \
  && mkdir -p /opt/hoover/search
 
 WORKDIR /opt/hoover/search
 
-ADD requirements.txt ./
-RUN pip install -r requirements.txt
+ADD Pipfile Pipfile.lock ./
+RUN pipenv install --system --deploy --ignore-pipfile
 
 COPY . .
 

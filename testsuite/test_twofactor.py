@@ -3,7 +3,7 @@
 from datetime import datetime, timedelta
 import pytest
 from django.utils.timezone import utc, now
-from django_otp.oath import TOTP
+from django_otp.oath import hotp
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from hoover.contrib.twofactor import invitations, models, signals
 from .fixtures import listen
@@ -29,9 +29,8 @@ def mock_time(monkeypatch):
     yield set_time
 
 def _totp(device, now):
-    totp = TOTP(device.bin_key, device.step, device.t0, device.digits)
-    totp.time = now.timestamp()
-    return totp.token()
+    counter = int(now.timestamp() - device.t0) // device.step
+    return hotp(device.bin_key, counter)
 
 def _access_homepage(client):
     resp = client.get('/', follow=False)
@@ -94,14 +93,27 @@ def test_flow(client, listen,
         assert invitation_accept == []
         assert not _access_homepage(client)
 
-def _accept(invitation, password):
-    from django.http import HttpRequest
-    from django.contrib.sessions.backends.db import SessionStore
-    request = HttpRequest()
-    request.session = SessionStore()
-    device = invitations.device_for_session(request, invitation)
-    invitations.accept(request, invitation, device, password)
+def _accept(client, invitation, password, mock_now=None):
+    client.get(f'/invitation/{invitation.code}')
+    [device] = invitation.user.totpdevice_set.all()
+
+    resp = client.post(f'/invitation/{invitation.code}', {
+        'username': invitation.user.username,
+        'password': password,
+        'password-confirm': password,
+        'code': _totp(device, mock_now or now()),
+    })
+    assert "Verification successful." in resp.content.decode('utf8')
+
+    device.refresh_from_db()
     return device
+
+
+def _reset_last_use(device):
+    device.refresh_from_db()
+    device.last_t = -1
+    device.save()
+
 
 @pytest.mark.parametrize('username,password,interval,success', [
     ('john', 'pw', timedelta(0), True),
@@ -112,7 +124,10 @@ def _accept(invitation, password):
 def test_login(client, listen, username, password, interval, success):
     login_failure = listen(signals.login_failure)
     invitations.invite('john', INVITATION_DURATION, create=True)
-    device = _accept(models.Invitation.objects.get(), 'pw')
+    device = _accept(client, models.Invitation.objects.get(), 'pw')
+    assert _access_homepage(client)
+    client.logout()
+    _reset_last_use(device)
     assert not _access_homepage(client)
     client.post('/accounts/login/', {
         'username': username,
@@ -132,13 +147,7 @@ def test_auto_logout(client, mock_time, listen):
 
     mock_time(t0)
     invitations.invite('john', INVITATION_DURATION, create=True)
-    device = _accept(models.Invitation.objects.get(), 'pw')
-    assert not _access_homepage(client)
-    client.post('/accounts/login/', {
-        'username': 'john',
-        'password': 'pw',
-        'otp_token': _totp(device, t0),
-    })
+    device = _accept(client, models.Invitation.objects.get(), 'pw', t0)
     assert _access_homepage(client)
 
     mock_time(t0 + timedelta(hours=2, minutes=59))
@@ -162,15 +171,15 @@ def test_rate_limit(client, mock_time, listen):
     def try_login(correct_otp, expect_limit, expect_success):
         device.last_t = -1
         device.save()
+        otp_token = _totp(device, now) if correct_otp else '123456'
         resp = client.post('/accounts/login/', {
             'username': 'john',
             'password': 'pw',
-            'otp_token': _totp(device, now) if correct_otp else '123456',
+            'otp_token': otp_token,
         })
-        is_rate_limit = ('Your account is temporarily locked'
-            in resp.content.decode('utf8'))
-        assert expect_limit == is_rate_limit, \
-            "rate limit shoud be {}".format(expect_limit)
+        html = resp.content.decode('utf8')
+        is_rate_limit = 'Your account is temporarily locked' in html
+        assert expect_limit == is_rate_limit
 
         if expect_success:
             assert resp.status_code == 302
@@ -179,7 +188,9 @@ def test_rate_limit(client, mock_time, listen):
             assert resp.status_code == 200
 
     invitations.invite('john', INVITATION_DURATION, create=True)
-    device = _accept(models.Invitation.objects.get(), 'pw')
+    device = _accept(client, models.Invitation.objects.get(), 'pw')
+    client.logout()
+    assert not _access_homepage(client)
 
     set_time(t0)
     # 3 failures and we should get locked out
