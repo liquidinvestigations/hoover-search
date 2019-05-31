@@ -23,11 +23,8 @@ ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.3.0/wait
 ENV DJANGO_SETTINGS_MODULE hoover.site.settings.docker_local
 
 RUN set -e \
- && export SECRET_KEY=temp \
- && ./manage.py downloadassets \
- && ./manage.py collectstatic --noinput \
- && echo '#!/bin/bash -e' > /runserver \
- && echo 'waitress-serve --port 80 hoover.site.wsgi:application' >> /runserver \
- && chmod +x /runserver /wait
+ && SECRET_KEY=temp ./manage.py downloadassets \
+ && SECRET_KEY=temp ./manage.py collectstatic --noinput \
+ && chmod +x /wait
 
-CMD /wait && /runserver
+CMD ./runserver

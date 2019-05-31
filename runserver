@@ -1,0 +1,5 @@
+#!/bin/bash -ex
+
+/wait
+# exec ./manage.py runserver 0.0.0.0:80
+exec waitress-serve --port 80 hoover.site.wsgi:application
