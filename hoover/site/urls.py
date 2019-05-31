@@ -1,20 +1,20 @@
 from django.conf import settings
-from django.conf.urls import include, url
+from django.urls import include, path, re_path
 from django.contrib import admin
 from ..search.admin import admin_site
 from ..search import views, uploads, ui
 from ..contrib import installed
 
 urlpatterns = [
-    url(r'^_ping$', views.ping, name='ping'),
-    url(r'^_is_staff', views.is_staff),
-    url(r'^admin/', include(admin_site.get_urls())),
-    url(r'^search$', views.search, name='search'),
-    url(r'^whoami$', views.whoami, name='whoami'),
-    url(r'^batch$', views.batch, name='batch'),
-    url(r'^limits$', views.limits, name='limits'),
-    url(r'^collections$', views.collections, name='collections'),
-    url(r'^doc/(?P<collection_name>[^/]+)/(?P<id>[^/]+)(?P<suffix>.*)$', views.doc),
+    path('_ping', views.ping, name='ping'),
+    path('_is_staff', views.is_staff),
+    path('admin/', admin_site.urls),
+    path('search', views.search, name='search'),
+    path('whoami', views.whoami, name='whoami'),
+    path('batch', views.batch, name='batch'),
+    path('limits', views.limits, name='limits'),
+    path('collections', views.collections, name='collections'),
+    re_path(r'^doc/(?P<collection_name>[^/]+)/(?P<id>[^/]+)(?P<suffix>.*)$', views.doc),
 ]
 
 if installed.twofactor:
@@ -26,33 +26,33 @@ if installed.twofactor:
         authentication_form=twofactor_views.AuthenticationForm,
     )
     urlpatterns += [
-        url(r'^invitation/(?P<code>.*)$', twofactor_views.invitation),
-        url(r'^accounts/login/$', login_view),
-        url(r'^accounts/', include('django.contrib.auth.urls')),
+        path('invitation/<code>', twofactor_views.invitation),
+        path('accounts/login/', login_view),
+        path('accounts/', include('django.contrib.auth.urls')),
     ]
 
 elif installed.oauth2:
     from ..contrib.oauth2 import views as oauth2_views
     urlpatterns += [
-        url(r'^accounts/login/$', oauth2_views.oauth2_login),
-        url(r'^accounts/oauth2-exchange/$', oauth2_views.oauth2_exchange),
-        url(r'^accounts/logout/$', oauth2_views.oauth2_logout, name='logout'),
+        path('accounts/login/', oauth2_views.oauth2_login),
+        path('accounts/oauth2-exchange/', oauth2_views.oauth2_exchange),
+        path('accounts/logout/', oauth2_views.oauth2_logout, name='logout'),
     ]
 
 else:
     urlpatterns += [
-        url(r'^accounts/', include('django.contrib.auth.urls')),
+        path('accounts/', include('django.contrib.auth.urls')),
     ]
 
 urlpatterns += [
-    url(r'^uploads/(?P<filename>.+)$', uploads.serve_file),
+    path('uploads/<path:filename>', uploads.serve_file),
 ]
 
 if settings.HOOVER_UI_ROOT:
     urlpatterns += [
-        url(r'^(?P<filename>.*)$', ui.file),
+        path('<path:filename>', ui.file),
     ]
 else:
     urlpatterns += [
-        url(r'^$', views.home, name='home'),
+        path('', views.home, name='home'),
     ]
