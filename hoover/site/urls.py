@@ -50,7 +50,7 @@ urlpatterns += [
 
 if settings.HOOVER_UI_ROOT:
     urlpatterns += [
-        path('<path:filename>', ui.file),
+        re_path(r'^(?P<filename>.*)$', ui.file),
     ]
 else:
     urlpatterns += [
