@@ -22,6 +22,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'hoover.search.middleware.NoReferral',
     'hoover.search.middleware.NoCache',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 ROOT_URLCONF = 'hoover.site.urls'
