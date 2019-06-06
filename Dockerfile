@@ -23,8 +23,8 @@ ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.3.0/wait
 ENV DJANGO_SETTINGS_MODULE hoover.site.settings.docker_local
 
 RUN set -e \
- && SECRET_KEY=temp ./manage.py downloadassets \
- && SECRET_KEY=temp ./manage.py collectstatic --noinput \
+ && SECRET_KEY=temp HOOVER_DB='postgresql://search:search@search-pg:5432/search' ./manage.py downloadassets \
+ && SECRET_KEY=temp HOOVER_DB='postgresql://search:search@search-pg:5432/search' ./manage.py collectstatic --noinput \
  && chmod +x /wait
 
 CMD ./runserver

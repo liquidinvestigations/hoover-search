@@ -33,6 +33,7 @@ services:
     ports:
       - "45024:80"
     environment:
+      HOOVER_DB: postgresql://search:search@search-pg:5432/search
       WAIT_HOSTS: search-es:9200, search-pg:5432
       WAIT_HOSTS_TIMEOUT: 60
       DJANGO_SETTINGS_MODULE: testsuite.settings

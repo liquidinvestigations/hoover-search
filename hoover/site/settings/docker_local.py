@@ -69,20 +69,19 @@ DATABASES = {
 }
 
 # heroku-style db config
-_db = os.environ.get('HOOVER_DB')
-if _db:
-    dbm = re.match(
-        r'postgresql://(?P<user>[^:]+):(?P<password>[^@]+)'
-        r'@(?P<host>[^:]+):(?P<port>\d+)/(?P<name>.+)',
-        _db,
-    )
-    if not dbm:
-        raise RuntimeError("Can't parse HOOVER_DB value %r" % _db)
-    DATABASES['default']['HOST'] = dbm.group('host')
-    DATABASES['default']['PORT'] = dbm.group('port')
-    DATABASES['default']['NAME'] = dbm.group('name')
-    DATABASES['default']['USER'] = dbm.group('user')
-    DATABASES['default']['PASSWORD'] = dbm.group('password')
+_db = os.environ['HOOVER_DB']
+dbm = re.match(
+    r'postgresql://(?P<user>[^:]+):(?P<password>[^@]+)'
+    r'@(?P<host>[^:]+):(?P<port>\d+)/(?P<name>.+)',
+    _db,
+)
+if not dbm:
+    raise RuntimeError("Can't parse HOOVER_DB value %r" % _db)
+DATABASES['default']['HOST'] = dbm.group('host')
+DATABASES['default']['PORT'] = dbm.group('port')
+DATABASES['default']['NAME'] = dbm.group('name')
+DATABASES['default']['USER'] = dbm.group('user')
+DATABASES['default']['PASSWORD'] = dbm.group('password')
 
 STATIC_ROOT = str(base_dir / 'static')
 
