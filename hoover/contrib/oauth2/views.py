@@ -57,9 +57,14 @@ def oauth2_exchange(request):
     profile = profile_resp.json()
     user, created = User.objects.get_or_create(username=profile['login'])
     if created:
-        user.is_superuser = True
-        user.is_staff = True
         user.save()
+
+    is_admin = profile['is_admin']
+    if is_admin != user.is_superuser or is_admin != user.is_staff:
+        user.is_superuser = is_admin
+        user.is_staff = is_admin
+        user.save()
+
     login(request, user)
 
     return redirect(settings.LOGIN_REDIRECT_URL)
