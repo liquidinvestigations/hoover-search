@@ -22,12 +22,17 @@ DEBUG = bool_env(os.environ.get('DEBUG'))
 if DEBUG:
     log.warn('DEBUG mode on')
 
+
+INSTALLED_APPS += (
+    'hoover.contrib.ratelimit',
+)
+HOOVER_RATELIMIT_USER = (30, 60)
+
 if bool_env(os.environ.get('HOOVER_TWOFACTOR_ENABLED')):
     INSTALLED_APPS += (
         'hoover.contrib.twofactor',
         'django_otp',
         'django_otp.plugins.otp_totp',
-        'hoover.contrib.ratelimit',
     )
 
     MIDDLEWARE_CLASSES += (
@@ -46,7 +51,6 @@ if bool_env(os.environ.get('HOOVER_TWOFACTOR_ENABLED')):
     if _twofactor_auto_logout:
         HOOVER_TWOFACTOR_AUTOLOGOUT = int(_twofactor_auto_logout)
 
-    HOOVER_RATELIMIT_USER = (30, 60)  # 30 per minute
     HOOVER_TWOFACTOR_RATELIMIT = (3, 60)  # 3 per minute
 
 if os.environ.get('LIQUID_AUTH_CLIENT_ID'):
