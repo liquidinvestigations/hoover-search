@@ -95,6 +95,7 @@ HOOVER_UPLOADS_ROOT = str(base_dir / 'uploads')
 HOOVER_UI_ROOT = str(base_dir.parent / 'ui' / 'build')
 HOOVER_EVENTS_DIR = str(base_dir.parent / 'metrics' / 'users')
 HOOVER_ELASTICSEARCH_URL = os.environ.get('HOOVER_ES_URL')
+HOOVER_TITLE = os.environ.get('HOOVER_TITLE', 'Hoover')
 
 
 if bool_env(os.environ.get('USE_X_FORWARDED_HOST')):
