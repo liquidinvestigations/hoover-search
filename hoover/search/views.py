@@ -115,10 +115,15 @@ def doc(request, collection_name, id, suffix):
         })
 
 def whoami(request):
+    if settings.HOOVER_AUTHPROXY:
+        logout_url = '/__auth/logout'
+    else:
+        logout_url = reverse('logout') + '?next=/'
+
     urls = {
         'login': settings.LOGIN_URL,
         'admin': reverse('admin:index'),
-        'logout': reverse('logout') + '?next=/',
+        'logout': logout_url,
     }
     try:
         password_change = reverse('password_change')

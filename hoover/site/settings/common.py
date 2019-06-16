@@ -17,6 +17,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'hoover.search.middleware.AuthproxyUserMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -125,5 +126,7 @@ HOOVER_EVENTS_DIR = None
 HOOVER_OAUTH_LIQUID_URL = None
 HOOVER_OAUTH_LIQUID_CLIENT_ID = None
 HOOVER_OAUTH_LIQUID_CLIENT_SECRET = None
+
+HOOVER_AUTHPROXY_HEADERS = False
 
 HOOVER_HYPOTHESIS_EMBED_URL = None

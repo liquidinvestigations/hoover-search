@@ -61,6 +61,12 @@ if os.environ.get('LIQUID_AUTH_CLIENT_ID'):
 
     log.info("Enabling Liquid OAuth2 at %s", LIQUID_AUTH_PUBLIC_URL)
 
+if bool_env(os.environ.get('HOOVER_AUTHPROXY')):
+    HOOVER_AUTHPROXY = True
+    AUTHENTICATION_BACKENDS = [
+        'django.contrib.auth.backends.RemoteUserBackend',
+    ]
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -89,6 +95,10 @@ HOOVER_UPLOADS_ROOT = str(base_dir / 'uploads')
 HOOVER_UI_ROOT = str(base_dir.parent / 'ui' / 'build')
 HOOVER_EVENTS_DIR = str(base_dir.parent / 'metrics' / 'users')
 HOOVER_ELASTICSEARCH_URL = os.environ.get('HOOVER_ES_URL')
+
+
+if bool_env(os.environ.get('USE_X_FORWARDED_HOST')):
+    USE_X_FORWARDED_HOST = True
 
 _secure_header = os.environ.get('SECURE_PROXY_SSL_HEADER')
 if _secure_header:
