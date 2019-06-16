@@ -135,6 +135,7 @@ def whoami(request):
         'username': request.user.username,
         'admin': request.user.is_superuser,
         'urls': urls,
+        'title': settings.HOOVER_TITLE,
     })
 
 @csrf_exempt

@@ -96,6 +96,8 @@ OTP_TOTP_SYNC = False
 
 HOOVER_ELASTICSEARCH_URL = 'http://localhost:9200'
 
+HOOVER_TITLE = 'Hoover'
+
 HOOVER_UPLOADS_URL = '/uploads/'
 
 STATIC_ROOT = str(base_dir / 'static')
