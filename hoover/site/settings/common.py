@@ -10,6 +10,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'hoover.search',
+    'hoover.contrib.ratelimit',
 ]
 
 MIDDLEWARE = [

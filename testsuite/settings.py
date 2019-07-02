@@ -5,7 +5,6 @@ INSTALLED_APPS = INSTALLED_APPS + [
     'hoover.contrib.twofactor',
     'django_otp',
     'django_otp.plugins.otp_totp',
-    'hoover.contrib.ratelimit',
 ]
 
 MIDDLEWARE = MIDDLEWARE + [

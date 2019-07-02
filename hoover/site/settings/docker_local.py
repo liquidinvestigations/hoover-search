@@ -1,6 +1,4 @@
 import os
-from pathlib import Path
-from urllib.parse import urlparse
 import re
 from logzero import logger as log
 
@@ -22,12 +20,16 @@ DEBUG = bool_env(os.environ.get('DEBUG'))
 if DEBUG:
     log.warn('DEBUG mode on')
 
+env_ratelimit = os.environ.get('HOOVER_RATELIMIT_USER', '30,60')
+if len(env_ratelimit.split(',')) != 2:
+    raise RuntimeError(f'Invalid environment variable HOOVER_RATELIMIT_USER: "{env_ratelimit}"')
+HOOVER_RATELIMIT_USER = [int(x) for x in env_ratelimit.split(',')]
+
 if bool_env(os.environ.get('HOOVER_TWOFACTOR_ENABLED')):
     INSTALLED_APPS += (
         'hoover.contrib.twofactor',
         'django_otp',
         'django_otp.plugins.otp_totp',
-        'hoover.contrib.ratelimit',
     )
 
     MIDDLEWARE_CLASSES += (
@@ -46,7 +48,6 @@ if bool_env(os.environ.get('HOOVER_TWOFACTOR_ENABLED')):
     if _twofactor_auto_logout:
         HOOVER_TWOFACTOR_AUTOLOGOUT = int(_twofactor_auto_logout)
 
-    HOOVER_RATELIMIT_USER = (30, 60)  # 30 per minute
     HOOVER_TWOFACTOR_RATELIMIT = (3, 60)  # 3 per minute
 
 if os.environ.get('LIQUID_AUTH_CLIENT_ID'):
