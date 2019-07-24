@@ -28,4 +28,4 @@ def qr_png(device, username):
         username=username,
         secret=b32encode(device.bin_key).decode('utf8'),
     )
-    return qrcode.make(url)
+    return bytes(qrcode.make(url))
