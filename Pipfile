@@ -17,6 +17,7 @@ whitenoise = "*"
 Django = "*"
 PyYAML = "*"
 logzero = "*"
+qrcode = "*"
 
 [requires]
 python_version = "3.7"
