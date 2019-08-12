@@ -138,7 +138,7 @@
                 "sha256:f8dc19d92896558f9c4317ee365729ead9d7bbcf2052a9a19a3ef17abbb8ac5b"
             ],
             "index": "pypi",
-            "version": "==6.1.0",
+            "version": "==6.1.0"
         },
         "pluggy": {
             "hashes": [
