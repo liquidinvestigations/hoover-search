@@ -30,7 +30,7 @@ if settings.HOOVER_RATELIMIT_USER:
         return wrapper
 
     def get_request_limits(user):
-        if user.is_anonymous():
+        if user.is_anonymous:
             return None
 
         key = 'user:' + user.get_username()
