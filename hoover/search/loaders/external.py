@@ -58,6 +58,8 @@ class Document:
                 raise RuntimeError("Unexpected response {!r} for {!r}"
                     .format(resp, url))
 
+        if suffix.startswith('/raw/'):
+            suffix = '/raw/data'  # fake filename, prevents url encoding errors
         url_with_suffix = urljoin(url, suffix[1:])
         resp = requests.get(url_with_suffix)
         if 200 <= resp.status_code < 300:
