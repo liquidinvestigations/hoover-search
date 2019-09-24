@@ -98,6 +98,7 @@ OTP_TOTP_SYNC = False
 HOOVER_ELASTICSEARCH_URL = 'http://localhost:9200'
 
 HOOVER_TITLE = 'Hoover'
+HOOVER_HYPOTHESIS_EMBED = None
 
 HOOVER_UPLOADS_URL = '/uploads/'
 

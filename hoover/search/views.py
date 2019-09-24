@@ -124,6 +124,7 @@ def whoami(request):
         'login': settings.LOGIN_URL,
         'admin': reverse('admin:index'),
         'logout': logout_url,
+        'hypothesis_embed': settings.HOOVER_HYPOTHESIS_EMBED,
     }
     try:
         password_change = reverse('password_change')
