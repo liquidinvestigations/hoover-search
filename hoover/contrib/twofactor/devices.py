@@ -22,6 +22,15 @@ def delete_all(user, keep=None):
             continue
         old_device.delete()
 
+def qrencode(data):
+    qr = qrcode.make(data)
+    qr_tempfile = tempfile.NamedTemporaryFile()
+    qr.save(qr_tempfile.name, 'PNG')
+    qr_img = qr_tempfile.read()
+    qr_tempfile.close()
+    return qr_img
+
+
 def qr_png(device, username):
     tpl = 'otpauth://totp/{app}:{username}?secret={secret}&issuer={app}'
     url = tpl.format(
@@ -29,10 +38,4 @@ def qr_png(device, username):
         username=username,
         secret=b32encode(device.bin_key).decode('utf8'),
     )
-    img = qrcode.make(url)
-    qr_file = tempfile.NamedTemporaryFile()
-    img.save(qr_file.name, 'PNG')
-    qr_img = qr_file.read()
-    qr_file.close()
-
-    return qr_img
+    return qrencode(url)

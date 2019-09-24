@@ -5,8 +5,6 @@ RUN set -e \
  && echo 'deb http://deb.debian.org/debian stable non-free' >> /etc/apt/sources.list \
  && echo 'deb http://deb.debian.org/debian stable-updates non-free' >> /etc/apt/sources.list \
  && echo 'deb http://security.debian.org stable/updates non-free' >> /etc/apt/sources.list \
- && apt-get update \
- && apt-get clean && rm -rf /var/lib/apt/lists/* \
  && pip install pipenv \
  && mkdir -p /opt/hoover/search
 
