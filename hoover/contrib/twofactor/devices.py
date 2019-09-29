@@ -1,4 +1,5 @@
-import subprocess
+import qrcode
+import tempfile
 from base64 import b32encode
 from contextlib import contextmanager
 from django_otp.plugins.otp_totp.models import TOTPDevice
@@ -22,7 +23,13 @@ def delete_all(user, keep=None):
         old_device.delete()
 
 def qrencode(data):
-    return subprocess.check_output(['qrencode', data, '-s', '5', '-o', '-'])
+    qr = qrcode.make(data)
+    qr_tempfile = tempfile.NamedTemporaryFile()
+    qr.save(qr_tempfile.name, 'PNG')
+    qr_img = qr_tempfile.read()
+    qr_tempfile.close()
+    return qr_img
+
 
 def qr_png(device, username):
     tpl = 'otpauth://totp/{app}:{username}?secret={secret}&issuer={app}'
