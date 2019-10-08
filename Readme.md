@@ -1,4 +1,4 @@
-Hoover is a search tool for large collections of documents. It gues together
+Hoover is a search tool for large collections of documents. It glues together
 proven open-source technologies like elasticsearch and Apache Tika to aid the
 work of investigative journalists.
 
