@@ -15,7 +15,7 @@ class SearchError(Exception):
 @contextmanager
 def elasticsearch():
     try:
-        yield Elasticsearch(settings.HOOVER_ELASTICSEARCH_URL)
+        yield Elasticsearch(settings.HOOVER_ELASTICSEARCH_URL, timeout=55)
     except ConnectionError:
         raise SearchError('Could not connect to Elasticsearch.')
     except RequestError as e:
@@ -63,7 +63,6 @@ def bulk_index(collection_id, docs):
             es,
             (index(id, data) for id, data in docs),
             stats_only=True,
-            request_timeout=55,
         )
     if err:
         raise RuntimeError("Bulk indexing failed on %d documents" % err)
@@ -79,7 +78,6 @@ def versions(collection_id, doc_id_list):
             },
             allow_partial_search_results=False,
             timeout='50s',
-            request_timeout=55,
         )
     hits = res['hits']['hits']
     assert len(hits) == res['hits']['total']
@@ -186,7 +184,6 @@ def search(query, _source, highlight, collections, from_, size, sort, aggs, post
             allow_partial_search_results=False,
             timeout='50s',
             body=body,
-            request_timeout=55,
         )
 
     aggs = (
