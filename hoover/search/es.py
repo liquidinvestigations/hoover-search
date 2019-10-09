@@ -63,7 +63,7 @@ def bulk_index(collection_id, docs):
             es,
             (index(id, data) for id, data in docs),
             stats_only=True,
-            request_timeout=60,
+            request_timeout=55,
         )
     if err:
         raise RuntimeError("Bulk indexing failed on %d documents" % err)
@@ -77,6 +77,9 @@ def versions(collection_id, doc_id_list):
                 'query': {'ids': {'values': doc_id_list}},
                 'fields': ['_hoover.version'],
             },
+            allow_partial_search_results=False,
+            timeout='50s',
+            request_timeout=55,
         )
     hits = res['hits']['hits']
     assert len(hits) == res['hits']['total']
@@ -180,8 +183,10 @@ def search(query, _source, highlight, collections, from_, size, sort, aggs, post
         rv = es.search(
             index=indices,
             ignore_unavailable=True,
+            allow_partial_search_results=False,
+            timeout='50s',
             body=body,
-            request_timeout=60,
+            request_timeout=55,
         )
 
     aggs = (
