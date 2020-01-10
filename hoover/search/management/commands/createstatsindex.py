@@ -33,7 +33,7 @@ class Command(BaseCommand):
 
     help = "Set mappings for the stats indexes"
 
-    def handle(self, name, url, index, public, **kwargs):
+    def handle(self, **kwargs):
         for document_type in ['task', 'blob']:
             index = ES_INDEX_PREFIX + document_type
             url = f'{settings.HOOVER_ELASTICSEARCH_URL}/{index}'
