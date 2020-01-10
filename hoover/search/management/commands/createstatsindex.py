@@ -3,7 +3,7 @@ import json
 from django.core.management.base import BaseCommand
 from django.conf import settings
 
-ES_INDEX_PREFIX = "_snoopstats-"
+ES_INDEX_PREFIX = ".hoover-snoopstats-"
 ES_MAPPINGS = {
     'task': {
         'properties': {
