@@ -39,10 +39,15 @@ class Command(BaseCommand):
             url = f'{settings.HOOVER_ELASTICSEARCH_URL}/{index}'
 
             config = {'mappings': {document_type: ES_MAPPINGS[document_type]}}
-            put_resp = requests.put(
+            resp = requests.put(
                 url,
                 data=json.dumps(config),
                 headers={'Content-Type': 'application/json'},
             )
-            print('%s Elasticsearch PUT: %r', document_type, put_resp)
-            print('%s Elasticsearch PUT: %r', document_type, put_resp.text)
+
+            if resp.status_code == 200:
+                print(f"Created stats index {index}")
+                return
+            elif 'resource_already_exists_exception' in resp.text:
+                return
+            raise RuntimeError(f"Unexpected response {resp!r} {resp.text}")
