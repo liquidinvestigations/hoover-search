@@ -27,6 +27,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'search',
         'USER': 'search',
+        'PASSWORD': 'search',
         'HOST': 'search-pg',
         'PORT': 5432,
     },
