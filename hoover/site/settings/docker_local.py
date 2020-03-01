@@ -92,6 +92,7 @@ DATABASES['default']['PASSWORD'] = dbm.group('password')
 
 STATIC_ROOT = str(base_dir / 'static')
 
+SNOOP_BASE_URL = os.environ.get('SNOOP_BASE_URL')
 HOOVER_UPLOADS_ROOT = str(base_dir / 'uploads')
 HOOVER_UI_ROOT = str(base_dir.parent / 'ui' / 'build')
 HOOVER_EVENTS_DIR = str(base_dir.parent / 'metrics' / 'users')
