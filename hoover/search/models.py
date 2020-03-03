@@ -1,10 +1,16 @@
-import hashlib
 import json
+
 from django.db import models
 from django.dispatch import receiver
 from django.conf import settings
 from django.utils.module_loading import import_string
+
 from . import es
+from .loaders.external import Loader as ExternalLoader
+
+
+log = logging.getLogger(__name__)
+
 
 class Collection(models.Model):
 
@@ -18,17 +24,11 @@ class Collection(models.Model):
     groups = models.ManyToManyField('auth.Group', blank=True,
         related_name='hoover_search_collections')
 
-    loader = models.CharField(max_length=2048,
-        default='hoover.search.loaders.upload.Loader')
-    options = models.TextField(default='{}')
-    loader_state = models.TextField(default='null')
-
     def __str__(self):
         return self.name
 
     def get_loader(self):
-        cls = import_string(self.loader)
-        return cls(self, **json.loads(self.options))
+        return ExternalLoader(self, url=settings.SNOOP_BASE_URL + f'/collections/{self.name}/json')
 
     def label(self):
         return self.title or self.name
@@ -43,25 +43,18 @@ class Collection(models.Model):
         return rv
 
     def count(self):
-        return es.count(self.id)
+        try:
+            return es.count(self.id)
+        except Exception as e:
+            log = logging.getLogger(__name__)
+            log.exception(e)
+            return -1
 
     def user_access_list(self):
         return ', '.join(u.username for u in self.users.all())
 
     def group_access_list(self):
         return ', '.join(g.name for g in self.groups.all())
-
-    def set_mapping(self):
-        loader = self.get_loader()
-        fields = loader.get_metadata().get('fields', {})
-        es.set_mapping(self.id, fields)
-
-    def reset(self):
-        self.loader_state = json.dumps(None)
-        self.save()
-        es.delete_index(self.id, ok_missing=True)
-        es.create_index(self.id, self.name)
-        self.set_mapping()
 
     def get_document(self, doc_id):
         return es.get(self.id, doc_id)
