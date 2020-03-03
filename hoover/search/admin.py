@@ -11,7 +11,6 @@ from django.utils.module_loading import import_string
 from django.shortcuts import render
 from ..contrib import installed
 from . import models
-from . import uploads
 
 if installed.twofactor:
     from django_otp.admin import OTPAdminSite
@@ -35,7 +34,7 @@ class CollectionAdminForm(forms.ModelForm):
 
 class CollectionAdmin(admin.ModelAdmin):
 
-    list_display = ['__str__', 'count', 'user_access_list', 'group_access_list', 'public', 'upload']
+    list_display = ['__str__', 'count', 'user_access_list', 'group_access_list', 'public']
     fields = ['title', 'name', 'index', 'public', 'users', 'groups', 'loader', 'options']
     filter_horizontal = ['users', 'groups']
 
@@ -43,33 +42,6 @@ class CollectionAdmin(admin.ModelAdmin):
 
     def get_prepopulated_fields(self, request, obj=None):
         return {} if obj else {'name': ['title'], 'index': ['name']}
-
-    def upload(self, obj):
-        if obj.loader == 'hoover.search.loaders.upload.Loader':
-            return '<a href="%s/upload">upload</a>' % obj.pk
-
-    upload.allow_tags = True
-
-    def upload_view(self, request, pk):
-        collection = get_object_or_404(models.Collection, pk=pk)
-
-        if request.method == 'POST':
-            results = uploads.handle_zipfile(
-                request,
-                collection,
-                request.FILES['file'],
-            )
-            return render(request, 'admin-upload-results.html', {
-                'collection': collection,
-                'results': results
-            })
-
-        return render(request, 'admin-upload.html', {'collection': collection})
-
-    def get_urls(self):
-        return [
-            url(r'^(.+)/upload$', self.admin_site.admin_view(self.upload_view)),
-        ] + super(CollectionAdmin, self).get_urls()
 
     def formfield_for_manytomany(self, db_field, request=None, **kwargs):
         field = super().formfield_for_manytomany(db_field, request, **kwargs)

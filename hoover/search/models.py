@@ -1,3 +1,4 @@
+import logging
 import json
 
 from django.db import models
@@ -46,7 +47,6 @@ class Collection(models.Model):
         try:
             return es.count(self.id)
         except Exception as e:
-            log = logging.getLogger(__name__)
             log.exception(e)
             return -1
 
