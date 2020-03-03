@@ -6,5 +6,6 @@ exclude =
     search/wsgi.py
 
 per-file-ignores =
-    testsuite/*: E501, F405, F403
+    testsuite/*: E501, F405, F403, F401, F841, F811
     hoover/search/migrations/*: E501
+    hoover/site/settings/*: F405, F403

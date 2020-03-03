@@ -46,7 +46,7 @@ def oauth2_exchange(request):
             "Expected token_type='Bearer', got {!r}"
             .format(token_type)
         )
-    refresh_token = token_data['refresh_token']
+    # refresh_token = token_data['refresh_token']
     profile_url = INTERNAL_URL + '/accounts/profile'
     profile_resp = requests.get(
         profile_url,

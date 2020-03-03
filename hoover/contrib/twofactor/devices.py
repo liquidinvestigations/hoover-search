@@ -1,7 +1,6 @@
 import qrcode
 import tempfile
 from base64 import b32encode
-from contextlib import contextmanager
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
 APP_NAME = 'Hoover'

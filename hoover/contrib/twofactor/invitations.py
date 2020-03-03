@@ -2,7 +2,6 @@ from django.db import transaction
 from datetime import timedelta
 from django.conf import settings
 from django.http import Http404
-from django.shortcuts import get_object_or_404
 from django.contrib.auth import authenticate, login, get_user_model
 from django.utils.timezone import now
 from django_otp import login as otp_login

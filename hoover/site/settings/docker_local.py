@@ -2,7 +2,7 @@ import os
 import re
 from logzero import logger as log
 
-from .common import *
+from .common import *  # noqa
 
 base_dir = Path(__file__).absolute().parent.parent.parent.parent
 

@@ -5,7 +5,6 @@ from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.contrib.auth.admin import User, Group, UserAdmin, GroupAdmin
 from django.forms import ModelForm
 from django.utils.module_loading import import_string
-from django.shortcuts import render
 from ..contrib import installed
 from . import models
 

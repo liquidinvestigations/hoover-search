@@ -40,7 +40,7 @@ class AuthenticationForm(OTPAuthenticationForm):
 
         try:
             return super().clean_otp(user)
-        except ValidationError as e:
+        except ValidationError:
             signals.login_failure.send('hoover.contrib.twofactor',
                                        otp_failure=True)
             raise

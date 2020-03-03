@@ -79,7 +79,7 @@ class Command(BaseCommand):
     def check_database(self):
         db_conn = connections['default']
         try:
-            c = db_conn.cursor()
+            _ = db_conn.cursor()
         except OperationalError:
             self.print_error("The database settings are not valid.")
             self.print_error("Please check the database access data under DATABASES.")
