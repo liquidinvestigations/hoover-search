@@ -1,6 +1,7 @@
 from time import time
 from django.db import models, IntegrityError, transaction
 
+
 class Count(models.Model):
 
     key = models.CharField(max_length=200, primary_key=True)

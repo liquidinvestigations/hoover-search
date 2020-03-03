@@ -3,6 +3,7 @@ from django.core.management.base import BaseCommand
 from django.conf import settings
 from ... import models
 
+
 class Command(BaseCommand):
 
     help = "Register a collection"

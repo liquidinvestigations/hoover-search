@@ -3,12 +3,14 @@ import requests
 from urllib.parse import urljoin
 from .. import ui
 
+
 def get_json(url):
     resp = requests.get(url)
     if resp.status_code != 200:
         raise RuntimeError("Unexpected response from {}: {!r}"
-            .format(url, resp))
+                           .format(url, resp))
     return resp.json()
+
 
 class Api:
 
@@ -39,6 +41,7 @@ class Api:
     def data(self, id):
         return get_json(self.data_url(id))
 
+
 class Document:
 
     def __init__(self, loader, doc_id):
@@ -56,7 +59,7 @@ class Document:
                 raise Http404
             else:
                 raise RuntimeError("Unexpected response {!r} for {!r}"
-                    .format(resp, url))
+                                   .format(resp, url))
 
         if suffix.startswith('/raw/'):
             suffix = '/raw/data'  # fake filename, prevents url encoding errors
@@ -64,12 +67,13 @@ class Document:
         resp = requests.get(url_with_suffix)
         if 200 <= resp.status_code < 300:
             return HttpResponse(resp.content,
-                content_type=resp.headers['Content-Type'])
+                                content_type=resp.headers['Content-Type'])
         elif resp.status_code == 404:
             raise Http404
         else:
             raise RuntimeError("Unexpected response {!r} for {!r}"
-                .format(resp, url_with_suffix))
+                               .format(resp, url_with_suffix))
+
 
 class Loader:
 
@@ -84,7 +88,7 @@ class Loader:
         documents_with_data = [
             doc if 'content' in doc else self.api.data(doc['id'])
             for doc in documents
-            ]
+        ]
         return (documents_with_data, next_url)
 
     def get(self, doc_id):

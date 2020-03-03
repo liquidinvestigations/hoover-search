@@ -8,6 +8,7 @@ from .fixtures import skip_twofactor, listen
 pytestmark = pytest.mark.django_db
 es = Elasticsearch(settings.HOOVER_ELASTICSEARCH_URL)
 
+
 class MockDoc:
 
     def __init__(self, id, data):
@@ -20,6 +21,7 @@ class MockDoc:
     def get_data(self):
         return self.metadata
 
+
 @pytest.yield_fixture
 def finally_cleanup_index():
     id_list = []
@@ -28,6 +30,7 @@ def finally_cleanup_index():
     finally:
         for id in id_list:
             es.indices.delete(id, ignore=[404])
+
 
 @pytest.fixture
 def api(client, skip_twofactor):
@@ -41,9 +44,9 @@ def api(client, skip_twofactor):
         def search(query, collections):
             data = {'query': query, 'collections': collections}
             res = client.post('/search',
-                data=json.dumps(data).encode('utf-8'),
-                content_type='application/json',
-            )
+                              data=json.dumps(data).encode('utf-8'),
+                              content_type='application/json',
+                              )
             return res.json()
 
         @staticmethod
@@ -65,10 +68,12 @@ def api(client, skip_twofactor):
 
     return Api
 
+
 class Response:
     def __init__(self, **kwargs):
         for k, v in dict({'status_code': 200}, **kwargs).items():
             setattr(self, k, v)
+
 
 class JsonResponse(Response):
     def __init__(self, data, **kwargs):
@@ -80,6 +85,7 @@ class JsonResponse(Response):
     def json(self):
         return json.loads(self.content.decode('utf8'))
 
+
 @pytest.fixture
 def external(monkeypatch):
     class mock_requests:
@@ -89,8 +95,9 @@ def external(monkeypatch):
 
     urlmap = {}
     monkeypatch.setattr('hoover.search.loaders.external.requests',
-        mock_requests)
+                        mock_requests)
     return urlmap
+
 
 def test_all_the_things(finally_cleanup_index, listen, api):
     from hoover.search.es import _index_name, DOCTYPE
@@ -101,7 +108,7 @@ def test_all_the_things(finally_cleanup_index, listen, api):
     assert {c['name'] for c in api.collections()} == {'testcol'}
 
     finally_cleanup_index(_index_name(col.id))
-    doc = MockDoc('mock1', {"content":{"id": "mock1", 'foo': "bar"}, "version": "1.12"})
+    doc = MockDoc('mock1', {"content": {"id": "mock1", 'foo': "bar"}, "version": "1.12"})
     index.index(col, doc)
     es_index_id = _index_name(col.id)
     data = es.get(index=es_index_id, doc_type=DOCTYPE, id='mock1')
@@ -130,7 +137,9 @@ def test_all_the_things(finally_cleanup_index, listen, api):
     assert batch_results['responses'][0]['hits']['total'] == 1
     assert batch_results['responses'][1]['hits']['total'] == 1
 
-@pytest.mark.skip(reason="mgax: i remember that the tests for search are out of date, so maybe just ignore that failure (2018-07-20)")
+
+@pytest.mark.skip(
+    reason="mgax: i remember that the tests for search are out of date, so maybe just ignore that failure (2018-07-20)")
 def test_external_loader(finally_cleanup_index, listen, api, external):
     from hoover.search.es import _index_name, DOCTYPE
     doc_events = listen(signals.doc)

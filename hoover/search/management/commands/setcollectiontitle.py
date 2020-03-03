@@ -2,6 +2,7 @@ import json
 from django.core.management.base import BaseCommand
 from ... import models
 
+
 class Command(BaseCommand):
 
     help = "Set collection title"

@@ -1,5 +1,6 @@
 from . import models
 
+
 class RateLimit:
 
     def __init__(self, limit, interval):

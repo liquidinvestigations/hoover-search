@@ -23,6 +23,7 @@ else:
     def rate_limit(username):
         return False
 
+
 class AuthenticationForm(OTPAuthenticationForm):
 
     def clean_otp(self, user):
@@ -34,15 +35,16 @@ class AuthenticationForm(OTPAuthenticationForm):
                     username=username,
                 )
                 raise ValidationError("Your account is temporarily locked "
-                    "because of too many login failures. Please try again "
-                    "in a few minutes.", code='ratelimit')
+                                      "because of too many login failures. Please try again "
+                                      "in a few minutes.", code='ratelimit')
 
         try:
             return super().clean_otp(user)
         except ValidationError as e:
             signals.login_failure.send('hoover.contrib.twofactor',
-                otp_failure=True)
+                                       otp_failure=True)
             raise
+
 
 @transaction.atomic
 def invitation(request, code):
@@ -70,7 +72,7 @@ def invitation(request, code):
         if not (bad_username or bad_password or bad_token):
             invitations.accept(request, invitation, device, password)
             signals.invitation_accept.send(models.Invitation,
-                username=username)
+                                           username=username)
 
             return render(request, 'totp-invitation-success.html')
 

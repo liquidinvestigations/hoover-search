@@ -2,15 +2,16 @@ import json
 from contextlib import contextmanager
 from django.conf import settings
 from elasticsearch import Elasticsearch
-from elasticsearch.client.utils import _make_path
 from elasticsearch.exceptions import NotFoundError, RequestError, ConnectionError
 from elasticsearch.helpers import bulk
 
 DOCTYPE = 'doc'
 
+
 class SearchError(Exception):
     def __init__(self, reason):
         self.reason = reason
+
 
 @contextmanager
 def elasticsearch():
@@ -27,26 +28,31 @@ def elasticsearch():
             pass
         raise SearchError('Elasticsearch failed: ' + reason)
 
+
 def create_index(collection_id, name):
     with elasticsearch() as es:
         es.indices.create(index=_index_name(collection_id))
+
 
 def _index_name(collection_id):
     from .models import Collection
     return Collection.objects.get(id=collection_id).index
 
+
 def _index_id(index):
     from .models import Collection
     return Collection.objects.get(index=index).id
 
+
 def index(collection_id, doc_id, body):
     with elasticsearch() as es:
-        resp = es.index(
+        es.index(
             index=_index_name(collection_id),
             doc_type=DOCTYPE,
             id=doc_id,
             body=body,
         )
+
 
 def bulk_index(collection_id, docs):
     def index(id, data):
@@ -68,6 +74,7 @@ def bulk_index(collection_id, docs):
     if err:
         raise RuntimeError("Bulk indexing failed on %d documents" % err)
 
+
 def versions(collection_id, doc_id_list):
     with elasticsearch() as es:
         res = es.search(
@@ -88,6 +95,7 @@ def versions(collection_id, doc_id_list):
         for hit in hits
     }
 
+
 def get(collection_id, doc_id):
     with elasticsearch() as es:
         return es.get(
@@ -96,6 +104,7 @@ def get(collection_id, doc_id):
             id=doc_id,
         )
 
+
 def _get_indices(collections):
     from .models import Collection
     indices = ','.join(
@@ -103,6 +112,7 @@ def _get_indices(collections):
         Collection.objects.filter(name__in=collections)
     )
     return indices
+
 
 def batch_count(query_strings, collections, aggs=None):
     def _build_query_lines(query_string, meta={}, aggs=None):
@@ -138,6 +148,7 @@ def batch_count(query_strings, collections, aggs=None):
         response['_query_string'] = query_string
 
     return rv
+
 
 def search(query, _source, highlight, collections, from_, size, sort, aggs, post_filter, search_after):
     indices = _get_indices(collections)

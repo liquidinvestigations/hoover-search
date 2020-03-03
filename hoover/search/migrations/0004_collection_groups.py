@@ -16,6 +16,9 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='collection',
             name='groups',
-            field=models.ManyToManyField(blank=True, related_name='hoover_search_collections', to='auth.Group'),
+            field=models.ManyToManyField(
+                blank=True,
+                related_name='hoover_search_collections',
+                to='auth.Group'),
         ),
     ]

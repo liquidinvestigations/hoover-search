@@ -6,7 +6,6 @@ from django.views.decorators.csrf import csrf_exempt
 from django.urls import reverse
 from django.urls.exceptions import NoReverseMatch
 from django.conf import settings
-from ..contrib import installed
 from . import es
 from .models import Collection
 from . import signals
@@ -16,17 +15,21 @@ from .ratelimit import limit_user, get_request_limits
 def JsonErrorResponse(reason, status=400):
     return JsonResponse({'status': 'error', 'reason': reason}, status=status)
 
+
 def collections_acl(user, collections_arg):
     available = list(Collection.objects_for_user(user))
     requested = set(collections_arg)
     return set(col for col in available if col.name in requested)
 
+
 def ping(request):
     Collection.objects.count()
     return HttpResponse('ok\n')
 
+
 def home(request):
     return render(request, 'home.html')
+
 
 @csrf_exempt
 def collections(request):
@@ -34,6 +37,7 @@ def collections(request):
         {'name': col.name, 'title': col.title}
         for col in Collection.objects_for_user(request.user)
     ], safe=False)
+
 
 def _search(request, **kwargs):
     try:
@@ -44,6 +48,7 @@ def _search(request, **kwargs):
 
     else:
         from .es import _index_id
+
         def col_name(id):
             return Collection.objects.get(id=id).name
 
@@ -57,6 +62,7 @@ def _search(request, **kwargs):
             for i in counts
         }
     return JsonResponse(res)
+
 
 @csrf_exempt
 @limit_user
@@ -91,6 +97,7 @@ def search(request):
             'success': success,
         })
 
+
 @limit_user
 def doc(request, collection_name, id, suffix):
     for collection in Collection.objects_for_user(request.user):
@@ -113,6 +120,7 @@ def doc(request, collection_name, id, suffix):
             'duration': time() - t0,
             'success': success,
         })
+
 
 def whoami(request):
     if settings.HOOVER_AUTHPROXY:
@@ -138,6 +146,7 @@ def whoami(request):
         'urls': urls,
         'title': settings.HOOVER_TITLE,
     })
+
 
 @csrf_exempt
 @limit_user

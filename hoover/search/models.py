@@ -1,10 +1,7 @@
 import logging
-import json
 
 from django.db import models
-from django.dispatch import receiver
 from django.conf import settings
-from django.utils.module_loading import import_string
 
 from . import es
 from .loaders.external import Loader as ExternalLoader
@@ -21,9 +18,9 @@ class Collection(models.Model):
 
     public = models.BooleanField(default=False)
     users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True,
-        related_name='hoover_search_collections')
+                                   related_name='hoover_search_collections')
     groups = models.ManyToManyField('auth.Group', blank=True,
-        related_name='hoover_search_collections')
+                                    related_name='hoover_search_collections')
 
     def __str__(self):
         return self.name

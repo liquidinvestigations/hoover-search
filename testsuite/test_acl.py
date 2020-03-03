@@ -2,6 +2,7 @@ import pytest
 
 pytestmark = pytest.mark.django_db
 
+
 def test_collections_acl_users(client):
     from django.contrib.auth.models import User, AnonymousUser
     from hoover.search.models import Collection

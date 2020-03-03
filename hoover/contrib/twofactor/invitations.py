@@ -10,6 +10,7 @@ from . import models
 from . import signals
 from . import devices
 
+
 @transaction.atomic
 def invite(username, duration, operator=None, create=False):
     if create:
@@ -35,6 +36,7 @@ def invite(username, duration, operator=None, create=False):
     )
     return url
 
+
 def get_or_404(code):
     now_time = now()
     invitations = (
@@ -50,9 +52,10 @@ def get_or_404(code):
 
     if invitation:
         signals.invitation_expired.send(models.Invitation,
-            username=invitation.user.get_username())
+                                        username=invitation.user.get_username())
 
     raise Http404()
+
 
 def device_for_session(request, invitation):
     user = invitation.user
@@ -63,6 +66,7 @@ def device_for_session(request, invitation):
     device = devices.create(user)
     request.session['invitation_device_id'] = device.id
     return device
+
 
 @transaction.atomic
 def accept(request, invitation, device, password):

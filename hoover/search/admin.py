@@ -1,10 +1,7 @@
 from django import forms
-from django.shortcuts import get_object_or_404
-from django.conf.urls import url
 from django.conf import settings
 from django.contrib import admin
 from django.contrib.admin.widgets import FilteredSelectMultiple
-from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import User, Group, UserAdmin, GroupAdmin
 from django.forms import ModelForm
 from django.utils.module_loading import import_string
@@ -64,9 +61,9 @@ class GroupAdminForm(ModelForm):
         exclude = []
 
     users = forms.ModelMultipleChoiceField(
-         queryset=User.objects.all(),
-         required=False,
-         widget=FilteredSelectMultiple('users', False)
+        queryset=User.objects.all(),
+        required=False,
+        widget=FilteredSelectMultiple('users', False)
     )
 
     def __init__(self, *args, **kwargs):
