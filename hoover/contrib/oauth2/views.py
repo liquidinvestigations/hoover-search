@@ -9,8 +9,10 @@ INTERNAL_URL = settings.LIQUID_AUTH_INTERNAL_URL
 CLIENT_ID = settings.LIQUID_AUTH_CLIENT_ID
 CLIENT_SECRET = settings.LIQUID_AUTH_CLIENT_SECRET
 
+
 class ClientError(Exception):
     pass
+
 
 def oauth2_login(request):
     authorize_url = PUBLIC_URL + '/o/authorize/'
@@ -18,6 +20,7 @@ def oauth2_login(request):
         '{}?response_type=code&client_id={}'
         .format(authorize_url, CLIENT_ID)
     )
+
 
 def oauth2_exchange(request):
     token_url = INTERNAL_URL + '/o/token/'
@@ -43,7 +46,7 @@ def oauth2_exchange(request):
             "Expected token_type='Bearer', got {!r}"
             .format(token_type)
         )
-    refresh_token = token_data['refresh_token']
+    # refresh_token = token_data['refresh_token']
     profile_url = INTERNAL_URL + '/accounts/profile'
     profile_resp = requests.get(
         profile_url,
@@ -68,6 +71,7 @@ def oauth2_exchange(request):
     login(request, user)
 
     return redirect(settings.LOGIN_REDIRECT_URL)
+
 
 def oauth2_logout(request):
     logout(request)

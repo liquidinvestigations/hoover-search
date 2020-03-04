@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand
 from ... import models
 from hoover.search.es import delete_index
 
+
 class Command(BaseCommand):
 
     help = "Remove a collection"

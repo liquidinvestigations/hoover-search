@@ -49,7 +49,7 @@ class Command(BaseCommand):
 
         if not have_errors:
             self.print_message("Checking all external collections.")
-            for name, check_fun, collection in  self.get_collection_checkers():
+            for name, check_fun, collection in self.get_collection_checkers():
                 collection_string = "{}: '{}'".format(collection.id, collection.name)
                 self.print_message("  Checking   " + collection_string)
                 result = check_fun()
@@ -79,7 +79,7 @@ class Command(BaseCommand):
     def check_database(self):
         db_conn = connections['default']
         try:
-            c = db_conn.cursor()
+            _ = db_conn.cursor()
         except OperationalError:
             self.print_error("The database settings are not valid.")
             self.print_error("Please check the database access data under DATABASES.")

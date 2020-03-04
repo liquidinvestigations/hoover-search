@@ -7,16 +7,19 @@ from hoover.search.ratelimit import limit_user, HttpLimitExceeded
 
 pytestmark = pytest.mark.django_db
 
+
 @pytest.yield_fixture
 def mock_time(monkeypatch):
     t = now()
     monkeypatch.setattr('hoover.contrib.ratelimit.models.time',
-        lambda: t.timestamp())
+                        lambda: t.timestamp())
+
     def set_time(value):
         nonlocal t
         assert t.tzinfo is utc
         t = value
     yield set_time
+
 
 def test_rate_limit(skip_twofactor, mock_time, listen):
     rate_limit_exceeded = listen(signals.rate_limit_exceeded)

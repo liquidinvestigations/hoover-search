@@ -1,8 +1,7 @@
 from django.conf import settings
 from django.urls import include, path, re_path
-from django.contrib import admin
 from ..search.admin import admin_site
-from ..search import views, uploads, ui
+from ..search import views, ui
 from ..contrib import installed
 
 urlpatterns = [
@@ -43,10 +42,6 @@ else:
     urlpatterns += [
         path('accounts/', include('django.contrib.auth.urls')),
     ]
-
-urlpatterns += [
-    path('uploads/<path:filename>', uploads.serve_file),
-]
 
 if settings.HOOVER_UI_ROOT:
     urlpatterns += [

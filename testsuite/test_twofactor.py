@@ -10,7 +10,8 @@ from .fixtures import listen
 
 pytestmark = pytest.mark.django_db
 
-INVITATION_DURATION = 30 # minutes
+INVITATION_DURATION = 30  # minutes
+
 
 @pytest.yield_fixture
 def mock_time(monkeypatch):
@@ -22,15 +23,18 @@ def mock_time(monkeypatch):
     patch('hoover.contrib.twofactor.middleware.time', mock_time.time)
     patch('hoover.contrib.ratelimit.models.time', mock_time.time)
     patch('django_otp.plugins.otp_totp.models.time', mock_time)
+
     def set_time(value):
         nonlocal t
         assert t.tzinfo is utc
         t = value
     yield set_time
 
+
 def _totp(device, now):
     counter = int(now.timestamp() - device.t0) // device.step
     return hotp(device.bin_key, counter)
+
 
 def _access_homepage(client):
     resp = client.get('/', follow=False)
@@ -43,6 +47,7 @@ def _access_homepage(client):
     else:
         raise RuntimeError("unexpected response %r" % resp)
 
+
 @pytest.mark.parametrize(
     'minutes,username_ok,password_ok,code_ok,invitation,success',
     [
@@ -53,8 +58,8 @@ def _access_homepage(client):
         (10, True, True, False, True, False),
     ])
 def test_flow(client, listen,
-        mock_time, minutes, username_ok, password_ok, code_ok,
-        invitation, success):
+              mock_time, minutes, username_ok, password_ok, code_ok,
+              invitation, success):
 
     invitation_open = listen(signals.invitation_open)
     invitation_accept = listen(signals.invitation_accept)
@@ -92,6 +97,7 @@ def test_flow(client, listen,
     else:
         assert invitation_accept == []
         assert not _access_homepage(client)
+
 
 def _accept(client, invitation, password, mock_now=None):
     client.get(f'/invitation/{invitation.code}')
@@ -141,6 +147,7 @@ def test_login(client, listen, username, password, interval, success):
         assert login_failure == [{'otp_failure': bool(interval)}]
         assert not _access_homepage(client)
 
+
 def test_auto_logout(client, mock_time, listen):
     auto_logout = listen(signals.auto_logout)
     t0 = datetime(2016, 6, 13, 12, 0, 0, tzinfo=utc)
@@ -157,6 +164,7 @@ def test_auto_logout(client, mock_time, listen):
     mock_time(t0 + timedelta(hours=3, minutes=0, seconds=5))
     assert not _access_homepage(client)
     assert auto_logout == [{'username': 'john'}]
+
 
 def test_rate_limit(client, mock_time, listen):
     rate_limit_exceeded = listen(signals.rate_limit_exceeded)

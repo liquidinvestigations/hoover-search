@@ -6,11 +6,13 @@ from django.db import models
 VOCABULARY = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 REQUIRED_ENTROPY = 256
 
+
 def random_code():
     entropy_per_char = math.log(len(VOCABULARY), 2)
     chars = int(math.ceil(REQUIRED_ENTROPY / entropy_per_char))
     urandom = random.SystemRandom()
     return ''.join(urandom.choice(VOCABULARY) for _ in range(chars))
+
 
 class Invitation(models.Model):
 

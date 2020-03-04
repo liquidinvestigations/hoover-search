@@ -2,19 +2,21 @@ import os
 import re
 from logzero import logger as log
 
-from .common import *
+from .common import *  # noqa
 
 base_dir = Path(__file__).absolute().parent.parent.parent.parent
 
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
-_hostname =  os.environ.get('HOOVER_HOSTNAME')
+_hostname = os.environ.get('HOOVER_HOSTNAME')
 if _hostname:
     HOOVER_BASE_URL = 'https://' + _hostname
     ALLOWED_HOSTS = [_hostname]
 
+
 def bool_env(value):
     return (value or '').lower() in ['on', 'true']
+
 
 DEBUG = bool_env(os.environ.get('DEBUG'))
 if DEBUG:
@@ -93,7 +95,6 @@ DATABASES['default']['PASSWORD'] = dbm.group('password')
 STATIC_ROOT = str(base_dir / 'static')
 
 SNOOP_BASE_URL = os.environ.get('SNOOP_BASE_URL')
-HOOVER_UPLOADS_ROOT = str(base_dir / 'uploads')
 HOOVER_UI_ROOT = str(base_dir.parent / 'ui' / 'build')
 HOOVER_EVENTS_DIR = str(base_dir.parent / 'metrics' / 'users')
 HOOVER_ELASTICSEARCH_URL = os.environ.get('HOOVER_ES_URL')

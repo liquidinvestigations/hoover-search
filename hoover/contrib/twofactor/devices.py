@@ -1,10 +1,10 @@
 import qrcode
 import tempfile
 from base64 import b32encode
-from contextlib import contextmanager
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
 APP_NAME = 'Hoover'
+
 
 def create(user):
     return TOTPDevice.objects.create(
@@ -13,14 +13,17 @@ def create(user):
         confirmed=False,
     )
 
+
 def get(user, id):
     return TOTPDevice.objects.devices_for_user(user).get(id=id)
+
 
 def delete_all(user, keep=None):
     for old_device in TOTPDevice.objects.devices_for_user(user):
         if old_device == keep:
             continue
         old_device.delete()
+
 
 def qrencode(data):
     qr = qrcode.make(data)

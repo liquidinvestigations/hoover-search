@@ -54,7 +54,7 @@ if settings.HOOVER_EVENTS_DIR:
         )
 
     @receiver(search_signals.rate_limit_exceeded)
-    def on_rate_limit_exceeded(sender, username, **kw):
+    def on_search_rate_limit_exceeded(sender, username, **kw):
         save(type='rateLimitExceeded', username=username)
 
     if installed.twofactor:
@@ -90,5 +90,5 @@ if settings.HOOVER_EVENTS_DIR:
             save(type='loginFailed', otp_failure=otp_failure)
 
         @receiver(twofactor_signals.rate_limit_exceeded)
-        def on_rate_limit_exceeded(sender, username, **kw):
+        def on_otp_rate_limit_exceeded(sender, username, **kw):
             save(type='otpRateLimitExceeded', username=username)

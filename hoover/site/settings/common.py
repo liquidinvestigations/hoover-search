@@ -100,14 +100,9 @@ HOOVER_ELASTICSEARCH_URL = 'http://localhost:9200'
 HOOVER_TITLE = 'Hoover'
 HOOVER_HYPOTHESIS_EMBED = None
 
-HOOVER_UPLOADS_URL = '/uploads/'
-
 STATIC_ROOT = str(base_dir / 'static')
-HOOVER_UPLOADS_ROOT = str(base_dir / 'uploads')
 
 HOOVER_LOADERS = [
-    'hoover.search.loaders.upload.Loader',
-    'hoover.search.loaders.collectible.Loader',
     'hoover.search.loaders.external.Loader',
 ]
 
@@ -119,7 +114,7 @@ EMBED_HYPOTHESIS = None
 
 _minute = 60
 _hour = 60 * _minute
-HOOVER_TWOFACTOR_INVITATION_VALID = 30 # minutes
+HOOVER_TWOFACTOR_INVITATION_VALID = 30  # minutes
 HOOVER_TWOFACTOR_AUTOLOGOUT = 3 * _hour
 HOOVER_TWOFACTOR_RATELIMIT = None
 HOOVER_RATELIMIT_USER = None

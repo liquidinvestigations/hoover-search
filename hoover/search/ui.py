@@ -7,6 +7,7 @@ from django.utils.html import escapejs
 
 NOCACHE_FILE_TYPES = ['.html']
 
+
 def resolve(filename):
     ui_root = Path(settings.HOOVER_UI_ROOT)
     file = ui_root / filename
@@ -21,6 +22,7 @@ def resolve(filename):
 
     raise Http404()
 
+
 def create_response(file):
     content_type = mimetypes.guess_type(str(file))[0] or None
     resp = FileResponse(file.open('rb'), content_type=content_type)
@@ -28,8 +30,10 @@ def create_response(file):
         resp['Cache-Control'] = 'max-age=31556926'
     return resp
 
+
 def file(request, filename):
     return create_response(resolve(filename))
+
 
 def doc_html(request, data):
     with resolve('doc.html').open('rt', encoding='utf-8') as f:

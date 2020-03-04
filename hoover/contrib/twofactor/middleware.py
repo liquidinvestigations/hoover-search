@@ -29,7 +29,7 @@ class AutoLogout(MiddlewareMixin):
             login_time = request.session.get(LOGIN_TIME_SESSION_KEY) or 0
             if time() - login_time > settings.HOOVER_TWOFACTOR_AUTOLOGOUT:
                 signals.auto_logout.send(AutoLogout,
-                    username=user.get_username())
+                                         username=user.get_username())
                 logout(request)
                 login = "{}?next={}".format(settings.LOGIN_URL, request.path)
                 return HttpResponseRedirect(login)

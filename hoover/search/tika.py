@@ -1,6 +1,7 @@
 from django.conf import settings
 import requests
 
+
 def text(doc):
     resp = requests.put(
         settings.TIKA_URL + '/tika',
@@ -8,6 +9,7 @@ def text(doc):
         data=doc,
     )
     return resp.content.decode('utf-8')
+
 
 def html(doc):
     resp = requests.put(

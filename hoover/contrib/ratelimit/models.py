@@ -1,5 +1,6 @@
 from time import time
-from django.db import models, IntegrityError, transaction
+from django.db import models, transaction
+
 
 class Count(models.Model):
 

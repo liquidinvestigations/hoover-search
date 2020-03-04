@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand
 from django.db.migrations.executor import MigrationExecutor
 from django.db import connections, DEFAULT_DB_ALIAS
 
+
 def is_database_synchronized():
     connection = connections[DEFAULT_DB_ALIAS]
     connection.prepare_database()
