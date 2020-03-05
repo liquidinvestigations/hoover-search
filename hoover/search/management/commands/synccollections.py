@@ -20,9 +20,10 @@ class Command(BaseCommand):
             col, created = models.Collection.objects.update_or_create(
                 name=name,
                 defaults=dict(
-                    title=name.title(),
                     index=name,
-                    public=conf.get('public', True),
+                    # these should be editable from the ui:
+                    # title=name.title(),
+                    # public=conf.get('public', False),
                 ),
             )
             action = "Created" if created else "Updated"
