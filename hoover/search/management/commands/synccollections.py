@@ -21,10 +21,11 @@ class Command(BaseCommand):
                 name=name,
                 defaults=dict(
                     index=name,
-                    # these should be editable from the ui:
-                    # title=name.title(),
-                    # public=conf.get('public', False),
                 ),
             )
+            if created or not col.title:
+                col.title = name
+                col.save()
+
             action = "Created" if created else "Updated"
             print(action, col)
