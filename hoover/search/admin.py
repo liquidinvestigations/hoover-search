@@ -1,10 +1,8 @@
 from django import forms
-from django.conf import settings
 from django.contrib import admin
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.contrib.auth.admin import User, Group, UserAdmin, GroupAdmin
 from django.forms import ModelForm
-from django.utils.module_loading import import_string
 from ..contrib import installed
 from . import models
 
@@ -20,21 +18,11 @@ class HooverAdminSite(_admin_baseclass):
     pass
 
 
-class CollectionAdminForm(forms.ModelForm):
-
-    loader = forms.ChoiceField(choices=[
-        (import_name, import_string(import_name).label)
-        for import_name in settings.HOOVER_LOADERS
-    ])
-
-
 class CollectionAdmin(admin.ModelAdmin):
 
     list_display = ['__str__', 'count', 'user_access_list', 'group_access_list', 'public']
-    fields = ['title', 'name', 'index', 'public', 'users', 'groups', 'loader', 'options']
+    fields = ['title', 'name', 'index', 'public', 'users', 'groups']
     filter_horizontal = ['users', 'groups']
-
-    form = CollectionAdminForm
 
     def get_prepopulated_fields(self, request, obj=None):
         return {} if obj else {'name': ['title'], 'index': ['name']}
