@@ -47,11 +47,11 @@
         },
         "django-otp": {
             "hashes": [
-                "sha256:0009211222388d8ba4a4840b6de21ff24461fd4aad6c6c194926e3091ac65f06",
-                "sha256:a9d39b35f7aa8eee82d6d9769d8004ec538e7d7c2f5a1c5e5525cda90d0e9b69"
+                "sha256:523a87f8d0c52ce9a9f0a5e248c59dab3e85cdda5bbcd106cf49138a8f3f3209",
+                "sha256:ad3206e4a6f461c8968a2366a7cccfb340b93294e604b278aa9ab8b26f1017a1"
             ],
             "index": "pypi",
-            "version": "==0.7.3"
+            "version": "==0.8.1"
         },
         "elasticsearch": {
             "hashes": [
@@ -93,10 +93,10 @@
         },
         "packaging": {
             "hashes": [
-                "sha256:170748228214b70b672c581a3dd610ee51f733018650740e98c7df862a583f73",
-                "sha256:e665345f9eef0c621aa0bf2f8d78cf6d21904eef16a93f020240b704a57f1334"
+                "sha256:3c292b474fda1671ec57d46d739d072bfd495a4f51ad01a055121d81e952b7a3",
+                "sha256:82f77b9bee21c1bafbf35a84905d604d5d1223801d639cf3ed140bd651c08752"
             ],
-            "version": "==20.1"
+            "version": "==20.3"
         },
         "pillow": {
             "hashes": [
