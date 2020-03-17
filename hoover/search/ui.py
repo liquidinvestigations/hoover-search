@@ -28,6 +28,7 @@ def create_response(file):
     resp = FileResponse(file.open('rb'), content_type=content_type)
     if file.suffix not in NOCACHE_FILE_TYPES:
         resp['Cache-Control'] = 'max-age=31556926'
+    resp['X-Frame-Options'] = 'SAMEORIGIN'
     return resp
 
 
