@@ -7,7 +7,7 @@ verify_ssl = true
 
 [packages]
 elasticsearch = "==6.*"
-psycopg2 = "*"
+psycopg2-binary = "*"
 pytest = "*"
 pytest-django = "*"
 requests = "*"
@@ -19,6 +19,7 @@ PyYAML = "*"
 logzero = "*"
 qrcode = "*"
 Pillow = "*"
+cachetools = "*"
 
 [requires]
 python_version = "3.8"

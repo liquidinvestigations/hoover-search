@@ -2,12 +2,18 @@ import logging
 
 from django.db import models
 from django.conf import settings
+from cachetools import cached, TTLCache
 
 from . import es
 from .loaders.external import Loader as ExternalLoader
 
 
 log = logging.getLogger(__name__)
+
+
+@cached(cache=TTLCache(maxsize=128, ttl=30))
+def _get_collection_loader(name):
+    return ExternalLoader(url=settings.SNOOP_BASE_URL + f'/collections/{name}/json')
 
 
 class Collection(models.Model):
@@ -26,7 +32,10 @@ class Collection(models.Model):
         return self.name
 
     def get_loader(self):
-        return ExternalLoader(self, url=settings.SNOOP_BASE_URL + f'/collections/{self.name}/json')
+        return _get_collection_loader(self.name)
+
+    def get_meta(self):
+        return self.get_loader().api.meta
 
     def label(self):
         return self.title or self.name

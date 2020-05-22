@@ -16,16 +16,11 @@ class Api:
 
     def __init__(self, meta_url):
         self.meta_url = meta_url
-        self._meta = None
-
-    def meta(self):
-        if self._meta is None:
-            self._meta = get_json(self.meta_url)
-        return self._meta
+        self.meta = get_json(self.meta_url)
 
     def feed(self, url):
         if url is None:
-            url = urljoin(self.meta_url, self.meta()['feed'])
+            url = urljoin(self.meta_url, self.meta['feed'])
 
         resp = get_json(url)
         next_url = resp.get('next')
@@ -34,8 +29,7 @@ class Api:
         return (resp['documents'], next_url)
 
     def data_url(self, id):
-        meta = self.meta()
-        data_url = meta['data_urls'].replace('{id}', id)
+        data_url = self.meta['data_urls'].replace('{id}', id)
         return urljoin(self.meta_url, data_url)
 
     def data(self, id):
@@ -79,7 +73,7 @@ class Loader:
 
     label = "External"
 
-    def __init__(self, collection, **config):
+    def __init__(self, **config):
         self.api = Api(config['url'])
         self.config = config
 

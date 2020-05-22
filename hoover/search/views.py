@@ -34,7 +34,7 @@ def home(request):
 @csrf_exempt
 def collections(request):
     return JsonResponse([
-        {'name': col.name, 'title': col.title}
+        {'name': col.name, 'title': col.title, 'stats': col.get_meta()['stats']}
         for col in Collection.objects_for_user(request.user)
     ], safe=False)
 
