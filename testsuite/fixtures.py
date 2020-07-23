@@ -16,6 +16,7 @@ def listen():
 
     def listen(signal):
         events = []
+
         @receiver(signal)
         def listener(sender, **kwargs):
             events.append({k: kwargs[k] for k in kwargs

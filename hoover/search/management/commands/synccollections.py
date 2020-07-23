@@ -5,17 +5,17 @@ from ... import models
 
 
 class Command(BaseCommand):
-
     help = "Register a collection"
 
     def add_arguments(self, parser):
-        parser.add_argument('snoop_collections')
+        parser.add_argument('snoop_collections_json')
 
-    def handle(self, snoop_collections, **kwargs):
+    def handle(self, snoop_collections_json, **kwargs):
         snoop_base_url = settings.SNOOP_BASE_URL
         assert snoop_base_url
 
-        for conf in json.loads(snoop_collections):
+        snoop_collections = json.loads(snoop_collections_json)
+        for conf in snoop_collections:
             name = conf['name']
             col, created = models.Collection.objects.update_or_create(
                 name=name,
@@ -29,3 +29,7 @@ class Command(BaseCommand):
 
             action = "Created" if created else "Updated"
             print(action, col)
+
+        to_delete = models.Collection.objects.exclude(name__in=[c['name'] for c in snoop_collections])
+        print('Deleting', to_delete.count(), 'collections')
+        to_delete.delete()
