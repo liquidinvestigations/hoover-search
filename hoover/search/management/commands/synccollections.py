@@ -15,8 +15,14 @@ class Command(BaseCommand):
         assert snoop_base_url
 
         snoop_collections = json.loads(snoop_collections_json)
+        print('json string has', len(snoop_collections), 'collections')
+        to_delete = models.Collection.objects.exclude(name__in=[c['name'] for c in snoop_collections])
+        print('Deleting', to_delete.count(), 'collections')
+        to_delete.delete()
+
         for conf in snoop_collections:
             name = conf['name']
+            print('Handling collection', name)
             col, created = models.Collection.objects.update_or_create(
                 name=name,
                 defaults=dict(
@@ -29,7 +35,3 @@ class Command(BaseCommand):
 
             action = "Created" if created else "Updated"
             print(action, col)
-
-        to_delete = models.Collection.objects.exclude(name__in=[c['name'] for c in snoop_collections])
-        print('Deleting', to_delete.count(), 'collections')
-        to_delete.delete()
