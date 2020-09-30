@@ -6,6 +6,7 @@ from cachetools import cached, TTLCache
 
 from . import es
 from .loaders.external import Loader as ExternalLoader
+from .loaders.external import get_json
 
 
 log = logging.getLogger(__name__)
@@ -30,6 +31,9 @@ class Collection(models.Model):
 
     def __str__(self):
         return self.name
+
+    def get_doc(self, url):
+        return get_json(url)
 
     def get_loader(self):
         return _get_collection_loader(self.name)

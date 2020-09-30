@@ -1,4 +1,5 @@
 import json
+import urllib
 from time import time
 from django.shortcuts import render
 from django.http import HttpResponse, Http404, JsonResponse
@@ -100,6 +101,13 @@ def search(request):
 
 @limit_user
 def doc(request, collection_name, id, suffix):
+    query_string = urllib.parse.urlencode(request.GET)
+    if not suffix:
+        suffix = '/json'
+    full_path = settings.SNOOP_BASE_URL + f'/collections/{collection_name}{suffix}'
+    if (query_string):
+        full_path += f'?{query_string}'
+    
     for collection in Collection.objects_for_user(request.user):
         if collection.name == collection_name:
             break
@@ -108,7 +116,7 @@ def doc(request, collection_name, id, suffix):
     t0 = time()
     success = False
     try:
-        rv = collection.get_loader().get(id).view(request, suffix)
+        rv = collection.get_doc(full_path)
         success = True
         return rv
 
