@@ -22,7 +22,6 @@ class NoCache(MiddlewareMixin):
 class AuthproxyUserMiddleware(RemoteUserMiddleware):
 
     header = 'HTTP_X_FORWARDED_USER'
-    is_admin_header = 'HTTP_X_FORWARDED_USER_ADMIN'
 
     def process_request(self, request):
         if not settings.HOOVER_AUTHPROXY:
@@ -30,9 +29,36 @@ class AuthproxyUserMiddleware(RemoteUserMiddleware):
 
         super().process_request(request)
 
+        if not request.META.get(self.header):
+            return
+
         user = request.user
-        is_admin = (request.META.get(self.is_admin_header) == 'true')
+        username = request.META.get(self.header)
+        assert user.username == username
+
+        email = request.META.get('HTTP_X_FORWARDED_EMAIL')
+        full_name = request.META.get('HTTP_X_FORWARDED_PREFERRED_USERNAME')
+        groups = [
+            x.strip()
+            for x in request.META.get('HTTP_X_FORWARDED_GROUPS').split(',')
+        ]
+
+        is_admin = ('admin' in groups)
+        save = False
         if is_admin != user.is_superuser or is_admin != user.is_staff:
             user.is_superuser = is_admin
             user.is_staff = is_admin
+            save = True
+
+        if email != user.email:
+            user.email = email
+            save = True
+
+        if full_name != user.get_full_name() and \
+                full_name != user.get_username() and \
+                ' ' in full_name:
+            user.first_name, user.last_name = full_name.split(' ', maxsplit=1)
+            save = True
+
+        if save:
             user.save()
