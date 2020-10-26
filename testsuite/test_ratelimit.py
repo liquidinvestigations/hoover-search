@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 import pytest
 from django.utils.timezone import utc, now
-from .fixtures import skip_twofactor, listen
+from .fixtures import listen
 from hoover.search import signals
 from hoover.search.ratelimit import limit_user, HttpLimitExceeded
 
@@ -21,7 +21,7 @@ def mock_time(monkeypatch):
     yield set_time
 
 
-def test_rate_limit(skip_twofactor, mock_time, listen):
+def test_rate_limit(mock_time, listen):
     rate_limit_exceeded = listen(signals.rate_limit_exceeded)
     t0 = datetime(2016, 6, 13, 12, 0, 0, tzinfo=utc)
 

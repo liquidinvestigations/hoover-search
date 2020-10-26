@@ -3,17 +3,10 @@ from django.contrib import admin
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.contrib.auth.admin import User, Group, UserAdmin, GroupAdmin
 from django.forms import ModelForm
-from ..contrib import installed
 from . import models
 
-if installed.twofactor:
-    from django_otp.admin import OTPAdminSite
-    _admin_baseclass = OTPAdminSite
-else:
-    _admin_baseclass = admin.AdminSite
 
-
-class HooverAdminSite(_admin_baseclass):
+class HooverAdminSite(admin.AdminSite):
 
     pass
 
@@ -83,9 +76,6 @@ class HooverUserAdmin(UserAdmin):
         }),
         ('Important dates', {'fields': ('last_login', 'date_joined')}),
     )
-    if installed.twofactor:
-        from ..contrib.twofactor.admin import create_invitations
-        actions.append(create_invitations)
 
 
 admin_site = HooverAdminSite(name='hoover-admin')

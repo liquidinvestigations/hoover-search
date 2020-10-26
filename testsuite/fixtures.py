@@ -2,14 +2,6 @@ import pytest
 from django.dispatch import receiver
 
 
-@pytest.fixture()
-def skip_twofactor(monkeypatch):
-    monkeypatch.setattr(
-        'hoover.contrib.twofactor.middleware.RequireAuth.process_request',
-        lambda self, request: None
-    )
-
-
 @pytest.yield_fixture()
 def listen():
     funcs = []

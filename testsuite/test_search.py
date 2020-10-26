@@ -3,7 +3,7 @@ import pytest
 from django.conf import settings
 from elasticsearch import Elasticsearch
 from hoover.search import models, signals
-from .fixtures import skip_twofactor, listen
+from .fixtures import listen
 
 pytestmark = pytest.mark.django_db
 es = Elasticsearch(settings.HOOVER_ELASTICSEARCH_URL)
@@ -33,7 +33,7 @@ def finally_cleanup_index():
 
 
 @pytest.fixture
-def api(client, skip_twofactor):
+def api(client):
     class Api:
         @staticmethod
         def collections():
