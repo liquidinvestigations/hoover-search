@@ -95,7 +95,10 @@ DATABASES['default']['PASSWORD'] = dbm.group('password')
 STATIC_ROOT = str(base_dir / 'static')
 
 SNOOP_BASE_URL = os.environ.get('SNOOP_BASE_URL')
-HOOVER_UI_ROOT = str(base_dir.parent / 'ui' / 'build')
+HOOVER_UI_BASE_URL = os.environ.get('HOOVER_UI_BASE_URL')
+if HOOVER_UI_BASE_URL:
+    log.info("Enabling Proxying to UI Server at %s", HOOVER_UI_BASE_URL)
+
 HOOVER_EVENTS_DIR = str(base_dir.parent / 'metrics' / 'users')
 HOOVER_ELASTICSEARCH_URL = os.environ.get('HOOVER_ES_URL')
 HOOVER_TITLE = os.environ.get('HOOVER_TITLE', 'Hoover')

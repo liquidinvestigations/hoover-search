@@ -1,56 +1,35 @@
-from pathlib import Path
-import json
-import mimetypes
+import logging
+
 from django.conf import settings
-from django.http import HttpResponse, FileResponse, Http404
-from django.utils.html import escapejs
+from django.http import HttpResponse
+import requests
 
-NOCACHE_FILE_TYPES = ['.html']
-
-
-def resolve(filename):
-    ui_root = Path(settings.HOOVER_UI_ROOT)
-    file = ui_root / filename
-    if not (ui_root == file or ui_root in file.parents):
-        raise Http404()
-
-    if file.is_dir():
-        file = file / 'index.html'
-
-    if file.is_file():
-        return file
-
-    raise Http404()
+log = logging.getLogger(__name__)
 
 
-def create_response(file):
-    content_type = mimetypes.guess_type(str(file))[0] or None
-    resp = FileResponse(file.open('rb'), content_type=content_type)
-    if file.suffix not in NOCACHE_FILE_TYPES:
-        resp['Cache-Control'] = 'max-age=31556926'
-    resp['X-Frame-Options'] = 'SAMEORIGIN'
-    return resp
+def proxy(request, path):
+    # FIXME - urljoin cuts existing path prefix in base
+    url = settings.HOOVER_UI_BASE_URL + '/' + path
+    log.warning(f'proxying {path} to {url}')
 
-
-def file(request, filename):
-    return create_response(resolve(filename))
-
-
-def doc_html(request, data):
-    with resolve('doc.html').open('rt', encoding='utf-8') as f:
-        html = f.read()
-
-    data_json = escapejs(json.dumps(data))
-    html = html.replace(
-        '/* HOOVER HYDRATION PLACEHOLDER */',
-        'window.HOOVER_HYDRATE_DOC = JSON.parse(\'{}\')'.format(data_json),
+    r_resp = requests.request(
+        method=request.method,
+        url=url,
+        params=request.GET if request.method == 'GET' else {},
+        data=request.body,
+        headers={k: str(v) for k, v in request.META.items()},
+        cookies=request.COOKIES,
     )
 
-    scripts = ''
-    if settings.HOOVER_HYPOTHESIS_EMBED_URL:
-        url = settings.HOOVER_HYPOTHESIS_EMBED_URL
-        scripts += '<script src="{}"></script>'.format(url)
+    c_type = r_resp.headers.get('Content-Type', 'text/html')
+    d_resp = HttpResponse(
+        r_resp.content,
+        content_type=c_type,
+        status=r_resp.status_code,
+    )
 
-    html = html.replace('<!-- HOOVER SCRIPT PLACEHOLDER -->', scripts)
+    if c_type not in ['text/html']:
+        d_resp['Cache-Control'] = 'max-age=31556926'
 
-    return HttpResponse(html)
+    d_resp['X-Frame-Options'] = 'SAMEORIGIN'
+    return d_resp

@@ -39,7 +39,7 @@ def _totp(device, now):
 def _access_homepage(client):
     resp = client.get('/', follow=False)
     if resp.status_code == 200:
-        content = b''.join(resp.streaming_content).decode('utf-8')
+        content = b''.join(resp.content).decode('utf-8')
         assert content == 'hoover ui homepage\n'
         return True
     elif resp.status_code == 302:
