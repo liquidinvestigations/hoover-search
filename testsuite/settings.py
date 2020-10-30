@@ -5,7 +5,6 @@ from hoover.site.settings.common import *
 testsuite_dir = Path(__file__).absolute().parent
 
 SECRET_KEY = 'testing secret key'
-HOOVER_UI_ROOT = str(testsuite_dir / 'mock_ui')
 HOOVER_BASE_URL = 'http://testserver'
 HOOVER_RATELIMIT_USER = (30, 60)  # 30 per minute
 

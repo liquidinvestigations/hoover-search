@@ -1,7 +1,6 @@
-from django.conf import settings
 from django.urls import include, path, re_path
 from ..search.admin import admin_site
-from ..search import views, ui
+from ..search import views
 
 # FIXME take /api/v0 routes to separate list, include that under prefix once
 urlpatterns = [
@@ -17,12 +16,7 @@ urlpatterns = [
     re_path(r'^api/v0/doc/(?P<collection_name>[^/]+)/(?P<id>[^/]+)(?P<suffix>.*)$', views.doc),
 ]
 
-if settings.HOOVER_UI_BASE_URL:
-    urlpatterns += [
-        re_path(r'^(?P<path>.*)$', ui.proxy),
-        path('', ui.proxy, name='home'),
-    ]
-else:
-    urlpatterns += [
-        path('', views.home, name='home'),
-    ]
+# else:
+#     urlpatterns += [
+#         path('', views.home, name='home'),
+#     ]
