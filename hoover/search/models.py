@@ -11,7 +11,7 @@ from .loaders.external import Loader as ExternalLoader
 log = logging.getLogger(__name__)
 
 
-@cached(cache=TTLCache(maxsize=128, ttl=30))
+@cached(cache=TTLCache(maxsize=128, ttl=59))
 def _get_collection_loader(name):
     return ExternalLoader(url=settings.SNOOP_BASE_URL + f'/collections/{name}/json')
 
