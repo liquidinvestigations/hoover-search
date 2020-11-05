@@ -50,7 +50,7 @@ class Document:
         if suffix.startswith('/raw/'):
             suffix = '/raw/data'  # fake filename, prevents url encoding errors
         url_with_suffix = urljoin(url, suffix[1:])
-        resp = requests.get(url_with_suffix)
+        resp = requests.get(url_with_suffix, params=request.GET)
         if 200 <= resp.status_code < 300:
             return HttpResponse(resp.content,
                                 content_type=resp.headers['Content-Type'])
