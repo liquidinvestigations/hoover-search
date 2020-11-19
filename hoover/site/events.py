@@ -6,7 +6,6 @@ if settings.HOOVER_EVENTS_DIR:
     import json
     from pathlib import Path
     from django.dispatch import receiver
-    from ..contrib import installed
     from ..search import signals as search_signals
 
     root = Path(settings.HOOVER_EVENTS_DIR)
@@ -56,39 +55,3 @@ if settings.HOOVER_EVENTS_DIR:
     @receiver(search_signals.rate_limit_exceeded)
     def on_search_rate_limit_exceeded(sender, username, **kw):
         save(type='rateLimitExceeded', username=username)
-
-    if installed.twofactor:
-        from django.contrib.auth import signals as auth_signals
-        from ..contrib.twofactor import signals as twofactor_signals
-
-        @receiver(auth_signals.user_logged_in)
-        def on_login(sender, user, **kw):
-            save(type='login', username=user.get_username())
-
-        @receiver(twofactor_signals.invitation_create)
-        def on_invitation_create(sender, username, operator, **kw):
-            save(type='invitationCreate', username=username, operator=operator)
-
-        @receiver(twofactor_signals.invitation_open)
-        def on_invitation_open(sender, username, **kw):
-            save(type='invitationOpen', username=username)
-
-        @receiver(twofactor_signals.invitation_accept)
-        def on_invitation_accept(sender, username, **kw):
-            save(type='invitationAccept', username=username)
-
-        @receiver(twofactor_signals.invitation_expired)
-        def on_invitation_expired(sender, username, **kw):
-            save(type='invitationExpired', username=username)
-
-        @receiver(twofactor_signals.auto_logout)
-        def on_auto_logout(sender, username, **kw):
-            save(type='forceLogout', username=username)
-
-        @receiver(twofactor_signals.login_failure)
-        def on_login_failure(sender, otp_failure, **kw):
-            save(type='loginFailed', otp_failure=otp_failure)
-
-        @receiver(twofactor_signals.rate_limit_exceeded)
-        def on_otp_rate_limit_exceeded(sender, username, **kw):
-            save(type='otpRateLimitExceeded', username=username)

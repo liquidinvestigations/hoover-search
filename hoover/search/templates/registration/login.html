@@ -41,24 +41,8 @@
     {% endfor %}
   </fieldset>
 
-  {% if HOOVER_INSTALLED.twofactor %}
-  <fieldset class="form-group row{% if form.errors.otp_token %} has-danger{% endif %}">
-    {{ form.otp_token.label_tag }}
-    <div class="col-sm-4">
-      {{ form.otp_token }}
-    </div>
-    {% for message in form.errors.otp_token %}
-      <div class="form-control-feedback">{{ message }}</div>
-    {% endfor %}
-  </fieldset>
-  {% endif %}
-
   <button type="submit" class="btn btn-primary">login</button>
   <input type="hidden" name="next" value="{{ next }}" />
 </form>
-
-{% if not HOOVER_INSTALLED.twofactor %}
-<p><a href="{% url 'password_reset' %}">Lost password?</a></p>
-{% endif %}
 
 {% endblock %}
