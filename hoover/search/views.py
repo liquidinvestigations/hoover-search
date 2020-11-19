@@ -1,4 +1,6 @@
 import json
+import os
+import urllib.parse
 from time import time
 from django.shortcuts import render
 from django.http import HttpResponse, Http404, JsonResponse
@@ -124,7 +126,7 @@ def doc(request, collection_name, id, suffix):
 
 def whoami(request):
     if settings.HOOVER_AUTHPROXY:
-        logout_url = '/__auth/logout'
+        logout_url = "/oauth2/sign_out?rd=" + urllib.parse.quote(str(os.getenv('LIQUID_CORE_LOGOUT_URL')), safe='')
     else:
         logout_url = reverse('logout') + '?next=/'
 

@@ -1,12 +1,22 @@
 FROM python:3.8
 ENV PYTHONUNBUFFERED 1
 
+# merge
+
 RUN set -e \
  && echo 'deb http://deb.debian.org/debian stable non-free' >> /etc/apt/sources.list \
  && echo 'deb http://deb.debian.org/debian stable-updates non-free' >> /etc/apt/sources.list \
  && echo 'deb http://security.debian.org stable/updates non-free' >> /etc/apt/sources.list \
  && pip install pipenv \
- && mkdir -p /opt/hoover/search
+ && mkdir -p /opt/hoover/search \
+ && apt-get update \
+ && apt-get install sudo
+
+ARG UNAME=liquid
+ARG UID=666
+ARG GID=666
+RUN groupadd -g $GID -o $UNAME
+RUN useradd -m -u $UID -g $GID -o -s /bin/bash $UNAME
 
 WORKDIR /opt/hoover/search
 
@@ -24,4 +34,11 @@ RUN set -e \
  && SECRET_KEY=temp HOOVER_DB='postgresql://search:search@search-pg:5432/search' ./manage.py collectstatic --noinput \
  && chmod +x /wait
 
-CMD ./runserver
+ENV USER_NAME $UNAME
+
+RUN mkdir -p /opt/hoover/metrics
+RUN chown -R 666:666 /opt/hoover/metrics
+
+ENTRYPOINT ["/opt/hoover/search/docker-entrypoint.sh"]
+
+CMD /opt/hoover/search/runserver

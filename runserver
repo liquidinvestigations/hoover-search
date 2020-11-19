@@ -2,4 +2,6 @@
 
 /wait
 # exec ./manage.py runserver 0.0.0.0:80
+whami
+
 exec waitress-serve --port 80 hoover.site.wsgi:application
