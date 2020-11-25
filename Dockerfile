@@ -37,6 +37,10 @@ RUN set -e \
 ENV USER_NAME $UNAME
 ENV DATA_DIR /opt/hoover/search
 
+mkdir -p /opt/hoover/metrics
+chown -R 666:666 /opt/hoover/metrics
+
+
 ENTRYPOINT ["/opt/hoover/search/docker-entrypoint.sh"]
 
 CMD /opt/hoover/search/runserver
