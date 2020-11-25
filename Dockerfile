@@ -35,6 +35,7 @@ RUN set -e \
  && chmod +x /wait
 
 ENV USER_NAME $UNAME
+ENV DATA_DIR /opt/hoover/search
 
 ENTRYPOINT ["/opt/hoover/search/docker-entrypoint.sh"]
 
