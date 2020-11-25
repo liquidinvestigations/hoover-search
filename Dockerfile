@@ -10,7 +10,7 @@ RUN set -e \
  && pip install pipenv \
  && mkdir -p /opt/hoover/search \
  && apt-get update \
- && apt-get install sudo
+ && apt-get install -y gosu
 
 ARG UNAME=liquid
 ARG UID=666
@@ -35,9 +35,6 @@ RUN set -e \
  && chmod +x /wait
 
 ENV USER_NAME $UNAME
-
-RUN mkdir -p /opt/hoover/metrics
-RUN chown -R 666:666 /opt/hoover/metrics
 
 ENTRYPOINT ["/opt/hoover/search/docker-entrypoint.sh"]
 

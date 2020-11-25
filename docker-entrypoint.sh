@@ -1,5 +1,9 @@
 #!/bin/sh -ex
 
+mkdir -p /opt/hoover/metrics
+chown -R 666:666 /opt/hoover/metrics
+
 # chown $UID:$GID $DATA_DIR/*
 
-sudo -Eu $USER_NAME "$@"
+exec gosu $USER_NAME "$@"
+# sudo -Eu $USER_NAME "$@"
