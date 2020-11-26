@@ -7,16 +7,17 @@ RUN set -e \
  && echo 'deb http://deb.debian.org/debian stable non-free' >> /etc/apt/sources.list \
  && echo 'deb http://deb.debian.org/debian stable-updates non-free' >> /etc/apt/sources.list \
  && echo 'deb http://security.debian.org stable/updates non-free' >> /etc/apt/sources.list \
- && pip install pipenv \
- && mkdir -p /opt/hoover/search \
  && apt-get update \
- && apt-get install -y gosu
+ && apt-get install -y gosu \
+ && pip install pipenv \
 
-ARG UNAME=liquid
+RUN mkdir -p /opt/hoover/search
+
+ARG USER_NAME=liquid
 ARG UID=666
 ARG GID=666
-RUN groupadd -g $GID -o $UNAME
-RUN useradd -m -u $UID -g $GID -o -s /bin/bash $UNAME
+RUN groupadd -g $GID -o $USER_NAME
+RUN useradd -m -u $UID -g $GID -o -s /bin/bash $USER_NAME
 
 WORKDIR /opt/hoover/search
 
@@ -34,11 +35,11 @@ RUN set -e \
  && SECRET_KEY=temp HOOVER_DB='postgresql://search:search@search-pg:5432/search' ./manage.py collectstatic --noinput \
  && chmod +x /wait
 
-ENV USER_NAME $UNAME
+ENV USER_NAME $USER_NAME
 ENV DATA_DIR /opt/hoover/search
 
-mkdir -p /opt/hoover/metrics
-chown -R 666:666 /opt/hoover/metrics
+RUN mkdir -p /opt/hoover/metrics
+RUN chown $UID:$GID /opt/hoover/metrics
 
 
 ENTRYPOINT ["/opt/hoover/search/docker-entrypoint.sh"]

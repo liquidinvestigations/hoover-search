@@ -1,6 +1,5 @@
 #!/bin/sh -ex
 
-# chown -R $UID:$GID $DATA_DIR/*
+chown -R $UID:$GID $DATA_DIR
 
 exec gosu $USER_NAME "$@"
-# sudo -Eu $USER_NAME "$@"
