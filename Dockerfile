@@ -9,7 +9,7 @@ RUN set -e \
  && echo 'deb http://security.debian.org stable/updates non-free' >> /etc/apt/sources.list \
  && apt-get update \
  && apt-get install -y gosu \
- && pip install pipenv \
+ && pip install pipenv
 
 RUN mkdir -p /opt/hoover/search
 
