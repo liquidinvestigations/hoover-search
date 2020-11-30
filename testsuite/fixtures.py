@@ -11,8 +11,7 @@ def listen():
 
         @receiver(signal)
         def listener(sender, **kwargs):
-            events.append({k: kwargs[k] for k in kwargs
-                           if k in signal.providing_args})
+            events.append({k: kwargs[k] for k in kwargs})
         funcs.append(listener)
         return events
 
