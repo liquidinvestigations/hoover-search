@@ -1,16 +1,6 @@
 kind: pipeline
 name: publish to docker hub
 
-# trigger:
-#   status:
-#   - success
-#   event:
-#   - push
-#   - tag
-#
-# depends_on:
-# - test
-
 steps:
 - name: flake8
   image: alpine/flake8:3.7.9
@@ -76,15 +66,6 @@ services:
 steps:
 - name: run tests
   image: liquidinvestigations/hoover-search:${DRONE_COMMIT_BRANCH}
-  # volumes:
-  # - name: search-v-build
-  #   path: /opt/hoover/ui/build
-  # - name: search-v-metrics
-  #   path: /opt/hoover/metrics
-  # - name: search-v-settings
-  #   path: /opt/hoover/search/hoover/site/settings/local.py
-  # - name: search-v-testing
-  #   path: /opt/hoover/search/hoover/site/settings/testing_local.py
   environment:
     HOOVER_DB: postgresql://search:search@search-pg:5432/search
     WAIT_HOSTS: search-es:9200, search-pg:5432
@@ -102,26 +83,10 @@ steps:
 volumes:
 # - name: search-pg-v
 #   temp: {}
-#   host:
-#     path: /drone/src/volumes/search-pg/data
 # - name: search-es-v-data
-#   host:
-#     path: /drone/src/volumes/search-es/data
+#   temp: {}
 # - name: search-es-v-snapshot
-#   host:
-#     path: /drone/src/volumes/search-es-snapshots
-# - name: search-v-build
-#   host:
-#     path: /drone/src/ui/build
-# - name: search-v-metrics
-#   host:
-#     path: /drone/src/volumes/metrics
-# - name: search-v-settings
-#   host:
-#     path: /drone/src/settings/search-settings.py
-# - name: search-v-testing
-#   host:
-#     path: /drone/src/settings/search-settings-testing.py
+#   temp: {}
 ---
 
 kind: secret

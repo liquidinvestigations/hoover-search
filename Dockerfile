@@ -1,8 +1,6 @@
 FROM python:3.8
 ENV PYTHONUNBUFFERED 1
 
-# merge
-
 RUN set -e \
  && echo 'deb http://deb.debian.org/debian stable non-free' >> /etc/apt/sources.list \
  && echo 'deb http://deb.debian.org/debian stable-updates non-free' >> /etc/apt/sources.list \
@@ -34,6 +32,8 @@ RUN set -e \
  && SECRET_KEY=temp HOOVER_DB='postgresql://search:search@search-pg:5432/search' ./manage.py downloadassets \
  && SECRET_KEY=temp HOOVER_DB='postgresql://search:search@search-pg:5432/search' ./manage.py collectstatic --noinput \
  && chmod +x /wait
+
+RUN chown -R $UID:$GID /opt/hoover/search
 
 ENV USER_NAME $USER_NAME
 ENV DATA_DIR /opt/hoover/search
