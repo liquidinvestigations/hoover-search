@@ -12,6 +12,7 @@ from . import es
 from .models import Collection
 from . import signals
 from .ratelimit import limit_user, get_request_limits
+import requests
 
 
 def JsonErrorResponse(reason, status=400):
@@ -122,6 +123,33 @@ def doc(request, collection_name, id, suffix):
             'duration': time() - t0,
             'success': success,
         })
+
+
+@limit_user
+def doc_tags(request, collection_name, id, suffix):
+    for collection in Collection.objects_for_user(request.user):
+        if collection.name == collection_name:
+            break
+    else:
+        raise Http404
+
+    user = request.user.username
+    url = settings.SNOOP_BASE_URL + f"/collections/{collection_name}/{id}/tags/{user}{suffix}"
+    r = requests.request(
+        method=request.method,
+        url=url,
+        data=request.body,
+        params=request.GET or request.POST,
+        cookies=request.COOKIES,
+        headers=request.headers,
+    )
+
+    return HttpResponse(
+        r.content,
+        content_type=r.headers['Content-Type'],
+        status=r.status_code,
+        reason=r.reason,
+    )
 
 
 def whoami(request):

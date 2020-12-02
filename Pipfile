@@ -20,6 +20,12 @@ logzero = "*"
 qrcode = "*"
 Pillow = "*"
 cachetools = "*"
+djangorestframework = "*"
+markdown = "*"
+django-filter = "*"
+pyyaml = "*"
+drf-yasg = "*"
+uritemplate = "*"
 
 [requires]
-python_version = "3.8"
+python_version = "3.9"
