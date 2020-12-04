@@ -62,6 +62,8 @@ SNOOP_BASE_URL = os.environ.get('SNOOP_BASE_URL')
 HOOVER_EVENTS_DIR = str(base_dir.parent / 'metrics' / 'users')
 HOOVER_ELASTICSEARCH_URL = os.environ.get('HOOVER_ES_URL')
 HOOVER_TITLE = os.environ.get('HOOVER_TITLE', 'Hoover')
+HOOVER_LIQUID_TITLE = os.environ.get('HOOVER_LIQUID_TITLE', 'Liquid')
+HOOVER_LIQUID_URL = os.environ.get('HOOVER_LIQUID_URL', 'http://liquid')
 HOOVER_HYPOTHESIS_EMBED = os.environ.get('HOOVER_HYPOTHESIS_EMBED')
 
 

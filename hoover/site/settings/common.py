@@ -101,6 +101,8 @@ OTP_TOTP_SYNC = False
 HOOVER_ELASTICSEARCH_URL = 'http://localhost:9200'
 
 HOOVER_TITLE = 'Hoover'
+HOOVER_LIQUID_TITLE = "Liquid"
+HOOVER_LIQUID_URL = 'http://liquid'
 HOOVER_HYPOTHESIS_EMBED = None
 
 STATIC_ROOT = str(base_dir / 'static')

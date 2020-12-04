@@ -147,6 +147,10 @@ def whoami(request):
         'admin': request.user.is_superuser,
         'urls': urls,
         'title': settings.HOOVER_TITLE,
+        'liquid': {
+            'title': settings.HOOVER_LIQUID_TITLE,
+            'url': settings.HOOVER_LIQUID_URL,
+        },
     })
 
 
