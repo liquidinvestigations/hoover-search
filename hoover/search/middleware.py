@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.utils.cache import add_never_cache_headers
 from django.utils.deprecation import MiddlewareMixin
 from django.conf import settings
@@ -45,6 +46,9 @@ class AuthproxyUserMiddleware(RemoteUserMiddleware):
 
         is_admin = ('admin' in groups)
         save = False
+        if not User.objects.filter(username=username).exists():
+            save = True
+
         if is_admin != user.is_superuser or is_admin != user.is_staff:
             user.is_superuser = is_admin
             user.is_staff = is_admin
