@@ -43,9 +43,9 @@ depends_on:
 services:
 - name: search-pg
   image: postgres:9.6
-  # volumes:
-  # - name: search-pg-v
-  #   path: /var/lib/postgresql/data
+  volumes:
+  - name: search-pg-v
+    path: /var/lib/postgresql/data
   environment:
     POSTGRES_USER: search
     POSTGRES_DATABASE: search
@@ -53,11 +53,11 @@ services:
 
 - name: search-es
   image: docker.elastic.co/elasticsearch/elasticsearch:6.8.3
-  # volumes:
-  # - name: search-es-v-data
-  #   path: /usr/share/elasticsearch/data
-  # - name: search-es-v-snapshot
-  #   path: /opt/hoover/es-snapshots
+  volumes:
+  - name: search-es-v-data
+    path: /usr/share/elasticsearch/data
+  - name: search-es-v-snapshot
+    path: /opt/hoover/es-snapshots
   environment:
     discovery.type: single-node
     path.repo: /opt/hoover/es-snapshots
@@ -81,12 +81,12 @@ steps:
     - push
 
 volumes:
-# - name: search-pg-v
-#   temp: {}
-# - name: search-es-v-data
-#   temp: {}
-# - name: search-es-v-snapshot
-#   temp: {}
+- name: search-pg-v
+  temp: {}
+- name: search-es-v-data
+  temp: {}
+- name: search-es-v-snapshot
+  temp: {}
 ---
 
 kind: secret

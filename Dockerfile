@@ -36,7 +36,6 @@ RUN set -e \
 RUN chown -R $UID:$GID /opt/hoover/search
 
 ENV USER_NAME $USER_NAME
-ENV DATA_DIR /opt/hoover/search
 
 RUN mkdir -p /opt/hoover/metrics
 RUN chown $UID:$GID /opt/hoover/metrics
