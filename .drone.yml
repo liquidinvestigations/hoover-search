@@ -1,5 +1,5 @@
 kind: pipeline
-name: test
+name: publish to docker hub
 
 steps:
 - name: flake8
@@ -7,65 +7,6 @@ steps:
   commands:
   - flake8
 
-- name: docker build
-  image: docker:dind
-  volumes:
-  - name: dockersock
-    path: /var/run
-  commands:
-  - until docker version; do sleep 3; done
-  - docker build . --tag hoover-search-testing
-
-- name: docker setup
-  image: docker/compose:1.24.0
-  volumes:
-  - name: dockersock
-    path: /var/run
-  commands:
-  - apk add git
-  - git clone https://github.com/hoover/docker-setup.git
-  - cd docker-setup
-  - mkdir -p volumes volumes/metrics volumes/metrics/users collections volumes/search-es-snapshots volumes/search-es/data
-  - chmod 777 volumes/search-es-snapshots volumes/search-es/data
-  - cp ../testsuite/docker-compose.travis.yml docker-compose.yml
-  - cp ../testsuite/docker-compose.override.travis.yml docker-compose.override.yml
-  - docker-compose up -d
-
-- name: py.test
-  image: docker/compose:1.24.0
-  volumes:
-  - name: dockersock
-    path: /var/run
-  commands:
-  - cd docker-setup
-  - docker-compose run --rm search bash -c '/wait && py.test --ignore=docker-setup -v'
-
-services:
-- name: docker daemon in docker
-  image: docker:dind
-  privileged: true
-  volumes:
-  - name: dockersock
-    path: /var/run
-
-volumes:
-- name: dockersock
-  temp: {}
----
-kind: pipeline
-name: publish to docker hub
-
-trigger:
-  status:
-  - success
-  event:
-  - push
-  - tag
-
-depends_on:
-- test
-
-steps:
 - name: docker push branch ${DRONE_COMMIT_BRANCH}
   image: plugins/docker
   settings:
@@ -76,9 +17,6 @@ steps:
     password:
       from_secret: docker_password
   when:
-    branch:
-      excludes:
-        - dependabot/*
     event:
     - push
     branch:
@@ -96,6 +34,61 @@ steps:
       from_secret: docker_password
 
 ---
+kind: pipeline
+name: test
+
+depends_on:
+- publish to docker hub
+
+services:
+- name: search-pg
+  image: postgres:9.6
+  volumes:
+  - name: search-pg-v
+    path: /var/lib/postgresql/data
+  environment:
+    POSTGRES_USER: search
+    POSTGRES_DATABASE: search
+    POSTGRES_PASSWORD: search
+
+- name: search-es
+  image: docker.elastic.co/elasticsearch/elasticsearch:6.8.3
+  volumes:
+  - name: search-es-v-data
+    path: /usr/share/elasticsearch/data
+  - name: search-es-v-snapshot
+    path: /opt/hoover/es-snapshots
+  environment:
+    discovery.type: single-node
+    path.repo: /opt/hoover/es-snapshots
+
+
+steps:
+- name: run tests
+  image: liquidinvestigations/hoover-search:${DRONE_COMMIT_BRANCH}
+  environment:
+    HOOVER_DB: postgresql://search:search@search-pg:5432/search
+    WAIT_HOSTS: search-es:9200, search-pg:5432
+    WAIT_HOSTS_TIMEOUT: 60
+    DJANGO_SETTINGS_MODULE: testsuite.settings
+    SECRET_KEY: secret-key-for-testing
+  commands:
+  - sleep 20
+  - cd /opt/hoover/search
+  - py.test -vv
+  trigger:
+    events:
+    - push
+
+volumes:
+- name: search-pg-v
+  temp: {}
+- name: search-es-v-data
+  temp: {}
+- name: search-es-v-snapshot
+  temp: {}
+---
+
 kind: secret
 name: docker_username
 get:
