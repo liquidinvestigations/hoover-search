@@ -132,11 +132,13 @@ def doc_tags(request, collection_name, id, suffix):
         if collection.name == collection_name:
             break
     else:
+        print('collection 404')
         raise Http404
 
     user = request.user.username
     assert user
     url = settings.SNOOP_BASE_URL + f"/collections/{collection_name}/{id}/tags/{user}/{suffix}"
+    print('url = ' + url)
     r = requests.request(
         method=request.method,
         url=url,
@@ -145,6 +147,7 @@ def doc_tags(request, collection_name, id, suffix):
         cookies=request.COOKIES,
         headers=request.headers,
     )
+    print(str(r.content))
 
     return HttpResponse(
         r.content,

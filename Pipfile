@@ -24,7 +24,7 @@ djangorestframework = "*"
 markdown = "*"
 django-filter = "*"
 pyyaml = "*"
-drf-yasg = "*"
+drf-yasg = {extras = ["validation"], version = "*"}
 uritemplate = "*"
 
 [requires]

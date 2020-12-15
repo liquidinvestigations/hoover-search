@@ -39,6 +39,7 @@ if settings.DEBUG:
         ),
         public=True,
         permission_classes=[permissions.AllowAny],
+        validators=['ssv'],
     )
 
     schema_urlpatterns = [
