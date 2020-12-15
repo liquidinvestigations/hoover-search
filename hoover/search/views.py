@@ -158,7 +158,7 @@ def doc_tags(request, collection_name, id, suffix):
 
     return HttpResponse(
         r.content,
-        content_type=r.headers['Content-Type'],
+        content_type=r.headers.get('Content-Type'),
         status=r.status_code,
         reason=r.reason,
     )
