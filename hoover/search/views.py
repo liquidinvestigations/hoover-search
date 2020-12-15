@@ -34,12 +34,14 @@ def home(request):
     return render(request, 'home.html')
 
 
-@csrf_exempt
 def collections(request):
-    return JsonResponse([
-        {'name': col.name, 'title': col.title, 'stats': col.get_meta()['stats']}
-        for col in Collection.objects_for_user(request.user)
-    ], safe=False)
+    return JsonResponse({
+        'collections': [
+            {'name': col.name, 'title': col.title, 'stats': col.get_meta()['stats']}
+            for col in Collection.objects_for_user(request.user)
+        ],
+        'fields': es.get_fields(request.user.username),
+    }, safe=False)
 
 
 def _search(request, **kwargs):

@@ -7,6 +7,102 @@ from elasticsearch.helpers import bulk
 
 DOCTYPE = 'doc'
 
+ALL_FIELDS = [
+    'attachments',
+    'broken',
+    'content-type',
+    'date',
+    'date-created',
+    'email-domains',
+    'filename',
+    'filetype',
+    'from',
+    'id',
+    'in-reply-to',
+    'lang',
+    'location',
+    'md5',
+    'message',
+    'message-id',
+    'ocr',
+    'ocrimage',
+    'ocrpdf',
+    'ocrtext.*',
+    'path',
+    'path-parts',
+    'path-text',
+    'pgp',
+    'references',
+    'rev',
+    'sha1',
+    'size',
+    'size-long',
+    'subject',
+    'tags',
+    'text',
+    'thread-index',
+    'to',
+    'word-count',
+]
+
+PRIVATE_TAGS_FIELD_PREFIX = "private-tags."
+
+INT_FIELDS = [
+    'size',
+    'word-count',
+]
+
+DATE_FIELDS = [
+    'date',
+    'date-created',
+]
+
+BOOL_FIELDS = [
+    'attachments',
+    'ocr',
+    'ocrimage',
+    'ocrpdf',
+    'pgp',
+]
+
+TERM_OR_FIELDS = [
+    'email-domains',
+    'filetype',
+    'content-type',
+    'from',
+    'lang',
+    'text',
+    'thread-index',
+    'to',
+]
+
+TERM_AND_FIELDS = [
+    'tags',
+]
+
+SOURCE_FIELDS = [
+    'path',
+    'filename',
+    'url',
+]
+
+
+def get_fields(username):
+    assert username
+    private_tags_field = PRIVATE_TAGS_FIELD_PREFIX + username
+    SOURCE = SOURCE_FIELDS + INT_FIELDS \
+        + DATE_FIELDS + BOOL_FIELDS + TERM_OR_FIELDS \
+        + TERM_AND_FIELDS + [private_tags_field]
+    return {
+        'all': ALL_FIELDS + [private_tags_field],
+        'bool': BOOL_FIELDS,
+        'int': INT_FIELDS,
+        'term_or': TERM_OR_FIELDS,
+        'term_and': TERM_AND_FIELDS + [private_tags_field],
+        'highlight': ALL_FIELDS + [private_tags_field],
+        '_source': SOURCE,
+    }
+
 
 class SearchError(Exception):
     def __init__(self, reason):
