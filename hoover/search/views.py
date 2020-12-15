@@ -35,11 +35,16 @@ def home(request):
 
 
 def collections(request):
+    return JsonResponse([
+        {'name': col.name, 'title': col.title, 'stats': col.get_meta()['stats']}
+        for col in Collection.objects_for_user(request.user)
+    ], safe=False)
+
+
+def search_fields(request):
+    assert request.user
+    assert request.user.username
     return JsonResponse({
-        'collections': [
-            {'name': col.name, 'title': col.title, 'stats': col.get_meta()['stats']}
-            for col in Collection.objects_for_user(request.user)
-        ],
         'fields': es.get_fields(request.user.username),
     }, safe=False)
 

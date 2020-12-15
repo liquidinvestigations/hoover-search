@@ -97,6 +97,7 @@ def get_fields(username):
         'all': ALL_FIELDS + [private_tags_field],
         'bool': BOOL_FIELDS,
         'int': INT_FIELDS,
+        'date': DATE_FIELDS,
         'term_or': TERM_OR_FIELDS,
         'term_and': TERM_AND_FIELDS + [private_tags_field],
         'highlight': ALL_FIELDS + [private_tags_field],
