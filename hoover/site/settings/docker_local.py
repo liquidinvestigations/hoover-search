@@ -10,7 +10,6 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 
 _hostname = os.environ.get('HOOVER_HOSTNAME')
 if _hostname:
-    HOOVER_BASE_URL = 'https://' + _hostname
     ALLOWED_HOSTS = [_hostname]
 
 
