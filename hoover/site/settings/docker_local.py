@@ -74,4 +74,10 @@ _secure_header = os.environ.get('SECURE_PROXY_SSL_HEADER')
 if _secure_header:
     SECURE_PROXY_SSL_HEADER = (_secure_header, 'https')
 
+if not DEBUG:
+    # don't connect to the internet to verify my schema pls
+    SWAGGER_SETTINGS = {
+        'VALIDATOR_URL': None,
+    }
+
 log.info('hoover-search configuration loaded')

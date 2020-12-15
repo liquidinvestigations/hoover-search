@@ -125,6 +125,7 @@ def doc(request, collection_name, id, suffix):
         })
 
 
+@csrf_exempt
 @limit_user
 def doc_tags(request, collection_name, id, suffix):
     for collection in Collection.objects_for_user(request.user):
@@ -134,7 +135,8 @@ def doc_tags(request, collection_name, id, suffix):
         raise Http404
 
     user = request.user.username
-    url = settings.SNOOP_BASE_URL + f"/collections/{collection_name}/{id}/tags/{user}{suffix}"
+    assert user
+    url = settings.SNOOP_BASE_URL + f"/collections/{collection_name}/{id}/tags/{user}/{suffix}"
     r = requests.request(
         method=request.method,
         url=url,

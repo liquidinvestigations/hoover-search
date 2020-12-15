@@ -11,6 +11,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'hoover.search',
     'hoover.contrib.ratelimit',
+    'rest_framework',
+    'drf_yasg',
 ]
 
 MIDDLEWARE = [
