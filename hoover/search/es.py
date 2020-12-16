@@ -36,7 +36,6 @@ ALL_FIELDS = [
     'rev',
     'sha1',
     'size',
-    'size-long',
     'subject',
     'tags',
     'text',
