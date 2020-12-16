@@ -238,6 +238,7 @@ def batch_count(query_strings, collections, aggs=None):
             body=body,
             doc_type=DOCTYPE,
             request_timeout=120,
+            max_concurrent_searches=settings.ES_BATCH_MAX_CONCURRENT_SEARCHES,
         )
 
     for query_string, response in zip(query_strings, rv.get('responses', [])):
@@ -291,6 +292,9 @@ def search(query, _source, highlight, collections, from_, size, sort, aggs, post
             index=indices,
             ignore_unavailable=True,
             allow_partial_search_results=False,
+            request_cache=True,
+            batched_reduce_size=settings.ES_BATCHED_REDUCE_SIZE,
+            max_concurrent_shard_requests=settings.ES_MAX_CONCURRENT_SHARD_REQUESTS,
             timeout='50s',
             body=body,
             request_timeout=55,

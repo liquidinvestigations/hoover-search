@@ -65,6 +65,9 @@ HOOVER_LIQUID_TITLE = os.environ.get('HOOVER_LIQUID_TITLE', 'Liquid')
 HOOVER_LIQUID_URL = os.environ.get('HOOVER_LIQUID_URL', 'http://liquid')
 HOOVER_HYPOTHESIS_EMBED = os.environ.get('HOOVER_HYPOTHESIS_EMBED')
 
+ES_MAX_CONCURRENT_SHARD_REQUESTS = int(
+    os.environ.get('HOOVER_ES_MAX_CONCURRENT_SHARD_REQUESTS') or 3)
+
 
 if bool_env(os.environ.get('USE_X_FORWARDED_HOST')):
     USE_X_FORWARDED_HOST = True
@@ -78,5 +81,6 @@ if not DEBUG:
     SWAGGER_SETTINGS = {
         'VALIDATOR_URL': None,
     }
+
 
 log.info('hoover-search configuration loaded')
