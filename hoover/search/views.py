@@ -144,8 +144,7 @@ def doc_tags(request, collection_name, id, suffix):
 
     user = request.user.username
     assert user
-    url = settings.SNOOP_BASE_URL + f"/collections/{collection_name}/{id}/tags/{user}/{suffix}"
-    print('url = ' + url)
+    url = settings.SNOOP_BASE_URL + f"/collections/{collection_name}/{id}/tags/{user}{suffix}"
     r = requests.request(
         method=request.method,
         url=url,
@@ -154,7 +153,6 @@ def doc_tags(request, collection_name, id, suffix):
         cookies=request.COOKIES,
         headers=request.headers,
     )
-    print(str(r.content))
 
     return HttpResponse(
         r.content,
