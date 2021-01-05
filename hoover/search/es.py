@@ -44,7 +44,7 @@ ALL_FIELDS = [
     'word-count',
 ]
 
-PRIVATE_TAGS_FIELD_PREFIX = "private-tags."
+PRIVATE_TAGS_FIELD_PREFIX = "priv-tags."
 
 INT_FIELDS = [
     'size',
@@ -70,7 +70,6 @@ TERM_OR_FIELDS = [
     'content-type',
     'from',
     'lang',
-    'text',
     'thread-index',
     'to',
 ]
