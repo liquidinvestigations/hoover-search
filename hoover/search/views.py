@@ -182,9 +182,14 @@ def whoami(request):
         pass
     else:
         urls['password_change'] = password_change
+
+    if request.user.is_authenticated:
+        uuid = request.user.profile.uuid
+    else:
+        uuid = None
     return JsonResponse({
         'username': request.user.username,
-        'uuid': request.user.profile.uuid,
+        'uuid': uuid,
         'admin': request.user.is_superuser,
         'urls': urls,
         'title': settings.HOOVER_TITLE,
