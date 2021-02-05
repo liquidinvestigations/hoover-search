@@ -45,7 +45,7 @@ def search_fields(request):
     assert request.user
     assert request.user.username
     return JsonResponse({
-        'fields': es.get_fields(request.user.username),
+        'fields': es.get_fields(request.user.profile.uuid),
     }, safe=False)
 
 
@@ -142,9 +142,11 @@ def doc_tags(request, collection_name, id, suffix):
         print('collection 404')
         raise Http404
 
-    user = request.user.username
-    assert user
-    url = settings.SNOOP_BASE_URL + f"/collections/{collection_name}/{id}/tags/{user}{suffix}"
+    username = request.user.username
+    assert username
+    user_uuid = request.user.profile.uuid
+    assert user_uuid
+    url = settings.SNOOP_BASE_URL + f"/collections/{collection_name}/{id}/tags/{username}/{user_uuid}{suffix}"
     r = requests.request(
         method=request.method,
         url=url,
@@ -182,6 +184,7 @@ def whoami(request):
         urls['password_change'] = password_change
     return JsonResponse({
         'username': request.user.username,
+        'uuid': request.user.profile.uuid,
         'admin': request.user.is_superuser,
         'urls': urls,
         'title': settings.HOOVER_TITLE,

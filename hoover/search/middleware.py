@@ -4,6 +4,8 @@ from django.utils.deprecation import MiddlewareMixin
 from django.conf import settings
 from django.contrib.auth.middleware import RemoteUserMiddleware
 
+from hoover.search.models import Profile
+
 
 class NoReferral(MiddlewareMixin):
 
@@ -65,4 +67,6 @@ class AuthproxyUserMiddleware(RemoteUserMiddleware):
             save = True
 
         if save:
+            user.set_unusable_password()
             user.save()
+            Profile.objects.get_or_create(user=user)

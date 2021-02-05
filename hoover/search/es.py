@@ -85,9 +85,9 @@ SOURCE_FIELDS = [
 ]
 
 
-def get_fields(username):
-    assert username
-    private_tags_field = PRIVATE_TAGS_FIELD_PREFIX + username
+def get_fields(user_uuid):
+    assert user_uuid
+    private_tags_field = PRIVATE_TAGS_FIELD_PREFIX + user_uuid
     SOURCE = SOURCE_FIELDS + INT_FIELDS \
         + DATE_FIELDS + BOOL_FIELDS + TERM_OR_FIELDS \
         + TERM_AND_FIELDS + [private_tags_field]

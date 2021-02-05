@@ -1,14 +1,19 @@
+import uuid
 import logging
 
 from django.db import models
 from django.conf import settings
 from cachetools import cached, TTLCache
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.contrib.auth import get_user_model
 
 from . import es
 from .loaders.external import Loader as ExternalLoader
 
 
 log = logging.getLogger(__name__)
+User = get_user_model()
 
 
 @cached(cache=TTLCache(maxsize=128, ttl=59))
@@ -64,3 +69,19 @@ class Collection(models.Model):
 
     def get_document(self, doc_id):
         return es.get(self.id, doc_id)
+
+
+def random_uuid():
+    return str(uuid.uuid4())
+
+
+class Profile(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    uuid = models.CharField(max_length=50, default=random_uuid)
+    preferences = models.JSONField(default=dict)
+
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    p, _ = Profile.objects.get_or_create(user=instance)
+    p.save()
