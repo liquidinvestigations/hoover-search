@@ -7,12 +7,21 @@ from . import models
 
 
 class HooverAdminSite(admin.AdminSite):
-
     pass
 
 
-class CollectionAdmin(admin.ModelAdmin):
+class NoEditMixin:
+    def has_add_permission(self, request):
+        return False
 
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+class CollectionAdmin(admin.ModelAdmin, NoEditMixin):
     list_display = ['__str__', 'count', 'user_access_list', 'group_access_list', 'public']
     fields = ['title', 'name', 'index', 'public', 'users', 'groups']
     filter_horizontal = ['users', 'groups']
@@ -66,16 +75,29 @@ class HooverGroupAdmin(GroupAdmin):
     exclude = ['permissions']
 
 
-class HooverUserAdmin(UserAdmin):
+class ProfileInline(admin.StackedInline):
+    model = models.Profile
+    can_delete = False
+    verbose_name_plural = 'profile'
+    fields = ('user', 'uuid', 'preferences')
+    readonly_fields = ('user', 'uuid', 'preferences')
+    list_display = ('user', 'uuid', 'preferences')
+
+
+class HooverUserAdmin(UserAdmin, NoEditMixin):
+    inlines = (ProfileInline,)
     actions = []
     fieldsets = (
-        (None, {'fields': ('username', 'password')}),
-        ('Personal info', {'fields': ('first_name', 'last_name', 'email')}),
+        ('Personal info', {'fields': ('username', 'first_name', 'last_name', 'email')}),
         ('Permissions', {
             'fields': ('is_active', 'is_staff', 'is_superuser', 'groups'),
         }),
         ('Important dates', {'fields': ('last_login', 'date_joined')}),
     )
+    readonly_fields = [
+        'first_name', 'last_name', 'email',
+        'last_login', 'date_joined', 'username',  # 'password',
+    ]
 
 
 admin_site = HooverAdminSite(name='hoover-admin')
