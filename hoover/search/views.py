@@ -2,7 +2,7 @@ import json
 import os
 import urllib.parse
 from time import time
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse, Http404, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.urls import reverse
@@ -257,3 +257,18 @@ def limits(request):
         'batch': settings.HOOVER_BATCH_LIMIT,
         'requests': get_request_limits(request.user),
     })
+
+
+def doc_redirect_v0(request, collection_name, id, suffix):
+    # the target path is actually served by the UI, not us:
+    redirect_url = f'/doc/{collection_name}/{id}'
+    return redirect(redirect_url, permanent=True)
+
+
+def web_viewer_redirect_v0(request):
+    relative_path = request.GET['file']
+    # this path looks like /api/v0/doc/testdata/8319fde068733d8.../...
+    collection, identifier = relative_path.split('/', 6)[4:6]
+    # the target path is actually served by the UI, not us:
+    redirect_url = f'/doc/{collection}/{identifier}'
+    return redirect(redirect_url, permanent=True)
