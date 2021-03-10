@@ -10,18 +10,7 @@ class HooverAdminSite(admin.AdminSite):
     pass
 
 
-class NoEditMixin:
-    def has_add_permission(self, request):
-        return False
-
-    def has_change_permission(self, request, obj=None):
-        return False
-
-    def has_delete_permission(self, request, obj=None):
-        return False
-
-
-class CollectionAdmin(admin.ModelAdmin, NoEditMixin):
+class CollectionAdmin(admin.ModelAdmin):
     list_display = ['__str__', 'count', 'user_access_list', 'group_access_list', 'public']
     fields = ['title', 'name', 'index', 'public', 'users', 'groups']
     filter_horizontal = ['users', 'groups']
@@ -42,6 +31,15 @@ class CollectionAdmin(admin.ModelAdmin, NoEditMixin):
             return "{} ({})".format(username, name)
         else:
             return username
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 class GroupAdminForm(ModelForm):
@@ -84,7 +82,7 @@ class ProfileInline(admin.StackedInline):
     list_display = ('user', 'uuid', 'preferences')
 
 
-class HooverUserAdmin(UserAdmin, NoEditMixin):
+class HooverUserAdmin(UserAdmin):
     inlines = (ProfileInline,)
     actions = []
     fieldsets = (
@@ -99,8 +97,18 @@ class HooverUserAdmin(UserAdmin, NoEditMixin):
         'last_login', 'date_joined', 'username',  # 'password',
     ]
 
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return True
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
 
 admin_site = HooverAdminSite(name='hoover-admin')
 admin_site.register(models.Collection, CollectionAdmin)
 admin_site.register(Group, HooverGroupAdmin)
 admin_site.register(User, HooverUserAdmin)
+admin_site.site_header = 'Hoover Search Administration'

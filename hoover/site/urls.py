@@ -8,7 +8,11 @@ from ..search.admin import admin_site
 from ..search import views
 
 
-api_urlpatterns = [
+api_urlpatterns_v0 = [
+    re_path(r'^doc/(?P<collection_name>[^/]+)/(?P<id>[^/]+)(?P<suffix>.*)$', views.doc_redirect_v0),
+]
+
+api_urlpatterns_v1 = [
     path('_ping', views.ping, name='ping'),
     path('_is_staff', views.is_staff),
     path('search', views.search, name='search'),
@@ -24,7 +28,9 @@ api_urlpatterns = [
 urlpatterns = [
     path('admin/', admin_site.urls),
     path('accounts/', include('django.contrib.auth.urls')),
-    path('api/v0/', include(api_urlpatterns)),
+    path('api/v0/', include(api_urlpatterns_v0)),
+    path('api/v1/', include(api_urlpatterns_v1)),
+    path('viewer/web/viewer.html', views.web_viewer_redirect_v0),
 ]
 
 # DRF-YASG
