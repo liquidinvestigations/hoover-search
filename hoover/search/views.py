@@ -74,12 +74,23 @@ def _search(request, **kwargs):
     return JsonResponse(res)
 
 
+def _check_fields(query_fields, allowed_fields):
+    all_fields = allowed_fields['all'] + allowed_fields['_source']
+    for x in query_fields:
+        x = x.replace('.*', '')
+        assert x in all_fields, 'field not recognized'
+
+
 @csrf_exempt
 @limit_user
 def search(request):
     t0 = time()
     body = json.loads(request.body.decode('utf-8'))
     collections = collections_acl(request.user, body['collections'])
+    source_fields = body.get('_source', [])
+    query_fields = body['query'].get('fields', [])
+    _check_fields(source_fields + query_fields,
+                  es.get_fields(request.user.profile.uuid))
 
     success = False
     try:
