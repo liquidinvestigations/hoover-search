@@ -44,7 +44,11 @@ ALL_FIELDS = [
     'text',
     'thread-index',
     'to',
+    'cc',
+    'bcc',
     'word-count',
+    'tika',
+    'email-header',
 ]
 
 PRIVATE_TAGS_FIELD_PREFIX = "priv-tags."
@@ -75,6 +79,12 @@ TERM_OR_FIELDS = [
     'lang',
     'thread-index',
     'to',
+    'tika-key',
+    'email-header-key',
+    'cc',
+    'bcc',
+    'in-reply-to',
+    'broken',
 ]
 
 TERM_AND_FIELDS = [
@@ -85,6 +95,7 @@ SOURCE_FIELDS = [
     'path',
     'filename',
     'url',
+    'tika',
 ]
 
 
