@@ -47,18 +47,24 @@ class Document:
         if not suffix:
             raise Http404
 
-        if suffix.startswith('/raw/'):
-            suffix = '/raw/data'  # fake filename, prevents url encoding errors
+        # fake filename, prevents url encoding errors
+        # if suffix.startswith('/raw/'):
+        #     suffix = '/raw/data'
+
         url_with_suffix = urljoin(url, suffix[1:])
-        resp = requests.get(url_with_suffix, params=request.GET)
-        if 200 <= resp.status_code < 300:
-            return HttpResponse(resp.content,
-                                content_type=resp.headers['Content-Type'])
-        elif resp.status_code == 404:
+        data_resp = requests.get(url_with_suffix, params=request.GET)
+        if 200 <= data_resp.status_code < 300:
+            resp = HttpResponse(data_resp.content,
+                                content_type=data_resp.headers['Content-Type'])
+            for k, v in data_resp.headers.items():
+                if k in ['Content-Disposition']:
+                    resp[k] = v
+            return resp
+        elif data_resp.status_code == 404:
             raise Http404
         else:
             raise RuntimeError("Unexpected response {!r} for {!r}"
-                               .format(resp, url_with_suffix))
+                               .format(data_resp, url_with_suffix))
 
 
 class Loader:
