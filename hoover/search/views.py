@@ -275,8 +275,8 @@ def limits(request):
     return JsonResponse({
         'batch': settings.HOOVER_BATCH_LIMIT,
         'requests': {
-            'interval': settings.HOOVER_RATELIMIT_USER[0],
-            'limit': settings.HOOVER_RATELIMIT_USER[1],
+            'interval': settings.HOOVER_RATELIMIT_USER[1],
+            'limit': settings.HOOVER_RATELIMIT_USER[0],
             'count': 0,
         },
     })
