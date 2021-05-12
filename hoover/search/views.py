@@ -11,8 +11,9 @@ from django.conf import settings
 from . import es
 from .models import Collection
 from . import signals
-from .ratelimit import limit_user, get_request_limits
 import requests
+import re
+from ratelimit.decorators import ratelimit
 
 
 def JsonErrorResponse(reason, status=400):
@@ -82,7 +83,7 @@ def _check_fields(query_fields, allowed_fields):
 
 
 @csrf_exempt
-@limit_user
+@ratelimit(key='user', rate=settings.HOOVER_RATELIMIT_USER)
 def search(request):
     t0 = time()
     body = json.loads(request.body.decode('utf-8'))
@@ -119,7 +120,15 @@ def search(request):
         })
 
 
-@limit_user
+def thumbnail_rate(group, request):
+    # thumbnail url looks like this: baseurl/snoop/collections/{collection}/{hash}/thumbnail/200.jpg
+    has_thumbnail = re.search(r'^.+/thumbnail/\d{3}.jpg$', request.path)
+    if has_thumbnail:
+        return (1000, 60)
+    return settings.HOOVER_RATELIMIT_USER
+
+
+@ratelimit(key='user', rate=thumbnail_rate)
 def doc(request, collection_name, id, suffix):
     for collection in Collection.objects_for_user(request.user):
         if collection.name == collection_name:
@@ -144,7 +153,7 @@ def doc(request, collection_name, id, suffix):
 
 
 @csrf_exempt
-@limit_user
+@ratelimit(key='user', rate=settings.HOOVER_RATELIMIT_USER)
 def doc_tags(request, collection_name, id, suffix):
     for collection in Collection.objects_for_user(request.user):
         if collection.name == collection_name:
@@ -212,7 +221,7 @@ def whoami(request):
 
 
 @csrf_exempt
-@limit_user
+@ratelimit(key='user', rate=settings.HOOVER_RATELIMIT_USER)
 def batch(request):
     t0 = time()
     body = json.loads(request.body.decode('utf-8'))
@@ -266,7 +275,11 @@ def limits(request):
     """ Get rate limits """
     return JsonResponse({
         'batch': settings.HOOVER_BATCH_LIMIT,
-        'requests': get_request_limits(request.user),
+        'requests': {
+            'interval': settings.HOOVER_RATELIMIT_USER[1],
+            'limit': settings.HOOVER_RATELIMIT_USER[0],
+            'count': 0,
+        },
     })
 
 
