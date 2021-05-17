@@ -6,6 +6,9 @@ from elasticsearch.exceptions import NotFoundError, RequestError, ConnectionErro
 from elasticsearch.helpers import bulk
 
 DOCTYPE = 'doc'
+ES_TIMEOUT = '100s'
+ES_REQUEST_TIMEOUT = 100
+ES_BATCH_REQUEST_TIMEOUT = 120
 
 ALL_FIELDS = [
     'attachments',
@@ -164,7 +167,7 @@ def bulk_index(collection_id, docs):
             es,
             (index(id, data) for id, data in docs),
             stats_only=True,
-            request_timeout=55,
+            request_timeout=ES_REQUEST_TIMEOUT,
         )
     if err:
         raise RuntimeError("Bulk indexing failed on %d documents" % err)
@@ -180,8 +183,8 @@ def versions(collection_id, doc_id_list):
                 'fields': ['_hoover.version'],
             },
             allow_partial_search_results=False,
-            timeout='50s',
-            request_timeout=55,
+            timeout=ES_TIMEOUT,
+            request_timeout=ES_REQUEST_TIMEOUT,
         )
     hits = res['hits']['hits']
     assert len(hits) == res['hits']['total']
@@ -236,7 +239,7 @@ def batch_count(query_strings, collections, aggs=None):
             index=indices,
             body=body,
             doc_type=DOCTYPE,
-            request_timeout=120,
+            request_timeout=ES_BATCH_REQUEST_TIMEOUT,
             max_concurrent_searches=settings.ES_BATCH_MAX_CONCURRENT_SEARCHES,
         )
 
@@ -294,9 +297,9 @@ def search(query, _source, highlight, collections, from_, size, sort, aggs, post
             request_cache=True,
             batched_reduce_size=settings.ES_BATCHED_REDUCE_SIZE,
             max_concurrent_shard_requests=settings.ES_MAX_CONCURRENT_SHARD_REQUESTS,
-            timeout='50s',
+            timeout=ES_TIMEOUT,
+            request_timeout=ES_REQUEST_TIMEOUT,
             body=body,
-            request_timeout=55,
         )
 
     aggs = (
