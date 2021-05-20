@@ -85,7 +85,10 @@ def _check_fields(query_fields, allowed_fields):
 
 
 def rates(group, request):
-    return (settings.HOOVER_RATELIMIT_USER[0], settings.HOOVER_RATELIMIT_USER[1])
+    if settings.HOOVER_RATELIMIT_USER:
+        return (settings.HOOVER_RATELIMIT_USER[0], settings.HOOVER_RATELIMIT_USER[1])
+    else:
+        return None
 
 
 @csrf_exempt
@@ -131,7 +134,10 @@ def thumbnail_rate(group, request):
     has_thumbnail = re.search(r'^.+/thumbnail/\d{3}.jpg$', request.path)
     if has_thumbnail:
         return (1000, 60)
-    return (settings.HOOVER_RATELIMIT_USER[0], settings.HOOVER_RATELIMIT_USER[1])
+    if settings.HOOVER_RATELIMIT_USER:
+        return (settings.HOOVER_RATELIMIT_USER[0], settings.HOOVER_RATELIMIT_USER[1])
+    else:
+        return None
 
 
 @ratelimit(key='user', rate=thumbnail_rate, block=True)
