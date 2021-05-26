@@ -15,3 +15,5 @@ def test_search_rate(client, django_user_model):
     for _ in range(30):
         resp = client.post(url, payload, content_type='application/json')
         assert resp.status_code == 200
+    resp_exceeded = client.post(url, payload, content_type='application/json')
+    assert resp_exceeded.status_code == 429
