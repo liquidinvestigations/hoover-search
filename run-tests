@@ -4,5 +4,5 @@ cd "$(dirname ${BASH_SOURCE[0]})"
 docker build . --tag liquidinvestigations/hoover-snoop2:$(git branch --show-current)
 cp .drone.yml .drone.yml.bak
 sed -i "s/py\.test/py\.test `echo $@`/g" .drone.yml.bak
-drone exec --branch $(git branch --show-current) --event push --pipeline test .drone.yml.bak --trusted
+drone exec --trusted --branch $(git branch --show-current) --event push --pipeline test .drone.yml.bak 
 rm .drone.yml.bak
