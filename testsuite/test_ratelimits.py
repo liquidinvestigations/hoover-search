@@ -5,8 +5,23 @@ from .test_search import external, JsonResponse
 import pytest
 from time import sleep
 from hoover.search import models
+import responses
+import requests
+import logging
 
 pytestmark = pytest.mark.django_db
+
+
+@pytest.fixture
+def test_collection():
+    col = models.Collection.objects.create(
+        name='testcol',
+        index='hoover-testcol',
+        public=True,
+        loader='hoover.search.loaders.external.Loader',
+        options='{"url": "https://example.com/doc/json"}',
+    )
+    return col
 
 
 def test_search_rate(client, django_user_model):
@@ -18,25 +33,18 @@ def test_search_rate(client, django_user_model):
         resp = client.post(url, payload, content_type='application/json')
         assert resp.status_code == 200
     resp_exceeded = client.post(url, payload, content_type='application/json')
+    logging.warning(resp_exceeded)
     assert resp_exceeded.status_code == 429
     sleep(60)
     resp_after_timeout = client.post(url, payload, content_type='application/json')
-    assert resp_after_timeout == 200
+    assert resp_after_timeout.status_code == 200
 
 
 @pytest.mark.skip(
     reason='not working yet')
-def test_search_doc(client, django_user_model, external):
+def test_search_doc(client, django_user_model, test_collection):
     user = django_user_model.objects.create_user(username='testuser', password='pw')
     client.force_login(user)
-
-    col = models.Collection.objects.create(
-        name='testcol',
-        index='hoover-testcol',
-        public=True,
-        loader='hoover.search.loaders.external.Loader',
-        options='{"url": "https://example.com/doc/json"}',
-    )
 
     external['https://example.com/doc/json'] = JsonResponse({
         'data_urls': '{id}/json',
