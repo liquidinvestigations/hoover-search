@@ -42,22 +42,6 @@ def base_response():
         yield rsps
 
 
-@pytest.fixture
-def doc_response():
-    with responses.RequestsMock() as rsps:
-        rsps.add(responses.GET, 'http://example.com/collections/testcol/mock1/json',
-                 json={}, status=200)
-        yield rsps
-
-
-@pytest.fixture
-def thumbnail_response():
-    with responses.RequestsMock() as rsps:
-        rsps.add(responses.GET, 'http://example.com/collections/testcol/mock1/thumbnail/200.jpg',
-                 json={}, status=200)
-        yield rsps
-
-
 def test_search_rate(client, django_user_model):
     user = django_user_model.objects.create_user(username='testuser', password='pw')
     url = reverse('search')
@@ -74,7 +58,8 @@ def test_search_rate(client, django_user_model):
     assert resp_after_timeout.status_code == 200
 
 
-def test_doc_rate(client, django_user_model, collection, base_response, doc_response):
+def test_doc_rate(client, django_user_model, collection, base_response):
+    base_response.add(responses.GET, 'http://example.com/collections/testcol/mock1/thumbnail/200.jpg', json={}, status=200)
     user = django_user_model.objects.create_user(username='testuser', password='pw')
     client.force_login(user)
     for _ in range(RATELIMIT_REQUESTS):
@@ -88,6 +73,7 @@ def test_doc_rate(client, django_user_model, collection, base_response, doc_resp
 
 
 def test_thumbnail_rate(client, django_user_model, collection, base_response, thumbnail_response):
+    base_response.add(responses.GET, 'http://example.com/collections/testcol/mock1/thumbnail/200.jpg', json={}, status=200)
     user = django_user_model.objects.create_user(username='testuser', password='pw')
     client.force_login(user)
     for _ in range(RATELIMIT_REQUESTS_THUMBNAIL):
