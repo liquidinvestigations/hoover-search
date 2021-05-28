@@ -27,6 +27,7 @@ django-filter = "*"
 pyyaml = "*"
 drf-yasg = {extras = ["validation"], version = "*"}
 uritemplate = "*"
+responses = "*"
 
 [requires]
 python_version = "3.9"
