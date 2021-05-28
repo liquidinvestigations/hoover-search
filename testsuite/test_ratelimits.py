@@ -28,6 +28,18 @@ def collection():
 @pytest.fixture
 def mocked_responses():
     with responses.RequestsMock() as rsps:
+        # this mocks the response made by hoover.search.loaders.external.get_json
+        rsps.add(responses.GET, 'http://example.com/collections/testcol/json',
+                 json={
+                     'name': 'testcol',
+                     'title': 'testcol',
+                     'description': 'testcol',
+                     'feed': 'feed',
+                     'data_urls': 'mock1/json',
+                     'stats': 'stats',
+                     'max_result_window': 1,
+                     'refresh_interval': 1,
+                 }, status=200)
         yield rsps
 
 
@@ -50,17 +62,6 @@ def test_search_rate(client, django_user_model):
 
 def test_doc_rate(client, django_user_model, collection, mocked_responses):
     # the requests to snoop made in hoover.search.loaders.external need to be mocked
-    mocked_responses.add(responses.GET, 'http://example.com/collections/testcol/json',
-                         json={
-                             'name': 'testcol',
-                             'title': 'testcol',
-                             'description': 'testcol',
-                             'feed': 'feed',
-                             'data_urls': 'mock1/json',
-                             'stats': 'stats',
-                             'max_result_window': 1,
-                             'refresh_interval': 1,
-                         }, status=200)
     mocked_responses.add(responses.GET, 'http://example.com/collections/testcol/mock1/json', json={}, status=200)
 
     # a user needs to be logged in as the ratelimits apply per user
