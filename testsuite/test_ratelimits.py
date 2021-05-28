@@ -59,7 +59,7 @@ def test_search_rate(client, django_user_model):
 
 
 def test_doc_rate(client, django_user_model, collection, base_response):
-    base_response.add(responses.GET, 'http://example.com/collections/testcol/mock1/thumbnail/200.jpg', json={}, status=200)
+    base_response.add(responses.GET, 'http://example.com/collections/testcol/mock1/json', json={}, status=200)
     user = django_user_model.objects.create_user(username='testuser', password='pw')
     client.force_login(user)
     for _ in range(RATELIMIT_REQUESTS):
