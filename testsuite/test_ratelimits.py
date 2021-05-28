@@ -32,10 +32,11 @@ def mocked_responses():
 
 
 def test_search_rate(client, django_user_model):
+    # a user needs to be logged in as the ratelimits apply per user
     user = django_user_model.objects.create_user(username='testuser', password='pw')
     url = reverse('search')
-    print(url)
     client.force_login(user)
+    # just an arbitrary payload
     payload = {'query': {'match_all': {}}, 'collections': ['testcol']}
     for _ in range(RATELIMIT_REQUESTS):
         resp = client.post(url, payload, content_type='application/json')
@@ -48,19 +49,21 @@ def test_search_rate(client, django_user_model):
 
 
 def test_doc_rate(client, django_user_model, collection, mocked_responses):
-    mocked_responses.add(responses.GET, 'http://example.com/collections/testcol/mock1/json', json={}, status=200)
+    # the requests to snoop made in hoover.search.loaders.external need to be mocked
     mocked_responses.add(responses.GET, 'http://example.com/collections/testcol/json',
-             json={
-                 'name': 'testcol',
-                 'title': 'testcol',
-                 'description': 'testcol',
-                 'feed': 'feed',
-                 'data_urls': 'mock1/json',
-                 'stats': 'stats',
-                 'max_result_window': 1,
-                 'refresh_interval': 1,
-             }, status=200)
+                         json={
+                             'name': 'testcol',
+                             'title': 'testcol',
+                             'description': 'testcol',
+                             'feed': 'feed',
+                             'data_urls': 'mock1/json',
+                             'stats': 'stats',
+                             'max_result_window': 1,
+                             'refresh_interval': 1,
+                         }, status=200)
+    mocked_responses.add(responses.GET, 'http://example.com/collections/testcol/mock1/json', json={}, status=200)
 
+    # a user needs to be logged in as the ratelimits apply per user
     user = django_user_model.objects.create_user(username='testuser', password='pw')
     client.force_login(user)
     for _ in range(RATELIMIT_REQUESTS):
@@ -74,7 +77,9 @@ def test_doc_rate(client, django_user_model, collection, mocked_responses):
 
 
 def test_thumbnail_rate(client, django_user_model, collection, mocked_responses):
+    # the request to snoop made in hoover.search.loaders.external needs to be mocked
     mocked_responses.add(responses.GET, 'http://example.com/collections/testcol/mock1/thumbnail/200.jpg', json={}, status=200)
+    # a user needs to be logged in as the ratelimits apply per user
     user = django_user_model.objects.create_user(username='testuser', password='pw')
     client.force_login(user)
     for _ in range(RATELIMIT_REQUESTS_THUMBNAIL):
