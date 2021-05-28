@@ -89,3 +89,6 @@ CE, latest version.
 Then, run `./run-tests` with arguments you'd normally pass to `py.test`, like this:
 
     ./run-tests -vvv -x -k ratelimits
+
+During the test a `docker-setup` directory will be created. Make sure to delete it after 
+running the tests with `sudo rm -r docker-setup`.

@@ -1,7 +1,7 @@
 #!/bin/bash -ex
 cd "$(dirname ${BASH_SOURCE[0]})"
 
-trap 'sudo rm -r docker-setup && rm .drone.yml.bak' EXIT
+trap 'rm .drone.yml.bak && echo "make sure to delete the docker-setup directory that has been created"' EXIT
 
 docker build . --tag liquidinvestigations/hoover-snoop2:$(git branch --show-current)
 cp .drone.yml .drone.yml.bak
