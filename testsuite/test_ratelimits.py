@@ -26,19 +26,8 @@ def collection():
 
 
 @pytest.fixture
-def base_response():
+def mocked_responses():
     with responses.RequestsMock() as rsps:
-        rsps.add(responses.GET, 'http://example.com/collections/testcol/json',
-                 json={
-                     'name': 'testcol',
-                     'title': 'testcol',
-                     'description': 'testcol',
-                     'feed': 'feed',
-                     'data_urls': 'mock1/json',
-                     'stats': 'stats',
-                     'max_result_window': 1,
-                     'refresh_interval': 1,
-                 }, status=200)
         yield rsps
 
 
@@ -58,8 +47,20 @@ def test_search_rate(client, django_user_model):
     assert resp_after_timeout.status_code == 200
 
 
-def test_doc_rate(client, django_user_model, collection, base_response):
-    base_response.add(responses.GET, 'http://example.com/collections/testcol/mock1/json', json={}, status=200)
+def test_doc_rate(client, django_user_model, collection, mocked_responses):
+    mocked_responses.add(responses.GET, 'http://example.com/collections/testcol/mock1/json', json={}, status=200)
+    mocked_responses.add(responses.GET, 'http://example.com/collections/testcol/json',
+             json={
+                 'name': 'testcol',
+                 'title': 'testcol',
+                 'description': 'testcol',
+                 'feed': 'feed',
+                 'data_urls': 'mock1/json',
+                 'stats': 'stats',
+                 'max_result_window': 1,
+                 'refresh_interval': 1,
+             }, status=200)
+
     user = django_user_model.objects.create_user(username='testuser', password='pw')
     client.force_login(user)
     for _ in range(RATELIMIT_REQUESTS):
@@ -72,8 +73,8 @@ def test_doc_rate(client, django_user_model, collection, base_response):
     assert resp_after_timeout.status_code == 200
 
 
-def test_thumbnail_rate(client, django_user_model, collection, base_response, thumbnail_response):
-    base_response.add(responses.GET, 'http://example.com/collections/testcol/mock1/thumbnail/200.jpg', json={}, status=200)
+def test_thumbnail_rate(client, django_user_model, collection, mocked_responses):
+    mocked_responses.add(responses.GET, 'http://example.com/collections/testcol/mock1/thumbnail/200.jpg', json={}, status=200)
     user = django_user_model.objects.create_user(username='testuser', password='pw')
     client.force_login(user)
     for _ in range(RATELIMIT_REQUESTS_THUMBNAIL):
