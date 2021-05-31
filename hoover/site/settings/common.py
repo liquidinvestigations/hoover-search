@@ -10,7 +10,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'hoover.search',
-    'hoover.contrib.ratelimit',
     'rest_framework',
     'drf_yasg',
 ]
@@ -42,7 +41,6 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'hoover.search.context_processors.default',
             ],
         },
     },

@@ -15,6 +15,7 @@ waitress = "*"
 django-otp = "*"
 whitenoise = "*"
 Django = "*"
+django-ratelimit = "*"
 PyYAML = "*"
 logzero = "*"
 qrcode = "*"
@@ -26,6 +27,7 @@ django-filter = "*"
 pyyaml = "*"
 drf-yasg = {extras = ["validation"], version = "*"}
 uritemplate = "*"
+responses = "*"
 
 [requires]
 python_version = "3.9"

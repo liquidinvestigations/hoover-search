@@ -20,3 +20,4 @@ DATABASES = {
 }
 
 HOOVER_ELASTICSEARCH_URL = 'http://search-es:9200'
+SNOOP_BASE_URL = 'http://example.com'

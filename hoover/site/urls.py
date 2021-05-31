@@ -57,3 +57,5 @@ if settings.DEBUG:
     ]
 
     urlpatterns += schema_urlpatterns
+
+handler403 = 'hoover.search.views.handler_403'

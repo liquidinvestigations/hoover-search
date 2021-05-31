@@ -79,3 +79,16 @@ The `documents` URL is composed of the URL of *hoover-snoop*
 `renderDocument` tells *hoover-search* to use the new `doc.html` view from
 *hoover-ui* to render the document preview pages. If you're not using
 *hoover-ui* then omit this flag.
+
+
+### Run tests locally
+
+Install the drone CLI binary from their website onto your PATH. Install Docker
+CE, latest version.
+
+Then, run `./run-tests` with arguments you'd normally pass to `py.test`, like this:
+
+    ./run-tests -vvv -x -k ratelimits
+
+During the test a `docker-setup` directory will be created. Make sure to delete it after 
+running the tests with `sudo rm -r docker-setup`.

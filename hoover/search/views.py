@@ -8,11 +8,14 @@ from django.views.decorators.csrf import csrf_exempt
 from django.urls import reverse
 from django.urls.exceptions import NoReverseMatch
 from django.conf import settings
+from django.views.defaults import permission_denied
 from . import es
 from .models import Collection
 from . import signals
-from .ratelimit import limit_user, get_request_limits
 import requests
+import re
+from ratelimit.decorators import ratelimit
+from ratelimit.exceptions import Ratelimited
 
 
 def JsonErrorResponse(reason, status=400):
@@ -81,8 +84,15 @@ def _check_fields(query_fields, allowed_fields):
         assert x in all_fields, 'field not recognized'
 
 
+def rates(group, request):
+    if settings.HOOVER_RATELIMIT_USER:
+        return (settings.HOOVER_RATELIMIT_USER[0], settings.HOOVER_RATELIMIT_USER[1])
+    else:
+        return None
+
+
 @csrf_exempt
-@limit_user
+@ratelimit(key='user', rate=rates, block=True)
 def search(request):
     t0 = time()
     body = json.loads(request.body.decode('utf-8'))
@@ -119,7 +129,18 @@ def search(request):
         })
 
 
-@limit_user
+def thumbnail_rate(group, request):
+    # thumbnail url looks like this: baseurl/snoop/collections/{collection}/{hash}/thumbnail/200.jpg
+    has_thumbnail = re.search(r'^.+/thumbnail/\d{3}.jpg$', request.path)
+    if has_thumbnail:
+        return (1000, 60)
+    if settings.HOOVER_RATELIMIT_USER:
+        return (settings.HOOVER_RATELIMIT_USER[0], settings.HOOVER_RATELIMIT_USER[1])
+    else:
+        return None
+
+
+@ratelimit(key='user', rate=thumbnail_rate, block=True)
 def doc(request, collection_name, id, suffix):
     for collection in Collection.objects_for_user(request.user):
         if collection.name == collection_name:
@@ -144,7 +165,7 @@ def doc(request, collection_name, id, suffix):
 
 
 @csrf_exempt
-@limit_user
+@ratelimit(key='user', rate=rates, block=True)
 def doc_tags(request, collection_name, id, suffix):
     for collection in Collection.objects_for_user(request.user):
         if collection.name == collection_name:
@@ -212,7 +233,7 @@ def whoami(request):
 
 
 @csrf_exempt
-@limit_user
+@ratelimit(key='user', rate=rates, block=True)
 def batch(request):
     t0 = time()
     body = json.loads(request.body.decode('utf-8'))
@@ -266,7 +287,11 @@ def limits(request):
     """ Get rate limits """
     return JsonResponse({
         'batch': settings.HOOVER_BATCH_LIMIT,
-        'requests': get_request_limits(request.user),
+        'requests': {
+            'interval': settings.HOOVER_RATELIMIT_USER[1],
+            'limit': settings.HOOVER_RATELIMIT_USER[0],
+            'count': 0,
+        },
     })
 
 
@@ -283,3 +308,15 @@ def web_viewer_redirect_v0(request):
     # the target path is actually served by the UI, not us:
     redirect_url = f'/doc/{collection}/{identifier}'
     return redirect(redirect_url, permanent=True)
+
+
+def handler_403(request, exception=None):
+    '''Custom 403 error handler.
+
+    Returns a 429 Response if the rate limit is exceeded. In any other case it
+    calls the default django 403 handler (permission_denied).
+    '''
+    if isinstance(exception, Ratelimited):
+        return HttpResponse('Too many requests', status=429)
+    else:
+        return permission_denied(request, exception)
