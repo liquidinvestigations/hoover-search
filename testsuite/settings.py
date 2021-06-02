@@ -7,6 +7,7 @@ testsuite_dir = Path(__file__).absolute().parent
 SECRET_KEY = 'testing secret key'
 HOOVER_BASE_URL = 'http://testserver'
 HOOVER_RATELIMIT_USER = (30, 60)  # 30 per minute
+HOOVER_RATELIMIT_THUMBNAIL = (50, 60)
 
 DATABASES = {
     'default': {
