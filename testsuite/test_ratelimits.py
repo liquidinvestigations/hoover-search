@@ -12,7 +12,8 @@ from django.conf import settings
 pytestmark = pytest.mark.django_db
 RATELIMIT_REQUESTS = settings.HOOVER_RATELIMIT_USER[0]
 RATELIMIT_SECONDS = settings.HOOVER_RATELIMIT_USER[1]
-RATELIMIT_REQUESTS_THUMBNAIL = 1000
+RATELIMIT_REQUESTS_THUMBNAIL = settings.HOOVER_RATELIMIT_THUMBNAIL[0]
+RATELIMIT_SECONDS_THUMBNAIL = settings.HOOVER_RATELIMIT_THUMBNAIL[1]
 
 
 @pytest.fixture
@@ -88,6 +89,6 @@ def test_thumbnail_rate(client, django_user_model, collection, mocked_responses)
         assert resp.status_code == 200
     resp_exceeded = client.post('/api/v1/doc/testcol/mock1/thumbnail/200.jpg')
     assert resp_exceeded.status_code == 429
-    sleep(RATELIMIT_SECONDS)
+    sleep(RATELIMIT_SECONDS_THUMBNAIL)
     resp_after_timeout = client.post('/api/v1/doc/testcol/mock1/thumbnail/200.jpg')
     assert resp_after_timeout.status_code == 200

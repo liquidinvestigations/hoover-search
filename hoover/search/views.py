@@ -133,7 +133,7 @@ def thumbnail_rate(group, request):
     # thumbnail url looks like this: baseurl/snoop/collections/{collection}/{hash}/thumbnail/200.jpg
     has_thumbnail = re.search(r'^.+/thumbnail/\d{3}.jpg$', request.path)
     if has_thumbnail:
-        return (1000, 60)
+        return settings.HOOVER_RATELIMIT_THUMBNAIL
     if settings.HOOVER_RATELIMIT_USER:
         return (settings.HOOVER_RATELIMIT_USER[0], settings.HOOVER_RATELIMIT_USER[1])
     else:
