@@ -103,7 +103,7 @@ def external(monkeypatch):
     reason="outdated test (2020-03-02)"
 )
 def test_all_the_things(finally_cleanup_index, listen, api):
-    from hoover.search.es import _index_name, DOCTYPE
+    from hoover.search.es import _index_name
     search_events = listen(signals.search)
     col = models.Collection.objects.create(
         name='testcol', index='hoover-testcol', public=True)
@@ -114,7 +114,7 @@ def test_all_the_things(finally_cleanup_index, listen, api):
     doc = MockDoc('mock1', {"content": {"id": "mock1", 'foo': "bar"}, "version": "1.12"})
     # index.index(col, doc)
     es_index_id = _index_name(col.id)
-    data = es.get(index=es_index_id, doc_type=DOCTYPE, id='mock1')
+    data = es.get(index=es_index_id, id='mock1')
     assert data['_id'] == 'mock1'
     assert data['_source'] == dict(
         id="mock1",
@@ -144,7 +144,7 @@ def test_all_the_things(finally_cleanup_index, listen, api):
 @pytest.mark.skip(
     reason="mgax: i remember that the tests for search are out of date, so maybe just ignore that failure (2018-07-20)")
 def test_external_loader(finally_cleanup_index, listen, api, external):
-    from hoover.search.es import _index_name, DOCTYPE
+    from hoover.search.es import _index_name
     doc_events = listen(signals.doc)
     col = models.Collection.objects.create(
         name='testcol',

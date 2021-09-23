@@ -118,10 +118,12 @@
         "elasticsearch": {
             "hashes": [
                 "sha256:540d633afcc0a32972e4b489c4559c9a96e294850853238f7a18b1cbd267c2ed",
-                "sha256:a8062a00b61bc7babeea028530667583a68ecb1a9f59ab0b22ff7feaf70d3564"
+                "sha256:6c47eb68f643f3d7d6a6d971e571448b900b9470dc481421c9af9d28a1303911",
+                "sha256:a8062a00b61bc7babeea028530667583a68ecb1a9f59ab0b22ff7feaf70d3564",
+                "sha256:bf1d210d82c78fbd3ae5cbedd756716d732433cc97184966688dcd1c75df4619"
             ],
             "index": "pypi",
-            "version": "==6.8.1"
+            "version": "==7.15.0"
         },
         "idna": {
             "hashes": [

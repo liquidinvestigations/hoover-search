@@ -146,7 +146,6 @@ def index(collection_id, doc_id, body):
     with elasticsearch() as es:
         es.index(
             index=_index_name(collection_id),
-            doc_type=DOCTYPE,
             id=doc_id,
             body=body,
         )
@@ -158,7 +157,6 @@ def bulk_index(collection_id, docs):
             data,
             _op_type='index',
             _index=_index_name(collection_id),
-            _type=DOCTYPE,
             _id=id,
         )
 
@@ -198,7 +196,6 @@ def get(collection_id, doc_id):
     with elasticsearch() as es:
         return es.get(
             index=_index_name(collection_id),
-            doc_type=DOCTYPE,
             id=doc_id,
         )
 
@@ -238,7 +235,6 @@ def batch_count(query_strings, collections, aggs=None):
         rv = es.msearch(
             index=indices,
             body=body,
-            doc_type=DOCTYPE,
             request_timeout=ES_BATCH_REQUEST_TIMEOUT,
             max_concurrent_searches=settings.ES_BATCH_MAX_CONCURRENT_SEARCHES,
         )
@@ -369,7 +365,6 @@ def set_mapping(collection_id, properties):
     with elasticsearch() as es:
         es.indices.put_mapping(
             index=_index_name(collection_id),
-            doc_type=DOCTYPE,
             body={'properties': properties},
         )
 
