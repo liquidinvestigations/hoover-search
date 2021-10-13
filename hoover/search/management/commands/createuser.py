@@ -11,5 +11,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         username = options['username']
         if User.objects.filter(username=username).exists():
+            print("A user with this name already exists!")
             return
         User.objects.create_user(username)
+        print("Created Hoover user " + options['username'] + ".")
