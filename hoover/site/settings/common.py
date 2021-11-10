@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 base_dir = Path(__file__).absolute().parent.parent.parent.parent
@@ -12,6 +13,7 @@ INSTALLED_APPS = [
     'hoover.search',
     'rest_framework',
     'drf_yasg',
+    'django_celery_results',
 ]
 
 MIDDLEWARE = [
@@ -140,3 +142,11 @@ HOOVER_HYPOTHESIS_EMBED_URL = None
 ES_BATCHED_REDUCE_SIZE = 30
 ES_MAX_CONCURRENT_SHARD_REQUESTS = 3
 ES_BATCH_MAX_CONCURRENT_SEARCHES = 4
+
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60
+CELERY_RESULT_BACKEND = 'django-db'
+
+HOOVER_CELERY_SEARCH_QUEUES = ['hoover.search.search', 'hoover.search.batch_search']
+SEARCH_WORKER_COUNT = 1
+CELERY_BROKER_URL = os.getenv('SEARCH_AMQP_URL')

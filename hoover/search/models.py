@@ -1,12 +1,14 @@
 import uuid
+from datetime import timedelta
 import logging
 
+from cachetools import cached, TTLCache
 from django.db import models
 from django.conf import settings
-from cachetools import cached, TTLCache
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 
 from . import es
 from .loaders.external import Loader as ExternalLoader
@@ -22,6 +24,8 @@ def _get_collection_loader(name):
 
 
 class Collection(models.Model):
+    UPDATE_INTERVAL_SEC = 100
+    SEARCH_OVERHEAD = 0.001
 
     title = models.CharField(max_length=2048, blank=True)
     name = models.CharField(max_length=256, unique=True)
@@ -32,6 +36,10 @@ class Collection(models.Model):
                                    related_name='hoover_search_collections')
     groups = models.ManyToManyField('auth.Group', blank=True,
                                     related_name='hoover_search_collections')
+
+    doc_count = models.IntegerField(default=0)
+    avg_search_time = models.FloatField(default=0)
+    last_update = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
@@ -54,12 +62,66 @@ class Collection(models.Model):
             rv |= set(cls.objects.filter(users__id=user.id))
         return rv
 
+    @property
     def count(self):
+        return self.doc_count
+
+    @property
+    def search_time(self):
+        return self.avg_search_time
+
+    def _get_avg_search_time(self):
+        # value used to avoid division by 0 when doing document count arithmethic. Used to soften out
+        # fractions for low document counts. For collections under this count, result times do not matter
+        # that much.
+        C_docs = 1000
+        new_cached_entries = (
+            self.searchresultcache_set
+            .exclude(date_started__isnull=True)
+            .exclude(date_finished__isnull=True)
+            .exclude(result__isnull=True)
+            .filter(date_finished__gt=timezone.now() - timedelta(seconds=self.UPDATE_INTERVAL_SEC) * 2)
+            .annotate(duration=models.F('date_finished') - models.F('date_started'))
+        )
+
+        entry_count = 0
+        total_time = 0
+        for item in new_cached_entries:
+            entry_count += 1
+            total_doc_count = item.collections.aggregate(count=models.Sum('doc_count'))['count'] or 0
+            total_time += item.duration.total_seconds() * \
+                float(C_docs + self.doc_count) / float(C_docs + total_doc_count)
+            log.warn("%s %s %s", item.duration.total_seconds(), self.doc_count, total_doc_count)
+
+        if not entry_count:
+            # abort if nothing new
+            return None
+
+        # include old search time into new average; assume past searches count up for this many searches
+        C_past = 3
+        total_time += self.avg_search_time * C_past
+        entry_count += C_past
+        return round(total_time / entry_count + self.SEARCH_OVERHEAD, 4)
+
+    def update(self):
+        # early exit if already updated
+        if (timezone.now() - self.last_update).total_seconds() <= self.UPDATE_INTERVAL_SEC:
+            return
+
+        # compute new ES index size
         try:
-            return es.count(self.id)
+            self.doc_count = es.count(self.id)
         except Exception as e:
             log.exception(e)
-            return -1
+
+        # compute new average search time
+        new_time = self._get_avg_search_time()
+        if new_time:
+            self.avg_search_time = new_time
+
+        # update timestamp and save
+        self.last_update = timezone.now()
+        self.save()
 
     def user_access_list(self):
         return ', '.join(u.username for u in self.users.all())
@@ -85,3 +147,45 @@ class Profile(models.Model):
 def create_user_profile(sender, instance, created, **kwargs):
     p, _ = Profile.objects.get_or_create(user=instance)
     p.save()
+
+
+class SearchResultCache(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    args = models.JSONField()
+    collections = models.ManyToManyField(Collection)
+    result = models.JSONField(null=True, default=None)
+    task_id = models.CharField(max_length=51, unique=True, default=random_uuid)
+
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_modified = models.DateTimeField(auto_now=True)
+    date_started = models.DateTimeField(null=True)
+    date_finished = models.DateTimeField(null=True)
+
+    def get_eta(self):
+        def search_time(x):
+            return sum(c.search_time for c in x.collections)
+
+        own_search_time = search_time(self)
+
+        res = {
+            'date_created': self.date_created,
+            'date_started': self.date_started,
+            'date_finished': self.date_finished,
+            'status': 'done' if self.date_finished else ('running' if self.date_starting else 'pending'),
+            'uuid': self.task_id,
+        }
+
+        if res['status'] != 'done':
+            # consider only the unfinished tasks created at most 2s after self
+            others = SearchResultCache.objects.filter(
+                date_finished__isnull=True,
+                date_created__lt=self.date_created + timedelta(seconds=2),
+            )
+            queue_len = len(others)
+            others_search_time = sum(search_time(x) for x in others) / settings.SEARCH_WORKER_COUNT
+
+            res['eta'] = round(own_search_time + others_search_time, 2)
+            res['eta_own_search'] = round(own_search_time, 2)
+            res['eta_queue'] = round(others_search_time, 2)
+            res['queue_len'] = queue_len
+        return res

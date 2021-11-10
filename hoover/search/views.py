@@ -1,3 +1,5 @@
+from datetime import timedelta
+import logging
 import json
 import os
 import urllib.parse
@@ -9,13 +11,23 @@ from django.urls import reverse
 from django.urls.exceptions import NoReverseMatch
 from django.conf import settings
 from django.views.defaults import permission_denied
+from django.utils import timezone
 from . import es
+from . import models
 from .models import Collection
 from . import signals
+from . import celery as cel
 import requests
 import re
 from ratelimit.decorators import ratelimit
 from ratelimit.exceptions import Ratelimited
+
+
+log = logging.getLogger(__name__)
+SEARCH_KEY = 'hoover.search.search'
+SEARCH_CACHE_AGE = timedelta(hours=12)  # keep results valid for this interval
+SEARCH_CACHE_JOIN_RUNNING_MAX_AGE = timedelta(minutes=2)  # join refreshed/recent requests with
+SEARCH_SYNC_WAIT_FOR_RESULTS = timedelta(seconds=60)
 
 
 def JsonErrorResponse(reason, status=400):
@@ -52,7 +64,15 @@ def search_fields(request):
     }, safe=False)
 
 
-def _search(request, **kwargs):
+@cel.app.task(bind=True, serializer='json', name=SEARCH_KEY, routing_key=SEARCH_KEY)
+def _search(self, **kwargs):
+    """Background task that actually runs the search through elasticsearch and annotates results.
+
+    The result is stored in the `SearchResultsCache` table as it becomes available.
+    """
+    cache = models.SearchResultCache.objects.get(task_id=self.request.id)
+    cache.date_started = timezone.now()
+    cache.save()
     try:
         res, counts = es.search(**kwargs)
         res['status'] = 'ok'
@@ -69,12 +89,64 @@ def _search(request, **kwargs):
             name = col_name(_index_id(item['_index']))
             url = 'doc/{}/{}'.format(name, item['_id'])
             item['_collection'] = name
-            item['_url'] = request.build_absolute_uri(url)
+            item['_url_rel'] = url
         res['count_by_index'] = {
             col_name(i): counts[i]
             for i in counts
         }
-    return JsonResponse(res)
+    cache.result = res
+    cache.date_finished = timezone.now()
+    cache.save()
+    return True
+
+
+def _cached_search(collections, user, kwargs, refresh=False, wait=True):
+    # queryset with all valid cache objects for this search
+    all_q = models.SearchResultCache.objects.filter(
+        user=user, args=kwargs,
+        date_created__gt=timezone.now() - SEARCH_CACHE_AGE,
+    )
+    if not refresh:
+        # find some existing entry and return it instantly
+        found = all_q.filter(result__isnull=False).exists()
+        if found:
+            cache_entry = all_q.filter(result__isnull=False).order_by('-date_finished')[:1].get()
+            log.warn('search cache hit: %s', cache_entry)
+            return cache_entry
+        log.debug('search cache miss')
+    else:
+        log.debug('search cache refresh')
+
+    # since there's no cache hit, find some running entry created less than 2min ago
+    recent_running_q = all_q.filter(
+        result__isnull=True,
+        date_created__gt=timezone.now() - SEARCH_CACHE_JOIN_RUNNING_MAX_AGE,
+    ).order_by('-date_created')
+    if recent_running_q.exists():
+        cache_entry = recent_running_q[:1].get()
+        async_result = _search.AsyncResult(task_id=cache_entry.task_id)
+    else:
+        # since we found nothing, create a new entry and launch it
+        cache_entry = models.SearchResultCache(user=user, args=kwargs)
+        cache_entry.save()
+        cache_entry.collections.add(*list(collections))
+        cache_entry.save()
+        async_result = _search.apply_async(
+            task_id=cache_entry.task_id,
+            kwargs=kwargs,
+            queue=SEARCH_KEY,
+            routing_key=SEARCH_KEY,
+        )
+
+    if wait:
+        # wait for the async result to be set
+        async_result.get(timeout=SEARCH_SYNC_WAIT_FOR_RESULTS.total_seconds())
+        # flush the object that was being modified in the async task
+        cache_entry.refresh_from_db()
+        # make sure it's actually got a result, and return it
+        assert cache_entry.result is not None, "search failed!"
+
+    return cache_entry
 
 
 def _check_fields(query_fields, allowed_fields):
@@ -94,6 +166,12 @@ def rates(group, request):
 @csrf_exempt
 @ratelimit(key='user', rate=rates, block=True)
 def search(request):
+    """API view that fetches search results.
+
+    All permission checks for users and fields must be handled here. Then, `_cached_search` is called to
+    actually run the search and return results.
+    """
+
     t0 = time()
     body = json.loads(request.body.decode('utf-8'))
     collections = collections_acl(request.user, body['collections'])
@@ -104,8 +182,7 @@ def search(request):
 
     success = False
     try:
-        response = _search(
-            request,
+        args = dict(
             from_=body.get('from', 0),
             size=body.get('size', 10),
             query=body['query'],
@@ -117,8 +194,10 @@ def search(request):
             collections=[c.name for c in collections],
             search_after=body.get('search_after'),
         )
+        cache_entry = _cached_search(collections, request.user, args)
+        response = cache_entry.result
         success = True
-        return response
+        return JsonResponse(response)
 
     finally:
         signals.search.send('hoover.search', **{
@@ -127,6 +206,23 @@ def search(request):
             'duration': time() - t0,
             'success': success,
         })
+
+
+@csrf_exempt
+@ratelimit(key='user', rate=rates, block=True)
+def async_search(request):
+    pass
+
+
+@csrf_exempt
+@ratelimit(key='user', rate=rates, block=True)
+def async_search_get(request, uuid):
+    search_result = models.SearchResultCache.objects.get(task_id=uuid)
+    assert search_result.user == request.user
+
+    # if cache hit exists, return result
+    # else, return new ETA
+    pass
 
 
 def thumbnail_rate(group, request):

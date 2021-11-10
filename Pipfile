@@ -28,6 +28,8 @@ pyyaml = "*"
 drf-yasg = {extras = ["validation"], version = "*"}
 uritemplate = "*"
 responses = "*"
+celery = "*"
+django-celery-results = "*"
 
 [requires]
 python_version = "3.9"

@@ -6,4 +6,4 @@ trap 'rm .drone.yml.bak && echo "make sure to delete the docker-setup directory 
 docker build . --tag liquidinvestigations/hoover-snoop2:$(git branch --show-current)
 cp .drone.yml .drone.yml.bak
 sed -i "s/py\.test --ignore=docker-setup -v/py\.test --ignore=docker-setup `echo $@`/g" .drone.yml.bak
-drone exec --trusted --branch $(git branch --show-current) --event push --pipeline test .drone.yml.bak 
+drone exec --branch $(git branch --show-current) --event push --pipeline test .drone.yml.bak 
