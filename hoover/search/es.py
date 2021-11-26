@@ -65,6 +65,8 @@ BOOL_FIELDS = [
     'ocrimage',
     'ocrpdf',
     'pgp',
+    'has-thumbnails',
+    'has-pdf-preview',
 ]
 
 TERM_OR_FIELDS = [
@@ -75,6 +77,8 @@ TERM_OR_FIELDS = [
     'lang',
     'thread-index',
     'to',
+    'detected-objects.object.keyword',
+    'image-classes.class.keyword',
 ]
 
 TERM_AND_FIELDS = [
