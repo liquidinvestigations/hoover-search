@@ -9,3 +9,4 @@
 /.venv
 .vscode
 /docker-setup
+.drone.yml.bak

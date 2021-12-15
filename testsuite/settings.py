@@ -1,6 +1,9 @@
 from pathlib import Path
 from hoover.site.settings.common import *
 
+CELERY_TASK_ALWAYS_EAGER = True
+CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
+
 
 testsuite_dir = Path(__file__).absolute().parent
 
