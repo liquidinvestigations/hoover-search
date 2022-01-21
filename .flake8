@@ -4,6 +4,7 @@ max-line-length=120
 
 exclude =
     search/wsgi.py
+    docker-setup/
 
 per-file-ignores =
     testsuite/*: E501, F405, F403, F401, F841, F811

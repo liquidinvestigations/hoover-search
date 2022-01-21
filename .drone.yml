@@ -1,5 +1,5 @@
 kind: pipeline
-name: test
+name: static-tests
 
 steps:
 - name: flake8
@@ -7,66 +7,43 @@ steps:
   commands:
   - flake8
 
-- name: docker build
-  image: docker:dind
-  volumes:
-  - name: dockersock
-    path: /var/run
-  commands:
-  - until docker version; do sleep 3; done
-  - docker build . --tag hoover-search-testing
-
-- name: docker setup
-  image: docker/compose:1.24.0
-  volumes:
-  - name: dockersock
-    path: /var/run
-  commands:
-  - apk add git
-  - git clone https://github.com/hoover/docker-setup.git
-  - cd docker-setup
-  - mkdir -p volumes volumes/metrics volumes/metrics/users collections volumes/search-es-snapshots volumes/search-es/data
-  - chmod 777 volumes/search-es-snapshots volumes/search-es/data
-  - cp ../testsuite/docker-compose.travis.yml docker-compose.yml
-  - cp ../testsuite/docker-compose.override.travis.yml docker-compose.override.yml
-  - docker-compose up -d
-
-- name: py.test
-  image: docker/compose:1.24.0
-  volumes:
-  - name: dockersock
-    path: /var/run
-  commands:
-  - cd docker-setup
-  - docker-compose run --rm search bash -c '/wait && py.test --ignore=docker-setup -v'
-
-services:
-- name: docker daemon in docker
-  image: docker:dind
-  privileged: true
-  volumes:
-  - name: dockersock
-    path: /var/run
-
-volumes:
-- name: dockersock
-  temp: {}
 ---
-kind: pipeline
-name: publish to docker hub
 
-trigger:
-  status:
-  - success
-  event:
-  - push
-  - tag
+kind: pipeline
+name: build
 
 depends_on:
-- test
+- static-tests
 
 steps:
-- name: docker push branch ${DRONE_COMMIT_BRANCH}
+# - name: GH CR docker push branch
+#   image: plugins/docker
+#   settings:
+#     repo: ghcr.io/liquidinvestigations/hoover-search
+#     registry: ghcr.io
+#     tags: ${DRONE_COMMIT_BRANCH}
+#     username:
+#       from_secret: ghcr_docker_username
+#     password:
+#       from_secret: ghcr_docker_password
+#   when:
+#     event:
+#     - push
+# 
+# - name: GH CR docker push autotag + latest
+#   image: plugins/docker
+#   settings:
+#     repo: ghcr.io/liquidinvestigations/hoover-search
+#     registry: ghcr.io
+#     auto_tag: true
+#     username:
+#       from_secret: ghcr_docker_username
+#     password:
+#       from_secret: ghcr_docker_password
+#   depends_on:
+#   - GH CR docker push branch
+
+- name: docker push branch
   image: plugins/docker
   settings:
     repo: liquidinvestigations/hoover-search
@@ -76,14 +53,8 @@ steps:
     password:
       from_secret: docker_password
   when:
-    branch:
-      excludes:
-        - dependabot/*
     event:
     - push
-    branch:
-      exclude:
-      - dependabot/**
 
 - name: docker push autotag + latest
   image: plugins/docker
@@ -94,6 +65,78 @@ steps:
       from_secret: docker_username
     password:
       from_secret: docker_password
+  depends_on:
+  - docker push branch
+
+---
+kind: pipeline
+name: test
+
+depends_on:
+- build
+
+services:
+- name: search-rabbitmq
+  image: rabbitmq:3.7.3
+  volumes:
+  - name: rabbit-v
+    path: /var/lib/rabbitmq
+
+- name: hoover-ui
+  image: liquidinvestigations/hoover-ui:0.1
+  volumes:
+  - name: hoover-ui-v
+    path: /opt/hoover/ui/build
+
+- name: search-es
+  image: docker.elastic.co/elasticsearch/elasticsearch:6.2.4
+  environment:
+    discovery.type: single-node
+    cluster.routing.allocation.disk.watermark.low: "97%"
+    cluster.routing.allocation.disk.watermark.high: "98%"
+    cluster.routing.allocation.disk.watermark.flood_stage: "99%"
+    cluster.info.update.interval: "10m"
+  volumes:
+  - name: es-v
+    path: /var/lib/elasticsearch/data
+
+- name: search-pg
+  image: postgres:13
+  environment:
+    POSTGRES_USER: search
+    POSTGRES_DATABASE: search
+    POSTGRES_PASSWORD: search
+  volumes:
+  - name: pg-v
+    path: /var/lib/postgresql/data
+
+steps:
+- name: py.test
+  image: liquidinvestigations/hoover-search:${DRONE_COMMIT_BRANCH}
+  environment:
+    HOOVER_DB: postgresql://search:search@search-pg:5432/search
+    WAIT_HOSTS: search-es:9200, search-pg:5432, search-rabbitmq:5672
+    WAIT_HOSTS_TIMEOUT: 60
+    DJANGO_SETTINGS_MODULE: testsuite.settings
+    SECRET_KEY: secret-key-for-testing
+    SEARCH_AMQP_URL: "amqp://search-rabbitmq"
+
+  commands:
+  - mkdir -p volumes volumes/metrics volumes/metrics/users collections volumes/search-es-snapshots volumes/search-es/data
+  - /wait
+    # - ./manage.py runperiodic &
+    # - ./manage.py searchworker &
+  - py.test --ignore=docker-setup -v -k test_search
+
+volumes:
+- name: es-v
+  temp: {}
+- name: pg-v
+  temp: {}
+- name: rabbit-v
+  temp: {}
+- name: hoover-ui-v
+  temp: {}
 
 ---
 kind: secret
@@ -108,3 +151,17 @@ name: docker_password
 get:
   path: liquid/ci/drone.docker
   name: password
+
+# ---
+# kind: secret
+# name: ghcr_docker_username
+# get:
+#   path: liquid/ci/gh-cr.docker
+#   name: username
+# 
+# ---
+# kind: secret
+# name: ghcr_docker_password
+# get:
+#   path: liquid/ci/gh-cr.docker
+#   name: password

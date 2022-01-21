@@ -19,6 +19,11 @@ services:
       discovery.type: single-node
       path.repo: /opt/hoover/es-snapshots
 
+  snoop-rabbitmq:
+    image: rabbitmq:3.7.3
+    volumes:
+      - ./volumes/rabbit-v:/var/lib/rabbitmq
+
   search:
     image: liquidinvestigations/hoover-search
     volumes:
@@ -35,7 +40,8 @@ services:
       - "45024:80"
     environment:
       HOOVER_DB: postgresql://search:search@search-pg:5432/search
-      WAIT_HOSTS: search-es:9200, search-pg:5432
+      WAIT_HOSTS: search-es:9200, search-pg:5432, snoop-rabbitmq:5672
       WAIT_HOSTS_TIMEOUT: 60
       DJANGO_SETTINGS_MODULE: testsuite.settings
       SECRET_KEY: secret-key-for-testing
+      SEARCH_AMQP_URL: "amqp://snoop-rabbitmq"

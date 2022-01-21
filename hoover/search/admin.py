@@ -11,7 +11,7 @@ class HooverAdminSite(admin.AdminSite):
 
 
 class CollectionAdmin(admin.ModelAdmin):
-    list_display = ['__str__', 'count', 'user_access_list', 'group_access_list', 'public']
+    list_display = ['__str__', 'count', 'user_access_list', 'group_access_list', 'public', 'avg_search_time']
     fields = ['title', 'name', 'index', 'public', 'users', 'groups']
     filter_horizontal = ['users', 'groups']
 
@@ -23,6 +23,9 @@ class CollectionAdmin(admin.ModelAdmin):
         if db_field.name == 'users':
             field.label_from_instance = self.get_user_label
         return field
+
+    def count(self, collection):
+        return collection.count
 
     def get_user_label(self, user):
         name = user.get_full_name()
@@ -111,4 +114,5 @@ admin_site = HooverAdminSite(name='hoover-admin')
 admin_site.register(models.Collection, CollectionAdmin)
 admin_site.register(Group, HooverGroupAdmin)
 admin_site.register(User, HooverUserAdmin)
+
 admin_site.site_header = 'Hoover Search Administration'
