@@ -17,7 +17,7 @@ api_urlpatterns_v1 = [
     path('_is_staff', views.is_staff),
     path('search', views.search, name='search'),
     path('async_search', views.async_search, name='async_search'),
-    path('async_search/(?P<uuid>[0-9a-f-]+)', views.async_search_get, name='async_search_get'),
+    re_path('^async_search/(?P<uuid>[0-9a-f-]+)$', views.async_search_get, name='async_search_get'),
     path('whoami', views.whoami, name='whoami'),
     path('batch', views.batch, name='batch'),
     path('limits', views.limits, name='limits'),

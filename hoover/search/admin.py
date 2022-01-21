@@ -3,7 +3,6 @@ from django.contrib import admin
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.contrib.auth.admin import User, Group, UserAdmin, GroupAdmin
 from django.forms import ModelForm
-from django_celery_results.models import TaskResult
 from . import models
 
 
@@ -115,8 +114,5 @@ admin_site = HooverAdminSite(name='hoover-admin')
 admin_site.register(models.Collection, CollectionAdmin)
 admin_site.register(Group, HooverGroupAdmin)
 admin_site.register(User, HooverUserAdmin)
-
-admin_site.register(TaskResult)
-admin_site.register(models.SearchResultCache)
 
 admin_site.site_header = 'Hoover Search Administration'

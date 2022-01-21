@@ -16,32 +16,32 @@ depends_on:
 - static-tests
 
 steps:
-- name: GH CR docker push branch
-  image: plugins/docker
-  settings:
-    repo: ghcr.io/liquidinvestigations/hoover-search
-    registry: ghcr.io
-    tags: ${DRONE_COMMIT_BRANCH}
-    username:
-      from_secret: ghcr_docker_username
-    password:
-      from_secret: ghcr_docker_password
-  when:
-    event:
-    - push
-
-- name: GH CR docker push autotag + latest
-  image: plugins/docker
-  settings:
-    repo: ghcr.io/liquidinvestigations/hoover-search
-    registry: ghcr.io
-    auto_tag: true
-    username:
-      from_secret: ghcr_docker_username
-    password:
-      from_secret: ghcr_docker_password
-  depends_on:
-  - GH CR docker push branch
+# - name: GH CR docker push branch
+#   image: plugins/docker
+#   settings:
+#     repo: ghcr.io/liquidinvestigations/hoover-search
+#     registry: ghcr.io
+#     tags: ${DRONE_COMMIT_BRANCH}
+#     username:
+#       from_secret: ghcr_docker_username
+#     password:
+#       from_secret: ghcr_docker_password
+#   when:
+#     event:
+#     - push
+# 
+# - name: GH CR docker push autotag + latest
+#   image: plugins/docker
+#   settings:
+#     repo: ghcr.io/liquidinvestigations/hoover-search
+#     registry: ghcr.io
+#     auto_tag: true
+#     username:
+#       from_secret: ghcr_docker_username
+#     password:
+#       from_secret: ghcr_docker_password
+#   depends_on:
+#   - GH CR docker push branch
 
 - name: docker push branch
   image: plugins/docker
@@ -114,11 +114,19 @@ steps:
 - name: py.test
   image: liquidinvestigations/hoover-search:${DRONE_COMMIT_BRANCH}
   environment:
-    A: B
+    HOOVER_DB: postgresql://search:search@search-pg:5432/search
+    WAIT_HOSTS: search-es:9200, search-pg:5432, search-rabbitmq:5672
+    WAIT_HOSTS_TIMEOUT: 60
+    DJANGO_SETTINGS_MODULE: testsuite.settings
+    SECRET_KEY: secret-key-for-testing
+    SEARCH_AMQP_URL: "amqp://search-rabbitmq"
+
   commands:
   - mkdir -p volumes volumes/metrics volumes/metrics/users collections volumes/search-es-snapshots volumes/search-es/data
   - /wait
-  - py.test --ignore=docker-setup -v
+    # - ./manage.py runperiodic &
+    # - ./manage.py searchworker &
+  - py.test --ignore=docker-setup -v -k test_search
 
 volumes:
 - name: es-v
@@ -144,16 +152,16 @@ get:
   path: liquid/ci/drone.docker
   name: password
 
----
-kind: secret
-name: ghcr_docker_username
-get:
-  path: liquid/ci/gh-cr.docker
-  name: username
-
----
-kind: secret
-name: ghcr_docker_password
-get:
-  path: liquid/ci/gh-cr.docker
-  name: password
+# ---
+# kind: secret
+# name: ghcr_docker_username
+# get:
+#   path: liquid/ci/gh-cr.docker
+#   name: username
+# 
+# ---
+# kind: secret
+# name: ghcr_docker_password
+# get:
+#   path: liquid/ci/gh-cr.docker
+#   name: password

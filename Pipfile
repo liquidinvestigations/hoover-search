@@ -29,7 +29,9 @@ drf-yasg = {extras = ["validation"], version = "*"}
 uritemplate = "*"
 responses = "*"
 celery = "*"
+pytest-celery = '*'
 django-celery-results = "*"
+pytest-mock = "*"
 
 [requires]
 python_version = "3.9"

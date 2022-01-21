@@ -161,31 +161,45 @@ class SearchResultCache(models.Model):
     date_started = models.DateTimeField(null=True)
     date_finished = models.DateTimeField(null=True)
 
-    def get_eta(self):
-        def search_time(x):
-            return sum(c.search_time for c in x.collections)
+    def to_dict(self):
+        """Returns a dict that can be serialized to JSON."""
+        return {
+            "user": self.user.username,
+            "args": self.args,
+            "collections": [c.name for c in self.collections.all()],
+            "task_id": self.task_id,
 
-        own_search_time = search_time(self)
+            "date_created": self.date_created,
+            "date_modified": self.date_modified,
+            "date_started": self.date_started,
+            "date_finished": self.date_finished,
 
-        res = {
-            'date_created': self.date_created,
-            'date_started': self.date_started,
-            'date_finished': self.date_finished,
-            'status': 'done' if self.date_finished else ('running' if self.date_starting else 'pending'),
-            'uuid': self.task_id,
+            'status': 'done' if self.date_finished else ('running' if self.date_started else 'pending'),
+
+            "result": self.result,
+
+            "eta": self._get_eta(),
         }
 
-        if res['status'] != 'done':
-            # consider only the unfinished tasks created at most 2s after self
+    def _get_eta(self):
+        def search_time(x):
+            return sum(c.search_time for c in x.collections.all())
+
+        own_search_time = search_time(self)
+        res = {}
+
+        if not self.date_finished:
+            # consider only the unfinished tasks created at most 5s after self
             others = SearchResultCache.objects.filter(
                 date_finished__isnull=True,
-                date_created__lt=self.date_created + timedelta(seconds=2),
-            )
+                date_created__lt=self.date_created + timedelta(seconds=5),
+            ).exclude(task_id=self.task_id)
+
             queue_len = len(others)
             others_search_time = sum(search_time(x) for x in others) / settings.SEARCH_WORKER_COUNT
 
-            res['eta'] = round(own_search_time + others_search_time, 2)
-            res['eta_own_search'] = round(own_search_time, 2)
-            res['eta_queue'] = round(others_search_time, 2)
-            res['queue_len'] = queue_len
+            res['total_sec'] = round(own_search_time + others_search_time, 3)
+            res['own_search_sec'] = round(own_search_time, 3)
+            res['queue_sec'] = round(others_search_time, 3)
+            res['queue_length'] = queue_len
         return res

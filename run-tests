@@ -3,7 +3,7 @@ cd "$(dirname ${BASH_SOURCE[0]})"
 
 # trap 'rm .drone.yml.bak' EXIT
 
-# docker build . --tag liquidinvestigations/hoover-search:$(git branch --show-current)
+docker build . --tag liquidinvestigations/hoover-search:$(git branch --show-current)
 
 cp .drone.yml .drone.yml.bak
 sed -i "s/py\.test --ignore=docker-setup -v/py\.test --ignore=docker-setup `echo $@`/g" .drone.yml.bak
