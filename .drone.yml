@@ -113,6 +113,7 @@ services:
 steps:
 - name: py.test
   image: liquidinvestigations/hoover-search:${DRONE_COMMIT_BRANCH}
+  pull: always
   environment:
     HOOVER_DB: postgresql://search:search@search-pg:5432/search
     WAIT_HOSTS: search-es:9200, search-pg:5432, search-rabbitmq:5672
