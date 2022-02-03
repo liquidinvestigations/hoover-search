@@ -150,3 +150,5 @@ CELERY_RESULT_BACKEND = 'django-db'
 HOOVER_CELERY_SEARCH_QUEUES = ['hoover.search.search', 'hoover.search.batch_search']
 SEARCH_WORKER_COUNT = 1
 CELERY_BROKER_URL = os.getenv('SEARCH_AMQP_URL')
+
+SNOOP_FORWARD_HEADERS = ['Content-Disposition', 'Accept-Ranges', 'Content-Range', 'Content-Length']
