@@ -1,4 +1,5 @@
 from django.http import HttpResponse, Http404
+from django.conf import settings
 import requests
 from urllib.parse import urljoin
 
@@ -52,12 +53,16 @@ class Document:
         #     suffix = '/raw/data'
 
         url_with_suffix = urljoin(url, suffix[1:])
-        data_resp = requests.get(url_with_suffix, params=request.GET)
+        headers = {}
+        if 'HTTP_RANGE' in request.META:
+            headers = {'Range': request.headers['Range']}
+        data_resp = requests.get(url_with_suffix, params=request.GET, headers=headers)
         if 200 <= data_resp.status_code < 300:
             resp = HttpResponse(data_resp.content,
-                                content_type=data_resp.headers['Content-Type'])
+                                content_type=data_resp.headers['Content-Type'],
+                                status=data_resp.status_code)
             for k, v in data_resp.headers.items():
-                if k in ['Content-Disposition']:
+                if k in settings.SNOOP_FORWARD_HEADERS:
                     resp[k] = v
             return resp
         elif data_resp.status_code == 404:
