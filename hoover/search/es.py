@@ -21,6 +21,7 @@ ALL_FIELDS = [
     'filetype',
     'from',
     'id',
+    'sha3-256',
     'in-reply-to',
     'lang',
     'location',
