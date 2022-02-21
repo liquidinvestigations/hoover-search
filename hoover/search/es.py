@@ -46,6 +46,36 @@ ALL_FIELDS = [
     'thread-index',
     'to',
     'word-count',
+    'entity',
+    'entity-type',
+]
+
+ENT_FIELDS = [
+    'entity.keyword',
+    'entity-type.PERIOD.keyword',
+    'entity-type.FACILITY.keyword',
+    'entity-type.NAT_REL_POL.keyword',
+    'entity-type.DATETIME.keyword',
+    'entity-type.ORGANIZATION.keyword',
+    'entity-type.NUMERIC_VALUE.keyword',
+    'entity-type.MONEY.keyword',
+    'entity-type.QUANTITY.keyword',
+    'entity-type.PERCENT.keyword',
+    'entity-type.ORDINAL.keyword',
+    'entity-type.CARDINAL.keyword',
+    'entity-type.LAW.keyword',
+    'entity-type.EVENT.keyword',
+    'entity-type.LANGUAGE.keyword',
+    'entity-type.PRODUCT.keyword',
+    'entity-type.TIME.keyword',
+    'entity-type.FAC.keyword',
+    'entity-type.DATE.keyword',
+    'entity-type.LOC.keyword',
+    'entity-type.NORP.keyword',
+    'entity-type.WORK_OF_ART.keyword',
+    'entity-type.PER.keyword',
+    'entity-type.GPE.keyword',
+    'entity-type.ORG.keyword',
 ]
 
 PRIVATE_TAGS_FIELD_PREFIX = "priv-tags."
@@ -80,7 +110,8 @@ TERM_OR_FIELDS = [
     'to',
     'detected-objects.object.keyword',
     'image-classes.class.keyword',
-]
+    'entity.keyword',
+] + ENT_FIELDS
 
 TERM_AND_FIELDS = [
     'tags',
