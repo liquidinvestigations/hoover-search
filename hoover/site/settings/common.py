@@ -11,9 +11,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'hoover.search',
+    'hoover.upload.apps.UploadConfig',
     'rest_framework',
     'drf_yasg',
     'django_celery_results',
+    'django_tus',
 ]
 
 MIDDLEWARE = [
@@ -65,6 +67,11 @@ LOGGING = {
             'handlers': ['stderr'],
         },
         'hoover.search': {
+            'level': 'INFO',
+            'propagate': False,
+            'handlers': ['stderr'],
+        },
+        'hoover.upload': {
             'level': 'INFO',
             'propagate': False,
             'handlers': ['stderr'],
@@ -155,3 +162,19 @@ SEARCH_WORKER_COUNT = 1
 CELERY_BROKER_URL = os.getenv('SEARCH_AMQP_URL')
 
 SNOOP_FORWARD_HEADERS = ['Content-Disposition', 'Accept-Ranges', 'Content-Range', 'Content-Length']
+
+
+# all django_tus related settings can be found here: https://github.com/alican/django-tus
+
+# this is where django_tus saves the resumable uploads
+TUS_UPLOAD_DIR = Path(os.getenv('TUS_UPLOAD_DIR', '/tmp/tus/uploads'))
+
+# this is where django_tus moves the finished uploads. We use the signal that is sent after an upload
+# is finished to move it from there into the correct collection.
+TUS_DESTINATION_DIR = Path(os.getenv('TUS_DESTINATION_DIR', '/tmp/tus/files'))
+
+TUS_FILE_NAME_FORMAT = 'increment'  # Other options are: 'random-suffix', 'random', 'keep'
+TUS_EXISTING_FILE = 'error'  # Other options are: 'overwrite',  'error', 'rename'
+
+# 5 MB in bytes, this needs to be higher than the chunksize of the tus client.
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5 * 2**20

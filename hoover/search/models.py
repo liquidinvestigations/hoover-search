@@ -32,10 +32,15 @@ class Collection(models.Model):
     index = models.CharField(max_length=256)
 
     public = models.BooleanField(default=False)
+    writeable = models.BooleanField(default=False)
     users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True,
                                    related_name='hoover_search_collections')
     groups = models.ManyToManyField('auth.Group', blank=True,
                                     related_name='hoover_search_collections')
+    uploader_users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True,
+                                            related_name='hoover_search_upload_collections')
+    uploader_groups = models.ManyToManyField('auth.Group', blank=True,
+                                             related_name='hoover_search_upload_collections')
 
     doc_count = models.IntegerField(default=0)
     avg_search_time = models.FloatField(default=0)
@@ -172,8 +177,14 @@ class Collection(models.Model):
     def user_access_list(self):
         return ', '.join(u.username for u in self.users.all())
 
+    def uploaders_access_list(self):
+        return ', '.join(u.username for u in self.uploader_users.all() & self.users.all())
+
     def group_access_list(self):
         return ', '.join(g.name for g in self.groups.all())
+
+    def group_upload_access_list(self):
+        return ', '.join(g.name for g in self.uploader_groups.all() & self.groups.all())
 
     def get_document(self, doc_id):
         return es.get(self.id, doc_id)

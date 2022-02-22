@@ -39,6 +39,7 @@ opentelemetry-instrumentation-logging = "*"
 opentelemetry-instrumentation-celery = "*"
 opentelemetry-instrumentation-requests = "*"
 opentelemetry-instrumentation-elasticsearch = "*"
+django-tus = "*"
 
 [requires]
 python_version = "3.9"

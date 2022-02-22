@@ -135,6 +135,8 @@ steps:
   commands:
   - mkdir -p volumes volumes/metrics volumes/metrics/users collections volumes/search-es-snapshots volumes/search-es/data
   - /wait
+  - mkdir -p /opt/hoover/collections/testdata/data
+  - curl -L https://github.com/liquidinvestigations/hoover-testdata/raw/ecc419bb7952dbdeb3d9f34fbd5b7f2eb4bb6f6b/data/disk-files/pdf-scans/PublicWaterMassMailing.pdf -o /opt/hoover/collections/testdata/data/original.pdf
     # - ./manage.py runperiodic &
     # - ./manage.py searchworker &
   - pytest --ignore=docker-setup -v testsuite/test_search.py testsuite/test_collection_access.py testsuite/test_ratelimits.py
