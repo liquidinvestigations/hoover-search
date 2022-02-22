@@ -10,6 +10,35 @@ ES_TIMEOUT = '100s'
 ES_REQUEST_TIMEOUT = 100
 ES_BATCH_REQUEST_TIMEOUT = 120
 
+ENT_FIELDS = [
+    'entity',
+    'entity-type.PERIOD',
+    'entity-type.FACILITY',
+    'entity-type.NAT_REL_POL',
+    'entity-type.DATETIME',
+    'entity-type.ORGANIZATION',
+    'entity-type.NUMERIC_VALUE',
+    'entity-type.MONEY',
+    'entity-type.QUANTITY',
+    'entity-type.PERCENT',
+    'entity-type.ORDINAL',
+    'entity-type.CARDINAL',
+    'entity-type.LAW',
+    'entity-type.EVENT',
+    'entity-type.LANGUAGE',
+    'entity-type.PRODUCT',
+    'entity-type.TIME',
+    'entity-type.FAC',
+    'entity-type.DATE',
+    'entity-type.LOC',
+    'entity-type.NORP',
+    'entity-type.WORK_OF_ART',
+    'entity-type.PER',
+    'entity-type.GPE',
+    'entity-type.ORG',
+]
+
+
 ALL_FIELDS = [
     'attachments',
     'broken',
@@ -46,37 +75,7 @@ ALL_FIELDS = [
     'thread-index',
     'to',
     'word-count',
-    'entity',
-    'entity-type',
-]
-
-ENT_FIELDS = [
-    'entity.keyword',
-    'entity-type.PERIOD.keyword',
-    'entity-type.FACILITY.keyword',
-    'entity-type.NAT_REL_POL.keyword',
-    'entity-type.DATETIME.keyword',
-    'entity-type.ORGANIZATION.keyword',
-    'entity-type.NUMERIC_VALUE.keyword',
-    'entity-type.MONEY.keyword',
-    'entity-type.QUANTITY.keyword',
-    'entity-type.PERCENT.keyword',
-    'entity-type.ORDINAL.keyword',
-    'entity-type.CARDINAL.keyword',
-    'entity-type.LAW.keyword',
-    'entity-type.EVENT.keyword',
-    'entity-type.LANGUAGE.keyword',
-    'entity-type.PRODUCT.keyword',
-    'entity-type.TIME.keyword',
-    'entity-type.FAC.keyword',
-    'entity-type.DATE.keyword',
-    'entity-type.LOC.keyword',
-    'entity-type.NORP.keyword',
-    'entity-type.WORK_OF_ART.keyword',
-    'entity-type.PER.keyword',
-    'entity-type.GPE.keyword',
-    'entity-type.ORG.keyword',
-]
+] + ENT_FIELDS
 
 PRIVATE_TAGS_FIELD_PREFIX = "priv-tags."
 
@@ -110,8 +109,7 @@ TERM_OR_FIELDS = [
     'to',
     'detected-objects.object.keyword',
     'image-classes.class.keyword',
-    'entity.keyword',
-] + ENT_FIELDS
+] + [x + '.keyword' for x in ENT_FIELDS]
 
 TERM_AND_FIELDS = [
     'tags',
