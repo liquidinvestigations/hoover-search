@@ -12,30 +12,12 @@ ES_BATCH_REQUEST_TIMEOUT = 120
 
 ENT_FIELDS = [
     'entity',
-    'entity-type.PERIOD',
-    'entity-type.FACILITY',
-    'entity-type.NAT_REL_POL',
-    'entity-type.DATETIME',
-    'entity-type.ORGANIZATION',
-    'entity-type.NUMERIC_VALUE',
-    'entity-type.MONEY',
-    'entity-type.QUANTITY',
-    'entity-type.PERCENT',
-    'entity-type.ORDINAL',
-    'entity-type.CARDINAL',
-    'entity-type.LAW',
-    'entity-type.EVENT',
-    'entity-type.LANGUAGE',
-    'entity-type.PRODUCT',
-    'entity-type.TIME',
-    'entity-type.FAC',
-    'entity-type.DATE',
-    'entity-type.LOC',
-    'entity-type.NORP',
-    'entity-type.WORK_OF_ART',
-    'entity-type.PER',
-    'entity-type.GPE',
-    'entity-type.ORG',
+
+    'entity-type.location',
+    'entity-type.organization',
+    'entity-type.event',
+    'entity-type.person',
+    'entity-type.money',
 ]
 
 
