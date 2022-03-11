@@ -183,9 +183,9 @@ class SearchResultCache(models.Model):
 
     def _get_eta(self):
         def search_time(x):
-            return sum(c.search_time for c in x.collections.all())
+            return sum(c.search_time for c in x.collections.all()) * 1.5
 
-        own_search_time = search_time(self)
+        own_search_time = 1 + round(search_time(self), 1)
         res = {}
 
         if not self.date_finished:
@@ -198,8 +198,13 @@ class SearchResultCache(models.Model):
             queue_len = len(others)
             others_search_time = sum(search_time(x) for x in others) / settings.SEARCH_WORKER_COUNT
 
-            res['total_sec'] = round(own_search_time + others_search_time, 3)
-            res['own_search_sec'] = round(own_search_time, 3)
-            res['queue_sec'] = round(others_search_time, 3)
+            # if we're the only task, that means we aren't taking into account at least one more task,
+            # so let's increase ETA by 50%
+            if others_search_time < 1:
+                own_search_time = 1 + int(own_search_time * 1.5)
+
+            res['total_sec'] = int(own_search_time + others_search_time)
+            res['own_search_sec'] = int(own_search_time)
+            res['queue_sec'] = int(others_search_time)
             res['queue_length'] = queue_len
         return res
