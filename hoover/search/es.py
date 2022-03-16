@@ -57,6 +57,8 @@ ALL_FIELDS = [
     'thread-index',
     'to',
     'word-count',
+    'translated-from',
+    'translated-to',
 ] + ENT_FIELDS
 
 PRIVATE_TAGS_FIELD_PREFIX = "priv-tags."
@@ -91,6 +93,8 @@ TERM_OR_FIELDS = [
     'to',
     'detected-objects.object.keyword',
     'image-classes.class.keyword',
+    'translated-from',
+    'translated-to',
 ] + [x + '.keyword' for x in ENT_FIELDS]
 
 TERM_AND_FIELDS = [
