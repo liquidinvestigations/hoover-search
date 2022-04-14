@@ -127,7 +127,7 @@ steps:
   - /wait
     # - ./manage.py runperiodic &
     # - ./manage.py searchworker &
-  - py.test --ignore=docker-setup -v -k test_search
+  - pytest --ignore=docker-setup -v testsuite/test_search.py testsuite/test_collection_access.py testsuite/test_ratelimits.py
 
 volumes:
 - name: es-v

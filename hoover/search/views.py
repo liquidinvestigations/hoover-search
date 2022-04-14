@@ -468,12 +468,9 @@ def collection_access(request, collection_name):
     user_list = {}
     for u in col.users.all():
         user_list[u.username] = 'has individual access'
-    print(user_list)
     for group in col.groups.all():
         for u in group.user_set.all():
             description = f"has access through group '{group.name}'"
-            print(u)
-            print(u in user_list)
             if u.username not in user_list:
                 user_list[u.username] = description
             else:
