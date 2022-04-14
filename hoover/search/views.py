@@ -458,6 +458,29 @@ def web_viewer_redirect_v0(request):
     return redirect(redirect_url, permanent=True)
 
 
+def collection_access(request, collection_name):
+    '''View that returns a list of users who can access a collection.
+
+    Returns a JsonResponse with usernames and the reasons why that user can access
+    the collection. The reasons can be individual access or access through a group.
+    '''
+    col = Collection.objects.get(name=collection_name)
+    user_list = {}
+    for u in col.users.all():
+        user_list[u.username] = 'has individual access'
+    print(user_list)
+    for group in col.groups.all():
+        for u in group.user_set.all():
+            description = f"has access through group '{group.name}'"
+            print(u)
+            print(u in user_list)
+            if u.username not in user_list:
+                user_list[u.username] = description
+            else:
+                user_list[u.username] = user_list[u.username] + ', ' + description
+    return JsonResponse(user_list)
+
+
 def handler_403(request, exception=None):
     '''Custom 403 error handler.
 
