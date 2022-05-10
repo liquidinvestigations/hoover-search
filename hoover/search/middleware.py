@@ -1,10 +1,11 @@
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Permission
 from django.utils.cache import add_never_cache_headers
 from django.utils.deprecation import MiddlewareMixin
 from django.conf import settings
 from django.contrib.auth.middleware import RemoteUserMiddleware
+from django.contrib.contenttypes.models import ContentType
 
-from hoover.search.models import Profile
+from hoover.search.models import Profile, Collection
 
 
 class NoReferral(MiddlewareMixin):
@@ -47,14 +48,21 @@ class AuthproxyUserMiddleware(RemoteUserMiddleware):
         ]
 
         is_admin = ('admin' in groups)
+        is_superuser = ('superuser' in groups)
         save = False
         if not User.objects.filter(username=username).exists():
             save = True
 
-        if is_admin != user.is_superuser or is_admin != user.is_staff:
-            user.is_superuser = is_admin
+        if is_superuser != user.is_superuser or is_admin != user.is_staff:
+            user.is_superuser = is_superuser
             user.is_staff = is_admin
             save = True
+
+        if is_admin:
+            collection_type = ContentType.objects.get_for_model(Collection)
+            collection_permissions = Permission.objects.filter(content_type=collection_type)
+            for perm in collection_permissions:
+                user.user_permissions.add(perm)
 
         if email != user.email:
             user.email = email

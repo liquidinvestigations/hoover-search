@@ -15,6 +15,14 @@ class CollectionAdmin(admin.ModelAdmin):
     fields = ['title', 'name', 'index', 'public', 'users', 'groups']
     filter_horizontal = ['users', 'groups']
 
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        qs_user = qs.filter(users__in=[request.user.id])
+        qs_groups = qs.filter(groups__in=request.user.groups.all())
+        return qs_user | qs_groups
+
     def get_prepopulated_fields(self, request, obj=None):
         return {} if obj else {'name': ['title'], 'index': ['name']}
 

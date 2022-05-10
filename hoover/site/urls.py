@@ -22,6 +22,7 @@ api_urlpatterns_v1 = [
     path('batch', views.batch, name='batch'),
     path('limits', views.limits, name='limits'),
     path('collections', views.collections, name='collections'),
+    path('collection_access/<collection_name>', views.collection_access, name='collection_access'),
     path('search_fields', views.search_fields, name='search_fields'),
     re_path(r'^doc/(?P<collection_name>[^/]+)/(?P<id>[^/]+)/tags(?P<suffix>.*)$', views.doc_tags),
     re_path(r'^doc/(?P<collection_name>[^/]+)/(?P<id>[^/]+)(?P<suffix>.*)$', views.doc),
