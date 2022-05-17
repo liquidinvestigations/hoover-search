@@ -59,6 +59,13 @@ ALL_FIELDS = [
     'word-count',
     'translated-from',
     'translated-to',
+    "is-table",
+    "table-columns",
+    "table-sheets",
+    "table-sheet-count",
+    "table-row-count",
+    "table-col-count",
+
 ] + ENT_FIELDS
 
 PRIVATE_TAGS_FIELD_PREFIX = "priv-tags."
@@ -66,6 +73,9 @@ PRIVATE_TAGS_FIELD_PREFIX = "priv-tags."
 INT_FIELDS = [
     'size',
     'word-count',
+    "table-sheet-count",
+    "table-row-count",
+    "table-col-count",
 ]
 
 DATE_FIELDS = [
@@ -81,6 +91,7 @@ BOOL_FIELDS = [
     'pgp',
     'has-thumbnails',
     'has-pdf-preview',
+    "is-table",
 ]
 
 TERM_OR_FIELDS = [
@@ -95,6 +106,8 @@ TERM_OR_FIELDS = [
     'image-classes.class.keyword',
     'translated-from',
     'translated-to',
+    "table-columns",
+    "table-sheets",
 ] + [x + '.keyword' for x in ENT_FIELDS]
 
 TERM_AND_FIELDS = [
