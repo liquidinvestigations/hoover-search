@@ -65,6 +65,7 @@ ALL_FIELDS = [
     "table-sheet-count",
     "table-row-count",
     "table-col-count",
+    'skipped',
 
 ] + ENT_FIELDS
 
@@ -92,6 +93,7 @@ BOOL_FIELDS = [
     'has-thumbnails',
     'has-pdf-preview',
     "is-table",
+    "skipped",
 ]
 
 TERM_OR_FIELDS = [
