@@ -68,7 +68,8 @@ class Collection(models.Model):
 
     @property
     def search_time(self):
-        return self.avg_search_time
+        return (self.avg_search_time
+                + settings.DEBUG_WAIT_PER_COLLECTION * Collection.objects.all().count())
 
     def _get_avg_search_time(self):
         # value used to avoid division by 0 when doing document count arithmethic. Used to soften out
@@ -101,7 +102,8 @@ class Collection(models.Model):
         C_past = 3
         total_time += self.avg_search_time * C_past
         entry_count += C_past
-        return round(total_time / entry_count + self.SEARCH_OVERHEAD, 4)
+        return (round(total_time / entry_count + self.SEARCH_OVERHEAD, 4)
+                + settings.DEBUG_WAIT_PER_COLLECTION * Collection.objects.all().count())
 
     def update(self):
         # early exit if already updated
@@ -183,7 +185,8 @@ class SearchResultCache(models.Model):
 
     def _get_eta(self):
         def search_time(x):
-            return sum(c.search_time for c in x.collections.all()) * 1.5
+            return (sum(c.search_time for c in x.collections.all()) * 1.5
+                    + settings.DEBUG_WAIT_PER_COLLECTION * Collection.objects.all().count())
 
         own_search_time = 1 + round(search_time(self), 1)
         res = {}

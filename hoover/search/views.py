@@ -3,7 +3,7 @@ import logging
 import json
 import os
 import urllib.parse
-from time import time
+from time import time, sleep
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, Http404, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -65,7 +65,7 @@ def search_fields(request):
 
 
 @cel.app.task(bind=True, serializer='json', name=SEARCH_KEY, routing_key=SEARCH_KEY)
-def _search(self, **kwargs):
+def _search(self, *args, **kwargs):
     """Background task that actually runs the search through elasticsearch and annotates results.
 
     The result is stored in the `SearchResultCache` table as it becomes available.
@@ -73,6 +73,10 @@ def _search(self, **kwargs):
     cache = models.SearchResultCache.objects.get(task_id=self.request.id)
     cache.date_started = timezone.now()
     cache.save()
+
+    # Add a sleep for debugging UI bug
+    sleep(args[0])
+
     try:
         res, counts = es.search(**kwargs)
         res['status'] = 'ok'
@@ -134,6 +138,7 @@ def _cached_search(collections, user, kwargs, refresh=False, wait=True):
         cache_entry.collections.add(*list(collections))
         cache_entry.save()
         async_result = _search.apply_async(
+            args=(settings.DEBUG_WAIT_PER_COLLECTION, ),
             task_id=cache_entry.task_id,
             kwargs=kwargs,
             queue=SEARCH_KEY,
