@@ -70,7 +70,6 @@ def _search(self, *args, **kwargs):
 
     The result is stored in the `SearchResultCache` table as it becomes available.
     """
-
     cache = models.SearchResultCache.objects.get(task_id=self.request.id)
     cache.date_started = timezone.now()
     cache.save()
@@ -179,6 +178,7 @@ def search(request):
     All permission checks for users and fields must be handled here. Then, `_cached_search` is called to
     actually run the search and return results.
     """
+
     t0 = time()
     body = json.loads(request.body.decode('utf-8'))
     collections = collections_acl(request.user, body['collections'])
@@ -225,6 +225,7 @@ def async_search(request):
     All permission checks for users and fields must be handled here. Then, `_cached_search` is called to
     actually run the search and return results.
     """
+
     t0 = time()
     body = json.loads(request.body.decode('utf-8'))
     collections = collections_acl(request.user, body['collections'])
