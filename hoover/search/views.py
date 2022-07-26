@@ -265,7 +265,6 @@ def async_search(request):
 @csrf_exempt
 @ratelimit(key='user', rate=rates, block=True)
 def async_search_get(request, uuid):
-
     search_result = models.SearchResultCache.objects.get(task_id=uuid)
     assert search_result.user == request.user
     wait = bool(request.GET.get('wait', None))
