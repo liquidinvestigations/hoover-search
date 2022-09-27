@@ -118,9 +118,43 @@ class HooverUserAdmin(UserAdmin):
         return False
 
 
+# class HooverSearchResultCacheAdmin(admin.ModelAdmin):
+#     readonly_fields = ['args_size', 'user', 'collections', 'result_size', 'task_id', 'date_started', 'date_finished',
+#                        'args', 'result', 'txt_query', 'result_hits', 'result_agg_hits']
+#     fields = readonly_fields
+#     list_display = ['task_id', 'user', 'str_collections', 'date_started', 'date_finished', 'args_size', 'result_size',
+#                     'txt_query', 'result_hits', 'result_agg_hits']
+#
+#     def len_collections(self, item):
+#         return len(item.collections)
+#
+#     def str_collections(self, item):
+#         _str = ', '.join(c.name for c in item.collections.all())
+#         _str = f'{len(item.collections.all())} items: ' + _str
+#         if len(_str) > 40:
+#             _str = _str[:37] + '...'
+#         return _str
+#
+#     def args_size(self, item):
+#         return len(str(item.args))
+#
+#     def result_size(self, item):
+#         return len(str(item.result))
+#
+#     def txt_query(self, item):
+#         return item.args.get('query', {}).get('query_string', {}).get('query')
+#
+#     def result_hits(self, item):
+#         pass
+#
+#     def result_agg_hits(self, item):
+#         return len((item.result or {}).get('aggregations', [])) or None
+
+
 admin_site = HooverAdminSite(name='hoover-admin')
 admin_site.register(models.Collection, CollectionAdmin)
 admin_site.register(Group, HooverGroupAdmin)
 admin_site.register(User, HooverUserAdmin)
+# admin_site.register(models.SearchResultCache, HooverSearchResultCacheAdmin)
 
 admin_site.site_header = 'Hoover Search Administration'

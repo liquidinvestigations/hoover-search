@@ -3,7 +3,7 @@ import logging
 import json
 import os
 import urllib.parse
-from time import time, sleep
+from time import time
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, Http404, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -70,39 +70,68 @@ def _search(self, *args, **kwargs):
 
     The result is stored in the `SearchResultCache` table as it becomes available.
     """
-    cache = models.SearchResultCache.objects.get(task_id=self.request.id)
-    cache.date_started = timezone.now()
-    cache.save()
-
-    # Add a sleep for debugging UI bug
-    sleep(args[0])
-
     try:
-        res, counts = es.search(**kwargs)
-        res['status'] = 'ok'
-    except es.SearchError as e:
-        return JsonErrorResponse(e.reason)
+        cache = models.SearchResultCache.objects.get(task_id=self.request.id)
+        cache.date_started = timezone.now()
+        cache.save()
 
+        try:
+            res, counts = es.search(**kwargs)
+            res['status'] = 'ok'
+        except es.SearchError as e:
+            return JsonErrorResponse(e.reason)
+
+        else:
+            from .es import _index_id
+
+            def col_name(id):
+                return Collection.objects.get(id=id).name
+
+            for item in res['hits']['hits']:
+                name = col_name(_index_id(item['_index']))
+                url = 'doc/{}/{}'.format(name, item['_id'])
+                item['_collection'] = name
+                item['_url_rel'] = url
+            res['count_by_index'] = {
+                col_name(i): counts[i]
+                for i in counts
+            }
+        res = _sanitize_utf8_values(res)
+        cache.result = res
+        cache.date_finished = timezone.now()
+        cache.save()
+        return True
+    except Exception as e:
+        log.error('_search celery task execution failed!')
+        log.exception(e)
+        raise
+
+
+def _sanitize_utf8_values(value):
+    """Ensure UTF-8 strings have valid encodings in dict.
+
+    Needed to avoid errors down the line when trying to put the search output into Postgres."""
+
+    if isinstance(value, str):
+        fixed_str = _fix_string(value)
+        if fixed_str != value:
+            log.warning('SANITIZE value: old=%s new=%s', value, fixed_str)
+        return fixed_str
+    elif isinstance(value, list):
+        return [_sanitize_utf8_values(x) for x in value]
+    elif isinstance(value, dict):
+        return {k: _sanitize_utf8_values(v) for k, v in value.items()}
     else:
-        from .es import _index_id
+        return value
 
-        def col_name(id):
-            return Collection.objects.get(id=id).name
 
-        for item in res['hits']['hits']:
-            name = col_name(_index_id(item['_index']))
-            url = 'doc/{}/{}'.format(name, item['_id'])
-            item['_collection'] = name
-            item['_url_rel'] = url
-        res['count_by_index'] = {
-            col_name(i): counts[i]
-            for i in counts
-        }
-    cache.result = res
-    cache.date_finished = timezone.now()
-    cache.save()
-
-    return True
+def _fix_string(s):
+    """Fix potential encoding errors for this UTF-8 string."""
+    return s.encode('utf-8', errors='replace').decode('utf-8', errors='replace')
+    # return s.encode('utf-16', 'surrogatepass')\
+    #     .decode('utf-16', errors='replace')\
+    #     .encode('utf-8', errors='backslashreplace')\
+    #     .decode('utf-8', errors='replace')
 
 
 def _cached_search(collections, user, kwargs, refresh=False, wait=True):
@@ -130,7 +159,7 @@ def _cached_search(collections, user, kwargs, refresh=False, wait=True):
     if not refresh and recent_running_q.exists():
         cache_entry = recent_running_q[:1].get()
         async_result = _search.AsyncResult(task_id=cache_entry.task_id)
-        log.warn('search cache hit existing (running): %s', cache_entry)
+        log.warning('search cache hit existing (running): %s', cache_entry)
     else:
         # since we found nothing, create a new entry and launch it
         cache_entry = models.SearchResultCache(user=user, args=kwargs)

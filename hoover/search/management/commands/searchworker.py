@@ -12,7 +12,7 @@ def celery_argv(queues):
         .strip()
     )
 
-    loglevel = 'warning' if settings.DEBUG else 'error'
+    loglevel = 'info' if settings.DEBUG else 'error'
     return [
         celery_binary,
         '-A', 'hoover.search',

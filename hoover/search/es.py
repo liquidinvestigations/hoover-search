@@ -1,3 +1,4 @@
+import logging
 import json
 from contextlib import contextmanager
 from django.conf import settings
@@ -5,6 +6,8 @@ from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import NotFoundError, RequestError, ConnectionError
 from elasticsearch.helpers import bulk
 
+
+log = logging.getLogger(__name__)
 DOCTYPE = 'doc'
 ES_TIMEOUT = '100s'
 ES_REQUEST_TIMEOUT = 100
