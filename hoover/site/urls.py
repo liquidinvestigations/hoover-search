@@ -33,7 +33,7 @@ api_urlpatterns_v1 = [
     path('upload/<collection_name>/', upload_views.upload, name='tus_upload'),
     path('upload/<collection_name>/<uuid:resource_id>', upload_views.upload,
          name='tus_upload_chunks'),
-    path('filemanagement/<collection_name>/delete_file/<hash>', filemanagement_views.async_delete_file),
+    # path('filemanagement/<collection_name>/delete_file/<hash>', filemanagement_views.async_delete_file),
 ]
 
 urlpatterns = [
