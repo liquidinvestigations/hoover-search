@@ -30,7 +30,7 @@ def can_upload(collection_name, user):
 
 
 @csrf_exempt
-def upload(request, collection_name, **kwargs):
+def upload(request, collection_name, directory_pk, **kwargs):
     """View to upload files to a collection.
 
     This view checks, if the user requesting to upload has the permissions to do so for
@@ -49,13 +49,21 @@ def upload(request, collection_name, **kwargs):
 
     if request.method == 'POST':
         upload_meta = request.META.get('HTTP_UPLOAD_METADATA')
-        collection_bytes = base64.b64encode(collection_name.encode('utf-8'))
-        collection_b64_str = collection_bytes.decode('utf-8')
-        request.META['HTTP_UPLOAD_METADATA'] = upload_meta + ',collection ' + collection_b64_str
+        # adding custom metadata to the request
+        request.META['HTTP_UPLOAD_METADATA'] = (upload_meta + ',collection ' + b64_encode(collection_name)
+                                                + ',directory_pk' + b64_encode(directory_pk))
         log.info('Created initial upload! Metadata: ' + upload_meta)
-        return(TusUpload.as_view()(request))
+        # forwarding request to tus view
+        return (TusUpload.as_view()(request))
 
     if request.method == 'PATCH':
         uuid = kwargs.get('resource_id')
         log.info(f'Starting file upload! UUID: "{str(uuid)}".')
+        # forward request to tus view
         return(TusUpload.as_view()(request, uuid))
+
+
+def b64_encode(s):
+    """Encodes a string into a base64 encoded string."""
+    s_bytes = base64.b64encode(s.encode('utf-8'))
+    return s_bytes.decode('utf-8')

@@ -7,7 +7,6 @@ from drf_yasg import openapi
 from ..search.admin import admin_site
 from ..search import views
 from ..upload import views as upload_views
-from ..filemanagement import views as filemanagement_views
 
 
 api_urlpatterns_v0 = [
@@ -30,10 +29,9 @@ api_urlpatterns_v1 = [
     path('search_fields', views.search_fields, name='search_fields'),
     re_path(r'^doc/(?P<collection_name>[^/]+)/(?P<id>[^/]+)/tags(?P<suffix>.*)$', views.doc_tags),
     re_path(r'^doc/(?P<collection_name>[^/]+)/(?P<id>[^/]+)(?P<suffix>.*)$', views.doc),
-    path('upload/<collection_name>/', upload_views.upload, name='tus_upload'),
+    path('upload/<collection_name>/<uuid:resource_id>', upload_views.upload, name='tus_upload'),
     path('upload/<collection_name>/<uuid:resource_id>', upload_views.upload,
          name='tus_upload_chunks'),
-    # path('filemanagement/<collection_name>/delete_file/<hash>', filemanagement_views.async_delete_file),
 ]
 
 urlpatterns = [
