@@ -329,3 +329,25 @@ class BatchResultCache(models.Model):
             res['queue_sec'] = int(others_search_time)
             res['queue_length'] = queue_len
         return res
+
+
+class Upload(models.Model):
+    """Database model to keep track of user uploads."""
+
+    started = models.DateTimeField(auto_now_add=True)
+    """Timestamp when the upload started."""
+
+    finished = models.DateTimeField(null=True, blank=True)
+    """Timestamp when the upload finished."""
+
+    uploader = models.ForeignKey(settings.AUTH_USER_MODEL)
+    """Reference to the user who is uploading."""
+
+    collection = models.ForeignKey(Collection)
+    """Reference to the collection in which the file is being uploaded."""
+
+    directory_id = models.IntegerField()
+    """The directory id that corresponds to the directory the file is being uploaded to."""
+
+    filename = models.CharField(max_length=256)
+    """The filename of the uploaded file."""

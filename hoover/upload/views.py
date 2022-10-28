@@ -45,7 +45,8 @@ def upload(request, **kwargs):
     """
 
     if request.method == 'POST':
-        collection_name = get_collection_name(request.META['HTTP_UPLOAD_METADATA'])
+        metadata = parse_metadata(request.META['HTTP_UPLOAD_METADATA'])
+        collection_name = metadata.get('collection_name')
 
         if not can_upload(collection_name, request.user):
             log.warning(f'User "{request.user.username}" cannot upload to collection: "{collection_name}"')
@@ -57,19 +58,31 @@ def upload(request, **kwargs):
 
     if request.method == 'PATCH':
         uuid = kwargs.get('resource_id')
+        models.Upload.objects.create(uploader=request.user,
+                                     collection=models.Collection.objects.get(name=collection_name),
+                                     directory_id=metadata.get('directory_pk'),
+                                     filename=metadata.get('filename'),
+                                     )
         log.info(f'Starting file upload! UUID: "{str(uuid)}".')
         # forward request to tus view
         return(TusUpload.as_view()(request, uuid))
 
 
-def get_collection_name(metadata):
-    """Retrieves the collection name from a metadata string.
+def parse_metadata(metadata):
+    """Parses the metadata from a metadata string and creates a dictionary.
 
     The string contains key value pairs, where each pair is seperated by a ',' and
-    the key,value pair by a ' '. The value is base64 encoded.
+    the key,value pair by a ' '. The values are base64 encoded.
+    Returns a dictionary with all key,value pairs inside.
     """
+    parsed_metadata = {}
     metadata = metadata.split(',')
     for entry in metadata:
-        if entry.startswith('collection'):
-            collection_name = entry.split(' ')[1]
-            return base64.b64decode(collection_name).decode('utf-8')
+        key, value = entry.split(' ')
+        if key.startswith('collection'):
+            parsed_metadata['collection'] = base64.b64decode(value).decode('utf-8')
+        elif key.startswith('name'):
+            parsed_metadata['filename'] = base64.b64decode(value).decode('utf-8')
+        elif key.startswith('dirpk'):
+            parsed_metadata['directory_pk'] = base64.b64decode(value).decode('utf-8')
+    return parsed_metadata
