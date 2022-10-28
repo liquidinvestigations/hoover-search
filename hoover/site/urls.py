@@ -29,8 +29,8 @@ api_urlpatterns_v1 = [
     path('search_fields', views.search_fields, name='search_fields'),
     re_path(r'^doc/(?P<collection_name>[^/]+)/(?P<id>[^/]+)/tags(?P<suffix>.*)$', views.doc_tags),
     re_path(r'^doc/(?P<collection_name>[^/]+)/(?P<id>[^/]+)(?P<suffix>.*)$', views.doc),
-    path('upload/<collection_name>/<uuid:resource_id>', upload_views.upload, name='tus_upload'),
-    path('upload/<collection_name>/<uuid:resource_id>', upload_views.upload,
+    path('upload/', upload_views.upload, name='tus_upload'),
+    path('upload/<uuid:resource_id>', upload_views.upload,
          name='tus_upload_chunks'),
 ]
 
@@ -39,7 +39,7 @@ urlpatterns = [
     path('accounts/', include('django.contrib.auth.urls')),
     path('api/v0/', include(api_urlpatterns_v0)),
     path('api/v1/', include(api_urlpatterns_v1)),
-    path('viewer/web/viewer.html', views.web_viewer_redirect_v0),
+    path('viewer/web/viewer.html', views.web_viewer_redirect_v0)
 ]
 
 # DRF-YASG

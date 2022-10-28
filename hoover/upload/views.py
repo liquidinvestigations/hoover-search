@@ -30,7 +30,7 @@ def can_upload(collection_name, user):
 
 
 @csrf_exempt
-def upload(request, collection_name, directory_pk, **kwargs):
+def upload(request, **kwargs):
     """View to upload files to a collection.
 
     This view checks, if the user requesting to upload has the permissions to do so for
@@ -43,16 +43,15 @@ def upload(request, collection_name, directory_pk, **kwargs):
     Here the views are forwarded to the views provided by the django_tus library
     ([[https://github.com/alican/django-tus]]).
     """
-    if not can_upload(collection_name, request.user):
-        log.warning(f'User "{request.user.username}" cannot upload to collection: "{collection_name}"')
-        return HttpResponseForbidden()
 
     if request.method == 'POST':
-        upload_meta = request.META.get('HTTP_UPLOAD_METADATA')
-        # adding custom metadata to the request
-        request.META['HTTP_UPLOAD_METADATA'] = (upload_meta + ',collection ' + b64_encode(collection_name)
-                                                + ',directory_pk' + b64_encode(directory_pk))
-        log.info('Created initial upload! Metadata: ' + upload_meta)
+        collection_name = get_collection_name(request.META['HTTP_UPLOAD_METADATA'])
+
+        if not can_upload(collection_name, request.user):
+            log.warning(f'User "{request.user.username}" cannot upload to collection: "{collection_name}"')
+            return HttpResponseForbidden()
+
+        log.info('Created initial upload! Metadata: ' + request.META['HTTP_UPLOAD_METADATA'])
         # forwarding request to tus view
         return (TusUpload.as_view()(request))
 
@@ -63,7 +62,14 @@ def upload(request, collection_name, directory_pk, **kwargs):
         return(TusUpload.as_view()(request, uuid))
 
 
-def b64_encode(s):
-    """Encodes a string into a base64 encoded string."""
-    s_bytes = base64.b64encode(s.encode('utf-8'))
-    return s_bytes.decode('utf-8')
+def get_collection_name(metadata):
+    """Retrieves the collection name from a metadata string.
+
+    The string contains key value pairs, where each pair is seperated by a ',' and
+    the key,value pair by a ' '. The value is base64 encoded.
+    """
+    metadata = metadata.split(',')
+    for entry in metadata:
+        if entry.startswith('collection'):
+            collection_name = entry.split(' ')[1]
+            return base64.b64decode(collection_name).decode('utf-8')
