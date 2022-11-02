@@ -46,7 +46,7 @@ def upload(request, **kwargs):
 
     if request.method == 'POST':
         metadata = parse_metadata(request.META['HTTP_UPLOAD_METADATA'])
-        collection_name = metadata.get('collection_name')
+        collection_name = metadata.get('collection')
 
         if not can_upload(collection_name, request.user):
             log.warning(f'User "{request.user.username}" cannot upload to collection: "{collection_name}"')
@@ -54,15 +54,18 @@ def upload(request, **kwargs):
 
         log.info('Created initial upload! Metadata: ' + request.META['HTTP_UPLOAD_METADATA'])
         # forwarding request to tus view
+        upload = models.Upload.objects.create(
+            uploader=request.user,
+            collection=models.Collection.objects.get(name=collection_name),
+            directory_id=metadata.get('directory_pk'),
+            filename=metadata.get('filename'),
+        )
+        request.META['HTTP_UPLOAD_METADATA'] = (request.META['HTTP_UPLOAD_METADATA']
+                                                + ',upload_pk ' + b64_encode(str(upload.pk)))
         return (TusUpload.as_view()(request))
 
     if request.method == 'PATCH':
         uuid = kwargs.get('resource_id')
-        models.Upload.objects.create(uploader=request.user,
-                                     collection=models.Collection.objects.get(name=collection_name),
-                                     directory_id=metadata.get('directory_pk'),
-                                     filename=metadata.get('filename'),
-                                     )
         log.info(f'Starting file upload! UUID: "{str(uuid)}".')
         # forward request to tus view
         return(TusUpload.as_view()(request, uuid))
@@ -86,3 +89,9 @@ def parse_metadata(metadata):
         elif key.startswith('dirpk'):
             parsed_metadata['directory_pk'] = base64.b64decode(value).decode('utf-8')
     return parsed_metadata
+
+
+def b64_encode(s):
+    """Encodes a string into a base64 encoded string."""
+    s_bytes = base64.b64encode(s.encode('utf-8'))
+    return s_bytes.decode('utf-8')

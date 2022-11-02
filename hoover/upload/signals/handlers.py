@@ -1,10 +1,13 @@
 from django.dispatch import receiver
 from django_tus.signals import tus_upload_finished_signal
 from django.conf import settings
+from django.utils import timezone
 from pathlib import Path
 import shutil
 import logging
 import requests
+
+from hoover.search import models
 
 log = logging.getLogger(__name__)
 
@@ -16,11 +19,18 @@ def move_file(sender, **kwargs):
     Takes the filename and the collection name from the signals kwargs and
     moves the file accordingly.
     """
+    print(kwargs)
     orig_filename = kwargs.get('metadata').get('name')
     collection_name = kwargs.get('metadata').get('collection')
     directory_pk = int(kwargs.get('metadata').get('dirpk'))
+    upload_pk = int(kwargs.get('metadata').get('upload_pk'))
     upload_path = Path(settings.TUS_DESTINATION_DIR, kwargs.get('filename'))
     collection_name = kwargs.get('metadata').get('collection')
+
+    upload = models.Upload.objects.get(pk=upload_pk)
+    upload.finished = timezone.now()
+    upload.save()
+    print(upload + 'abc')
     # notify snoop about the new directory and receive the full path as a string
     destination_path = Path(f'/opt/hoover/collections/{collection_name}/data'
                             + notify_snoop(collection_name, directory_pk)

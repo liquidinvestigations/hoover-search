@@ -334,16 +334,19 @@ class BatchResultCache(models.Model):
 class Upload(models.Model):
     """Database model to keep track of user uploads."""
 
+    upload_id = models.UUIDField(null=True)
+    """UUID of the upload, given by django tus, when upload is started."""
+
     started = models.DateTimeField(auto_now_add=True)
     """Timestamp when the upload started."""
 
     finished = models.DateTimeField(null=True, blank=True)
     """Timestamp when the upload finished."""
 
-    uploader = models.ForeignKey(settings.AUTH_USER_MODEL)
+    uploader = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     """Reference to the user who is uploading."""
 
-    collection = models.ForeignKey(Collection)
+    collection = models.ForeignKey(Collection, on_delete=models.CASCADE)
     """Reference to the collection in which the file is being uploaded."""
 
     directory_id = models.IntegerField()
