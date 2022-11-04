@@ -6,6 +6,7 @@ from pathlib import Path
 import shutil
 import logging
 import requests
+import hashlib
 
 from hoover.search import models
 
@@ -19,7 +20,6 @@ def move_file(sender, **kwargs):
     Takes the filename and the collection name from the signals kwargs and
     moves the file accordingly.
     """
-    print(kwargs)
     orig_filename = kwargs.get('metadata').get('name')
     collection_name = kwargs.get('metadata').get('collection')
     directory_pk = int(kwargs.get('metadata').get('dirpk'))
@@ -30,13 +30,33 @@ def move_file(sender, **kwargs):
     upload = models.Upload.objects.get(pk=upload_pk)
     upload.finished = timezone.now()
     upload.save()
-    print(upload + 'abc')
     # notify snoop about the new directory and receive the full path as a string
     destination_path = Path(f'/opt/hoover/collections/{collection_name}/data'
                             + notify_snoop(collection_name, directory_pk)
                             )
     shutil.move(upload_path, get_nonexistent_filename(destination_path, orig_filename))
     log.info(f'Finished uploading file: "{orig_filename}". Moved to "{destination_path}".')
+
+
+def calculate_hash(filepath, chunk_size=1600 * 8):
+    """Calculate the sha3-256 hash of a file.
+
+    Returns the hash for a file at a given path.
+
+    Args:
+        filepath: A Path object with the filepath of the file.
+        block_size: Integer value that indicates the chunk size. Default is 8 times the
+                    inernal state size of sha-3.
+
+    Returns:
+        The sha3-256 hash of the file as a string.
+    """
+    sha256 = hashlib.sha3_256()
+    with open(filepath, 'rb') as f:
+        # read file in chunks until end of file (empty byte string is EOF: b'')
+        for chunk in iter(lambda: f.read(chunk_size), b''):
+            sha256.update(chunk)
+        return sha256.hexdigest()
 
 
 def notify_snoop(collection_name, directory_pk):
