@@ -32,9 +32,10 @@ def move_file(sender, **kwargs):
     upload.save()
     # notify snoop about the new directory and receive the full path as a string
     destination_path = Path(f'/opt/hoover/collections/{collection_name}/data'
-                            + notify_snoop(collection_name, directory_pk)
+                            + get_path(collection_name, directory_pk)
                             )
     shutil.move(upload_path, get_nonexistent_filename(destination_path, orig_filename))
+    notify_snoop(collection_name, directory_pk)
     log.info(f'Finished uploading file: "{orig_filename}". Moved to "{destination_path}".')
 
 
@@ -69,6 +70,20 @@ def notify_snoop(collection_name, directory_pk):
     if not resp.status_code == 200:
         raise RuntimeError(f'Unexpected response: {resp}')
     else:
+        return resp.content.decode()
+
+
+def get_path(collection_name, directory_pk):
+    """Calls a snoop endpoint to notify snoop that there is new file and queue a rescan of the directory.
+
+    Returns: A string that is the full path of the directory.
+    """
+    url = settings.SNOOP_BASE_URL + f'/collections/{collection_name}/{directory_pk}/path'
+    resp = requests.get(url)
+    if not resp.status_code == 200:
+        raise RuntimeError(f'Unexpected response: {resp}')
+    else:
+        print(resp.content.decode())
         return resp.content.decode()
 
 

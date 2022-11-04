@@ -45,6 +45,7 @@ def upload(request, **kwargs):
     """
 
     if request.method == 'POST':
+        print(request.META)
         metadata = parse_metadata(request.META['HTTP_UPLOAD_METADATA'])
         collection_name = metadata.get('collection')
 
@@ -78,16 +79,18 @@ def parse_metadata(metadata):
     the key,value pair by a ' '. The values are base64 encoded.
     Returns a dictionary with all key,value pairs inside.
     """
+    print(metadata)
     parsed_metadata = {}
     metadata = metadata.split(',')
     for entry in metadata:
         key, value = entry.split(' ')
         if key.startswith('collection'):
-            parsed_metadata['collection'] = base64.b64decode(value).decode('utf-8')
+            parsed_metadata['collection'] = base64.b64decode(value).decode('ascii')
         elif key.startswith('name'):
-            parsed_metadata['filename'] = base64.b64decode(value).decode('utf-8')
+            parsed_metadata['filename'] = base64.b64decode(value).decode('ascii')
         elif key.startswith('dirpk'):
-            parsed_metadata['directory_pk'] = base64.b64decode(value).decode('utf-8')
+            parsed_metadata['directory_pk'] = base64.b64decode(value).decode('ascii')
+    print(parsed_metadata)
     return parsed_metadata
 
 
