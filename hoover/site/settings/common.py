@@ -156,8 +156,9 @@ CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
 CELERY_RESULT_BACKEND = 'django-db'
 
-HOOVER_CELERY_SEARCH_QUEUES = ['hoover.search.search']
+HOOVER_CELERY_SEARCH_QUEUES = ['hoover.search.search', 'hoover.search.upload']
 HOOVER_CELERY_BATCH_QUEUES = ['hoover.search.batch_search']
+
 SEARCH_WORKER_COUNT = 1
 CELERY_BROKER_URL = os.getenv('SEARCH_AMQP_URL')
 

@@ -3,10 +3,10 @@ from django_tus.signals import tus_upload_finished_signal
 from django.conf import settings
 from django.utils import timezone
 from pathlib import Path
+from ..tasks import poll_processing_status
 import shutil
 import logging
 import requests
-import hashlib
 
 from hoover.search import models
 
@@ -36,28 +36,13 @@ def move_file(sender, **kwargs):
                             )
     shutil.move(upload_path, get_nonexistent_filename(destination_path, orig_filename))
     notify_snoop(collection_name, directory_pk)
+    # TODO make this call a task
+    poll_processing_status(**{'filename': orig_filename,
+                              'directory_pk': directory_pk,
+                              'collection_name': collection_name})
+
     log.info(f'Finished uploading file: "{orig_filename}". Moved to "{destination_path}".')
-
-
-def calculate_hash(filepath, chunk_size=1600 * 8):
-    """Calculate the sha3-256 hash of a file.
-
-    Returns the hash for a file at a given path.
-
-    Args:
-        filepath: A Path object with the filepath of the file.
-        block_size: Integer value that indicates the chunk size. Default is 8 times the
-                    inernal state size of sha-3.
-
-    Returns:
-        The sha3-256 hash of the file as a string.
-    """
-    sha256 = hashlib.sha3_256()
-    with open(filepath, 'rb') as f:
-        # read file in chunks until end of file (empty byte string is EOF: b'')
-        for chunk in iter(lambda: f.read(chunk_size), b''):
-            sha256.update(chunk)
-        return sha256.hexdigest()
+    log.info('Started task to monitor processing status.')
 
 
 def notify_snoop(collection_name, directory_pk):
@@ -83,7 +68,6 @@ def get_path(collection_name, directory_pk):
     if not resp.status_code == 200:
         raise RuntimeError(f'Unexpected response: {resp}')
     else:
-        print(resp.content.decode())
         return resp.content.decode()
 
 
