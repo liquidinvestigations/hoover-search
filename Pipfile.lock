@@ -216,12 +216,9 @@
             "version": "==3.0.1"
         },
         "django-tus": {
-            "hashes": [
-                "sha256:9b9e8c69a9304993d840856403af1c76497408f4d9132571b974a7c0a0889310",
-                "sha256:f1470e467735b74b008bd4758c113441fec8b45b26b3bd340415a8a61c9bf280"
-            ],
-            "index": "pypi",
-            "version": "==0.5.0"
+            "editable": true,
+            "git": "https://github.com/alican/django-tus.git",
+            "ref": "25e91e2ac2a5f9d91ac843af2e2054819e778d7d"
         },
         "djangorestframework": {
             "hashes": [
@@ -323,11 +320,11 @@
         },
         "exceptiongroup": {
             "hashes": [
-                "sha256:2ac84b496be68464a2da60da518af3785fff8b7ec0d090a581604bc870bdee41",
-                "sha256:affbabf13fb6e98988c38d9c5650e701569fe3c1de3233cfb61c5f33774690ad"
+                "sha256:4d6c0aa6dd825810941c792f53d7b8d71da26f5e5f84f20f9508e8f2d33b140a",
+                "sha256:73866f7f842ede6cb1daa42c4af078e2035e5f7607f0e2c762cc51bb31bbe7b2"
             ],
             "markers": "python_version < '3.11'",
-            "version": "==1.0.0"
+            "version": "==1.0.1"
         },
         "idna": {
             "hashes": [

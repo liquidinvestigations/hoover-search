@@ -354,3 +354,9 @@ class Upload(models.Model):
 
     filename = models.CharField(max_length=256)
     """The filename of the uploaded file."""
+
+    processed = models.BooleanField(default=False)
+    """Boolean flag to show if the file has been processed on snoop."""
+
+    poll_task = models.CharField(max_length=64, null=True)
+    """The task id for the task that checks to processing status of the uploaded file."""
