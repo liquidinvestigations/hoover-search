@@ -216,9 +216,12 @@
             "version": "==3.0.1"
         },
         "django-tus": {
-            "editable": true,
-            "git": "https://github.com/liquidinvestigations/django-tus.git",
-            "ref": "25e91e2ac2a5f9d91ac843af2e2054819e778d7d"
+            "hashes": [
+                "sha256:9b9e8c69a9304993d840856403af1c76497408f4d9132571b974a7c0a0889310",
+                "sha256:f1470e467735b74b008bd4758c113441fec8b45b26b3bd340415a8a61c9bf280"
+            ],
+            "index": "pypi",
+            "version": "==0.5.0"
         },
         "djangorestframework": {
             "hashes": [
