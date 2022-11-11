@@ -217,7 +217,7 @@
         },
         "django-tus": {
             "editable": true,
-            "git": "https://github.com/alican/django-tus.git",
+            "git": "https://github.com/liquidinvestigations/django-tus.git",
             "ref": "25e91e2ac2a5f9d91ac843af2e2054819e778d7d"
         },
         "djangorestframework": {
