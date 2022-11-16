@@ -3,7 +3,9 @@ import base64
 import re
 import os
 import filecmp
+import responses
 from django.urls import reverse
+from django.conf import settings
 from hoover.search import models
 
 pytestmark = pytest.mark.django_db
@@ -28,16 +30,28 @@ def setup_collection(django_user_model):
     return col
 
 
+@responses.activate
 def test_search_upload(client, django_user_model):
     setup_collection(django_user_model)
     user = django_user_model.objects.get(username='testuser')
     url = reverse('tus_upload')
 
+    responses.add(responses.GET,
+                  settings.SNOOP_BASE_URL + '/collections/testdata/1/path',
+                  body='/',
+                  status=200,
+                  )
+
+    responses.add(responses.GET,
+                  settings.SNOOP_BASE_URL + '/collections/testdata/1/rescan',
+                  status=200,
+                  )
+
     # for details see https://tus.io/protocols/resumable-upload.html#post
     post_headers = {
         'HTTP_UPLOAD_METADATA': ('name ' + encode_str('test.pdf')
                                  + ',collection ' + encode_str('testdata')
-                                 + 'dirpk ', + encode_str('1')),
+                                 + ',dirpk ' + encode_str('1')),
         'HTTP_CONTENT_LENGTH': '0',
         'HTTP_UPLOAD_LENGTH': '2681358',  # file size in bytes
         'HTTP_TUS_RESUMABLE': '1.0.0'
