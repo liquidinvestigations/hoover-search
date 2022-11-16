@@ -10,8 +10,8 @@ pytestmark = pytest.mark.django_db
 TESTFILE_PATH = '/opt/hoover/collections/testdata/data/original.pdf'
 
 
-def encode_filename(filename):
-    string_bytes = base64.b64encode(filename.encode('utf-8'))
+def encode_str(input_str):
+    string_bytes = base64.b64encode(input_str.encode('utf-8'))
     return string_bytes.decode('utf-8')
 
 
@@ -31,11 +31,13 @@ def setup_collection(django_user_model):
 def test_search_upload(client, django_user_model):
     setup_collection(django_user_model)
     user = django_user_model.objects.get(username='testuser')
-    url = reverse('tus_upload', args=['testdata'])
+    url = reverse('tus_upload')
 
     # for details see https://tus.io/protocols/resumable-upload.html#post
     post_headers = {
-        'HTTP_UPLOAD_METADATA': 'orig_filename ' + encode_filename('test.pdf'),
+        'HTTP_UPLOAD_METADATA': ('name ' + encode_str('test.pdf')
+                                 + ',collection ' + encode_str('testdata')
+                                 + 'dirpk ', + encode_str('1')),
         'HTTP_CONTENT_LENGTH': '0',
         'HTTP_UPLOAD_LENGTH': '2681358',  # file size in bytes
         'HTTP_TUS_RESUMABLE': '1.0.0'
@@ -63,3 +65,4 @@ def test_search_upload(client, django_user_model):
 
     assert os.path.isfile('/opt/hoover/collections/testdata/data/test.pdf')
     assert filecmp.cmp('/opt/hoover/collections/testdata/data/test.pdf', TESTFILE_PATH, shallow=True)
+    os.remove('/opt/hoover/collections/testdata/data/test.pdf')

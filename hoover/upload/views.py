@@ -42,6 +42,10 @@ def upload(request, **kwargs):
 
     Here the views are forwarded to the views provided by the django_tus library
     ([[https://github.com/alican/django-tus]]).
+
+    The request is expected to include the following HTTP_UPLOAD_METADATA:
+    name: <filename>, collection: <collection_name>, dirpk: <target_directory_primary_key>
+
     """
 
     if request.method == 'POST':
