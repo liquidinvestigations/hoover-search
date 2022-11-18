@@ -12,14 +12,14 @@ WORKDIR /opt/hoover/search
 
 ADD Pipfile Pipfile.lock ./
 RUN pipenv install --system --deploy --ignore-pipfile
-RUN mv /opt/hoover/search/src/django-tus /opt/hoover/src/django-tus
+RUN mkdir /opt/hoover/src && mv /opt/hoover/search/src/django-tus /opt/hoover/src/django-tus
 ENV PYTHONPATH "${PYTHONPATH}:/opt/hoover/src/django-tus"
 # global installs from git need a source folder
 # https://pip.pypa.io/en/stable/topics/vcs-support/#editable-vcs-installs
 # pipenv doesn't support the --src flag so we move the directory after it is created
-
 COPY . .
 COPY .git .
+
 
 ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.3.0/wait /wait
 
