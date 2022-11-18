@@ -25,4 +25,8 @@ RUN set -e \
  && SECRET_KEY=temp HOOVER_DB='postgresql://search:search@search-pg:5432/search' ./manage.py collectstatic --noinput \
  && chmod +x /wait
 
+RUN mv /opt/hoover/search/src/django-tus /opt/hoover/django-tus
+ENV PYTHONPATH "${PYTHONPATH}:/opt/hoover/django-tus"
+
+
 CMD ./runserver
