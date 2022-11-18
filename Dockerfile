@@ -11,7 +11,10 @@ RUN set -e \
 WORKDIR /opt/hoover/search
 
 ADD Pipfile Pipfile.lock ./
-RUN pipenv install --system --deploy --ignore-pipfile
+RUN pipenv install --system --deploy --ignore-pipfile --src '/opt/hoover/src'
+ENV PYTHONPATH "${PYTHONPATH}:/opt/hoover/src/django-tus"
+# global installs from git need a source folder
+# https://pip.pypa.io/en/stable/topics/vcs-support/#editable-vcs-installs
 
 COPY . .
 COPY .git .
@@ -24,9 +27,5 @@ RUN set -e \
  && SECRET_KEY=temp HOOVER_DB='postgresql://search:search@search-pg:5432/search' ./manage.py downloadassets \
  && SECRET_KEY=temp HOOVER_DB='postgresql://search:search@search-pg:5432/search' ./manage.py collectstatic --noinput \
  && chmod +x /wait
-
-RUN mv /opt/hoover/search/src/django-tus /opt/hoover/django-tus
-ENV PYTHONPATH "${PYTHONPATH}:/opt/hoover/django-tus"
-
 
 CMD ./runserver
