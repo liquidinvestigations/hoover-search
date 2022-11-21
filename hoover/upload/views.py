@@ -91,7 +91,9 @@ def parse_metadata(metadata):
         elif key.startswith('name'):
             parsed_metadata['filename'] = base64.b64decode(value).decode('ascii')
         elif key.startswith('dirpk'):
-            parsed_metadata['directory_pk'] = base64.b64decode(value).decode('ascii')
+            directory_str = base64.b64decode(value).decode('ascii')
+            directory_pk = directory_str.split('_')[-1]
+            parsed_metadata['directory_pk'] = directory_pk
     return parsed_metadata
 
 
