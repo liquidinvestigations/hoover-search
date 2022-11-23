@@ -250,7 +250,24 @@ def _get_indices(collections):
     return indices
 
 
-def batch_count(query_strings, collections, aggs=None):
+def batch_count(query_strings, collections, aggs=None, split=500):
+    if not query_strings:
+        return {'responses': []}
+
+    len_queries = len(query_strings)
+    results = None
+    for k in range(0, len_queries, split):
+        current_qs = query_strings[k:k + split]
+        result_part = batch_count_single(current_qs, collections, aggs)
+        if not results:
+            results = result_part
+        else:
+            results['responses'] = results.get('responses', [])
+            results['responses'].extend(result_part.get('responses', []))
+    return results
+
+
+def batch_count_single(query_strings, collections, aggs=None):
     def _build_query_lines(query_string, meta={}, aggs=None):
         query_body = {
             "query": {

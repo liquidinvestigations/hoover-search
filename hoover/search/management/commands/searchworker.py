@@ -32,7 +32,14 @@ def celery_argv(queues):
 class Command(BaseCommand):
     help = "Run one search worker in this container."""
 
-    def handle(self, **kwargs):
-        argv = celery_argv(settings.HOOVER_CELERY_SEARCH_QUEUES)
+    def add_arguments(self, parser):
+        parser.add_argument('worker_type')
+
+    def handle(self, worker_type, **kwargs):
+        if worker_type == 'search':
+            argv = celery_argv(settings.HOOVER_CELERY_SEARCH_QUEUES)
+        elif worker_type == 'batch':
+            argv = celery_argv(settings.HOOVER_CELERY_BATCH_QUEUES)
+
         print('+' + ' '.join(argv))
         os.execv(argv[0], argv)

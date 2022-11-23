@@ -25,9 +25,19 @@ from ratelimit.exceptions import Ratelimited
 
 log = logging.getLogger(__name__)
 SEARCH_KEY = 'hoover.search.search'
-SEARCH_CACHE_AGE = timedelta(hours=12)  # keep results valid for this interval
-SEARCH_CACHE_JOIN_RUNNING_MAX_AGE = timedelta(minutes=2)  # join refreshed/recent requests with
-SEARCH_SYNC_WAIT_FOR_RESULTS = timedelta(minutes=2)  # time to wait for celery task to finish
+BATCH_KEY = 'hoover.search.batch_search'
+
+# keep results valid for this interval
+SEARCH_CACHE_AGE = timedelta(hours=12)
+BATCH_CACHE_AGE = timedelta(hours=48)
+
+# join refreshed/recent requests with
+SEARCH_CACHE_JOIN_RUNNING_MAX_AGE = timedelta(minutes=2)
+BATCH_CACHE_JOIN_RUNNING_MAX_AGE = timedelta(minutes=15)
+
+# time to wait for celery task to finish
+SEARCH_SYNC_WAIT_FOR_RESULTS = timedelta(minutes=2)
+BATCH_SYNC_WAIT_FOR_RESULTS = timedelta(minutes=15)
 
 
 def JsonErrorResponse(reason, status=400):
@@ -234,6 +244,7 @@ def search(request):
         cache_entry = _cached_search(collections, request.user, args,
                                      refresh=refresh, wait=True)
         response = cache_entry.result
+        response['status'] = 'ok'
         success = True
         return JsonResponse(response)
 
@@ -422,25 +433,26 @@ def batch(request):
     collections = collections_acl(request.user, body['collections'])
     query_strings = body.get('query_strings')
     aggs = body.get('aggs')
-
     if not collections:
         return JsonErrorResponse("No collections selected.")
-
     if not query_strings:
         return JsonErrorResponse("No items to be searched.")
-
-    batch_limit = settings.HOOVER_BATCH_LIMIT
-    if len(query_strings) > batch_limit:
-        reason = "Too many queries. Limit is {}.".format(batch_limit)
-        return JsonErrorResponse(reason)
+    if len(query_strings) > settings.HOOVER_BATCH_LIMIT:
+        return JsonErrorResponse("Too many search queries.")
+    kwargs = {
+        'collections': [c.name for c in collections],
+        'query_strings': query_strings,
+        'aggs': aggs,
+    }
 
     success = False
     try:
-        res = es.batch_count(
-            query_strings,
+        res = _cached_batch(
             collections,
-            aggs
-        )
+            request.user,
+            kwargs,
+            wait=True,
+        ).result
         res['status'] = 'ok'
         success = True
         return JsonResponse(res)
@@ -456,6 +468,141 @@ def batch(request):
             'success': success,
             'query_count': len(query_strings),
         })
+
+
+@csrf_exempt
+@ratelimit(key='user', rate=rates, block=True)
+def async_batch(request):
+    t0 = time()
+    body = json.loads(request.body.decode('utf-8'))
+    collections = collections_acl(request.user, body['collections'])
+    query_strings = body.get('query_strings')
+    aggs = body.get('aggs')
+    if not collections:
+        return JsonErrorResponse("No collections selected.")
+    if not query_strings:
+        return JsonErrorResponse("No items to be searched.")
+    if len(query_strings) > settings.HOOVER_BATCH_LIMIT:
+        return JsonErrorResponse("Too many search queries.")
+    kwargs = {
+        'collections': [c.name for c in collections],
+        'query_strings': query_strings,
+        'aggs': aggs,
+    }
+
+    success = False
+    try:
+        res = _cached_batch(
+            collections,
+            request.user,
+            kwargs,
+            wait=False,
+        )
+        res['status'] = 'ok'
+        success = True
+        return JsonResponse(res)
+
+    except es.SearchError as e:
+        return JsonErrorResponse(e.reason)
+
+    finally:
+        signals.batch.send('hoover.async_batch', **{
+            'request': request,
+            'collections': collections,
+            'duration': time() - t0,
+            'success': success,
+            'query_count': len(query_strings),
+        })
+
+
+@csrf_exempt
+@ratelimit(key='user', rate=rates, block=True)
+def async_batch_get(request, uuid):
+    batch_result = models.BatchResultCache.objects.get(task_id=uuid)
+    assert batch_result.user == request.user
+    wait = bool(request.GET.get('wait', None))
+
+    if wait and not batch_result.date_finished:
+        async_result = _search.AsyncResult(task_id=batch_result.task_id)
+        # wait for the async result to be set
+        async_result.get(timeout=SEARCH_SYNC_WAIT_FOR_RESULTS.total_seconds())
+        # flush the object that was being modified in the async task
+        batch_result.refresh_from_db()
+        # make sure it's actually got a result, and return it
+        assert batch_result.result is not None, "batch search failed!"
+
+    return JsonResponse(batch_result.to_dict())
+
+
+def _cached_batch(collections, user, kwargs, wait=True):
+    all_q = models.BatchResultCache.objects.filter(
+        user=user,
+        args=kwargs,
+        date_created__gt=timezone.now() - BATCH_CACHE_AGE,
+    )
+    # find some existing entry and return it instantly
+    found = all_q.filter(result__isnull=False).exists()
+    if found:
+        cache_entry = all_q.filter(result__isnull=False).order_by('-date_finished')[:1].get()
+        log.warn('batch search cache hit: %s', cache_entry)
+        return cache_entry
+    log.debug('batch search cache miss')
+    recent_running_q = all_q.filter(
+        result__isnull=True,
+        date_created__gt=timezone.now() - BATCH_CACHE_JOIN_RUNNING_MAX_AGE,
+    ).order_by('-date_created')
+    if recent_running_q.exists():
+        cache_entry = recent_running_q[:1].get()
+        async_result = _batch.AsyncResult(task_id=cache_entry.task_id)
+        log.warning('batch cache hit existing (running): %s', cache_entry)
+    else:
+        # since we found nothing, create a new entry and launch it
+        cache_entry = models.BatchResultCache(user=user, args=kwargs)
+        cache_entry.save()
+        cache_entry.collections.add(*list(collections))
+        cache_entry.save()
+        async_result = _batch.apply_async(
+            args=(settings.DEBUG_WAIT_PER_COLLECTION, ),
+            task_id=cache_entry.task_id,
+            kwargs=kwargs,
+            queue=BATCH_KEY,
+            routing_key=BATCH_KEY,
+        )
+
+    if wait:
+        # wait for the async result to be set
+        async_result.get(timeout=BATCH_SYNC_WAIT_FOR_RESULTS.total_seconds())
+        # flush the object that was being modified in the async task
+        cache_entry.refresh_from_db()
+        # make sure it's actually got a result, and return it
+        assert cache_entry.result is not None, "search failed!"
+
+    return cache_entry
+
+
+@cel.app.task(bind=True, serializer='json', name=BATCH_KEY, routing_key=BATCH_KEY)
+def _batch(self, *args, **kwargs):
+    """Background task that actually runs the batch count search through elasticsearch.
+
+    The result is stored in the `BatchResultCache` table as it becomes available.
+    """
+    try:
+        cache = models.BatchResultCache.objects.get(task_id=self.request.id)
+        cache.date_started = timezone.now()
+        cache.save()
+        try:
+            res = es.batch_count(**kwargs)
+            res['status'] = 'ok'
+        except es.SearchError as e:
+            return JsonErrorResponse(e.reason)
+        cache.result = res
+        cache.date_finished = timezone.now()
+        cache.save()
+        return True
+    except Exception as e:
+        log.error('_batch celery task execution failed!')
+        log.exception(e)
+        raise
 
 
 def is_staff(request):

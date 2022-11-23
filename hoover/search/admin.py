@@ -11,7 +11,8 @@ class HooverAdminSite(admin.AdminSite):
 
 
 class CollectionAdmin(admin.ModelAdmin):
-    list_display = ['__str__', 'count', 'user_access_list', 'group_access_list', 'public', 'avg_search_time']
+    list_display = ['__str__', 'count', 'user_access_list',
+                    'group_access_list', 'public', 'avg_search_time', 'avg_batch_time']
     fields = ['title', 'name', 'index', 'public', 'users', 'groups']
     filter_horizontal = ['users', 'groups']
 
@@ -145,16 +146,60 @@ class HooverUserAdmin(UserAdmin):
 #         return item.args.get('query', {}).get('query_string', {}).get('query')
 #
 #     def result_hits(self, item):
-#         pass
+#         return len(item.result.get('hits', {}).get('hits', []))
 #
 #     def result_agg_hits(self, item):
 #         return len((item.result or {}).get('aggregations', [])) or None
+#
+#
+# class HooverBatchSearchResultCacheAdmin(admin.ModelAdmin):
+#     readonly_fields = ['args_size', 'user', 'collections', 'result_size', 'task_id', 'date_started', 'date_finished',
+#                        'args', 'result', 'the_query_strings', 'result_hits']
+#     fields = readonly_fields
+#     list_display = ['task_id', 'user', 'str_collections', 'date_started', 'date_finished', 'args_size', 'result_size',
+#                     'the_query_strings', 'result_hits']
+#
+#     def len_collections(self, item):
+#         return len(item.collections)
+#
+#     def str_collections(self, item):
+#         _str = ', '.join(c.name for c in item.collections.all())
+#         _str = f'{len(item.collections.all())} items: ' + _str
+#         if len(_str) > 40:
+#             _str = _str[:37] + '...'
+#         return _str
+#
+#     def args_size(self, item):
+#         return len(str(item.args))
+#
+#     def result_size(self, item):
+#         return len(str(item.result))
+#
+#     def the_query_strings(self, item):
+#         _str = ', '.join(item.args.get('query_strings', []))
+#         _len = len(item.args.get('query_strings', []))
+#         if len(_str) > 40:
+#             _str = _str[:37] + '...'
+#         _str = str(_len) + ' items: ' + _str
+#         return _str
+#
+#     def result_hits(self, item):
+#         results = [x.get('hits', {}).get('total', 0)
+#                    for x in (item.result or {}).get('responses', [])]
+#         result_count = sum(results)
+#         first_results = results[:10]
+#         _str = f'{result_count} = {" + ".join(map(str, first_results))}'
+#         if len(_str) > 40:
+#             _str = _str[:37] + '...'
+#         return _str
 
 
 admin_site = HooverAdminSite(name='hoover-admin')
 admin_site.register(models.Collection, CollectionAdmin)
 admin_site.register(Group, HooverGroupAdmin)
 admin_site.register(User, HooverUserAdmin)
+
 # admin_site.register(models.SearchResultCache, HooverSearchResultCacheAdmin)
+# admin_site.register(models.BatchResultCache, HooverBatchSearchResultCacheAdmin)
 
 admin_site.site_header = 'Hoover Search Administration'
