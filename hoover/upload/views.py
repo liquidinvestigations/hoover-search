@@ -1,5 +1,5 @@
 from ..search import models
-from django.http import Http404, HttpResponseForbidden
+from django.http import Http404, HttpResponseForbidden, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django_tus.views import TusUpload
 import base64
@@ -72,7 +72,7 @@ def upload(request, **kwargs):
         uuid = kwargs.get('resource_id')
         log.info(f'Starting file upload! UUID: "{str(uuid)}".')
         # forward request to tus view
-        return(TusUpload.as_view()(request, uuid))
+        return (TusUpload.as_view()(request, uuid))
 
 
 def parse_metadata(metadata):
@@ -101,3 +101,18 @@ def b64_encode(s):
     """Encodes a string into a base64 encoded string."""
     s_bytes = base64.b64encode(s.encode('utf-8'))
     return s_bytes.decode('utf-8')
+
+
+def get_uploads_list(request, **kwargs):
+    """TODO"""
+    uploads = models.Upload.objects.all()
+    result = [{'started': upload.started,
+               'finished': upload.finished,
+               'uploader': upload.uploader.username,
+               'collection': upload.collection.name,
+               'directory_id': upload.directory_id,
+               'directory_path': upload.directory_path,
+               'filename': upload.filename,
+               'processed': upload.processed}
+              for upload in uploads]
+    return JsonResponse(result, safe=False)

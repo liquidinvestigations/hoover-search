@@ -352,6 +352,9 @@ class Upload(models.Model):
     directory_id = models.IntegerField()
     """The directory id that corresponds to the directory the file is being uploaded to."""
 
+    directory_path = models.CharField(max_length=256)
+    """The path to the directory that the file was uploaded to."""
+
     filename = models.CharField(max_length=256)
     """The filename of the uploaded file."""
 

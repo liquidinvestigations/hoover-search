@@ -30,13 +30,16 @@ def move_file(sender, **kwargs):
     # create uuid from uuid string which is the last part of the upload path
     upload_uuid = uuid.UUID(Path(kwargs.get('upload_file_path')).name)
 
+    snoop_path = get_path(collection_name, directory_pk)
+
     upload = models.Upload.objects.get(pk=upload_pk)
     upload.upload_id = upload_uuid
     upload.finished = timezone.now()
+    upload.directory_path = snoop_path
     upload.save()
     # notify snoop about the new directory and receive the full path as a string
     destination_path = Path(f'/opt/hoover/collections/{collection_name}/data'
-                            + get_path(collection_name, directory_pk)
+                            + snoop_path
                             )
     nonexistent_destination_path, snoop_filename = get_nonexistent_filename(destination_path, orig_filename)
     shutil.move(upload_path, nonexistent_destination_path)

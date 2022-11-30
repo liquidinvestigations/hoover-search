@@ -32,6 +32,7 @@ api_urlpatterns_v1 = [
     path('upload/', upload_views.upload, name='tus_upload'),
     path('upload/<uuid:resource_id>', upload_views.upload,
          name='tus_upload_chunks'),
+    path('get_uploads', upload_views.get_uploads_list, name='get_uploads'),
 ]
 
 urlpatterns = [
