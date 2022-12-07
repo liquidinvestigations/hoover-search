@@ -361,5 +361,11 @@ class Upload(models.Model):
     processed = models.BooleanField(default=False)
     """Boolean flag to show if the file has been processed on snoop."""
 
+    snoop_tasks_done = models.IntegerField(default=0)
+    """Count of snoop tasks that are finished."""
+
+    snoop_tasks_total = models.IntegerField(default=0)
+    """Count of all snoop tasks for the uploaded file."""
+
     poll_task = models.CharField(max_length=64, null=True)
     """The task id for the task that checks to processing status of the uploaded file."""

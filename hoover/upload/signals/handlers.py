@@ -4,12 +4,14 @@ from django.conf import settings
 from django.utils import timezone
 from pathlib import Path
 from ..tasks import poll_processing_status
+from ..views import parse_directory_id
 import shutil
 import logging
 import requests
 import uuid
 
 from hoover.search import models
+from ..utils import get_path
 
 log = logging.getLogger(__name__)
 
@@ -23,7 +25,8 @@ def move_file(sender, **kwargs):
     """
     orig_filename = kwargs.get('metadata').get('name')
     collection_name = kwargs.get('metadata').get('collection')
-    directory_pk = int(kwargs.get('metadata').get('dirpk'))
+    directory_pk_raw = kwargs.get('metadata').get('dirpk')
+    directory_pk = int(parse_directory_id(directory_pk_raw))
     upload_pk = int(kwargs.get('metadata').get('upload_pk'))
     upload_path = Path(settings.TUS_DESTINATION_DIR, kwargs.get('filename'))
     collection_name = kwargs.get('metadata').get('collection')
@@ -65,19 +68,6 @@ def notify_snoop(collection_name, directory_pk):
     resp = requests.get(url)
     if not resp.status_code == 200:
         raise RuntimeError(f'Unexpected response: {resp}')
-
-
-def get_path(collection_name, directory_pk):
-    """Calls a snoop endpoint to notify snoop that there is new file and queue a rescan of the directory.
-
-    Returns: A string that is the full path of the directory.
-    """
-    url = settings.SNOOP_BASE_URL + f'/collections/{collection_name}/{directory_pk}/path'
-    resp = requests.get(url)
-    if not resp.status_code == 200:
-        raise RuntimeError(f'Unexpected response: {resp}')
-    else:
-        return resp.content.decode()
 
 
 def get_nonexistent_filename(path, filename):

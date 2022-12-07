@@ -1,9 +1,12 @@
-from ..search import models
 from django.http import Http404, HttpResponseForbidden, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django_tus.views import TusUpload
 import base64
 import logging
+
+from ..search import models
+from .utils import get_path
+from .utils import parse_directory_id
 
 
 log = logging.getLogger(__name__)
@@ -92,8 +95,7 @@ def parse_metadata(metadata):
             parsed_metadata['filename'] = base64.b64decode(value).decode('ascii')
         elif key.startswith('dirpk'):
             directory_str = base64.b64decode(value).decode('ascii')
-            directory_pk = directory_str.split('_')[-1]
-            parsed_metadata['directory_pk'] = directory_pk
+            parsed_metadata['directory_pk'] = parse_directory_id(directory_str)
     return parsed_metadata
 
 
@@ -115,4 +117,25 @@ def get_uploads_list(request, **kwargs):
                'filename': upload.filename,
                'processed': upload.processed}
               for upload in uploads]
+    return JsonResponse(result, safe=False)
+
+
+def get_directory_uploads(request, collection_name, directory_id, **kwargs):
+    """TODO"""
+    dir_pk = parse_directory_id(directory_id)
+    collection = models.Collection.objects.get(name=collection_name)
+    uploads = models.Upload.objects.filter(collection=collection, directory_id=dir_pk)
+    snoop_path = get_path(collection.name, dir_pk)
+    result = {'directory_path': snoop_path,
+              'directory_name': snoop_path.split('/')[-2],
+              'collection': collection.name,
+              'uploads': [{'started': upload.started,
+                           'finished': upload.finished,
+                           'uploader': upload.uploader.username,
+                           'filename': upload.filename,
+                           'processed': upload.processed,
+                           'tasks_done': upload.snoop_tasks_done,
+                           'tasks_total': upload.snoop_tasks_total,
+                           }
+                          for upload in uploads]}
     return JsonResponse(result, safe=False)

@@ -31,13 +31,19 @@ def poll_processing_status(self, *args, **kwargs):
             # raise RuntimeError(f'{filename} does not exist in snoop in collection: {collection_name}')
             raise self.retry(countdown=10)
 
+        upload = models.Upload.objects.get(pk=kwargs.get('upload_pk'))
+
         # if file exists, check processing status for it's corresponding blob
-        processed = processing_done(collection_name, blob_pk)
-        if not processed:
+        status = processing_status(collection_name, blob_pk)
+        if not status['finished']:
+            upload.snoop_tasks_done = status['done_count']
+            upload.snoop_tasks_total = status['total_count']
+            upload.save()
             raise self.retry(countdown=10)
             # raise RuntimeError(f'{blob_pk} in collection: {collection_name} not processed.')
 
-        upload = models.Upload.objects.get(pk=kwargs.get('upload_pk'))
+        upload.snoop_tasks_done = status['done_count']
+        upload.snoop_tasks_total = status['total_count']
         upload.processed = True
         upload.save()
         return True
@@ -76,15 +82,17 @@ def file_exists(collection_name, directory_pk, filename):
     return blob_pk
 
 
-def processing_done(collection_name, blob_pk):
+def processing_status(collection_name, blob_pk):
     """TODO"""
     url = settings.SNOOP_BASE_URL + f'/collections/{collection_name}/{blob_pk}/processing_status'
 
     resp = requests.get(url)
     if not resp.status_code == 200:
-        log.info(f'Processing for blob: {blob_pk} not done yet!')
-        return False
+        log.error(f'Error while fetching processing status for blob: {blob_pk}!')
+        return None
 
-    log.info(f'Processing for blob: {blob_pk} done!')
+    res = resp.json()
 
-    return True
+    log.info(f'Processing for blob: {blob_pk} fetched! Status: {res["finished"]}')
+
+    return resp.json()
