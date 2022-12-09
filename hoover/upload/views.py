@@ -52,6 +52,7 @@ def upload(request, **kwargs):
     """
 
     if request.method == 'POST':
+        log.info(request.build_absolute_uri())
         metadata = parse_metadata(request.META['HTTP_UPLOAD_METADATA'])
         collection_name = metadata.get('collection')
 
