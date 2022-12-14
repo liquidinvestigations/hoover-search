@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('search', '0019_batchresultcache'),
+        ('search', '0011_batchresultcache'),
     ]
 
     operations = [
