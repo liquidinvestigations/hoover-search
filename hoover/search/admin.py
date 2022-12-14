@@ -13,7 +13,7 @@ class HooverAdminSite(admin.AdminSite):
 class CollectionAdmin(admin.ModelAdmin):
     list_display = ['__str__', 'count', 'user_access_list', 'group_access_list',
                     'uploaders_access_list', 'group_upload_access_list',
-                    'group_access_list', 'public', 'writeable' 'avg_search_time', 'avg_batch_time']
+                    'group_access_list', 'public', 'writeable', 'avg_search_time', 'avg_batch_time']
     fields = ['title', 'name', 'index', 'public', 'writeable', 'users', 'groups', 'uploader_users', 'uploader_groups']
     filter_horizontal = ['users', 'groups', 'uploader_users', 'uploader_groups']
 
