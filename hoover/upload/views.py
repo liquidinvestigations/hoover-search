@@ -72,7 +72,7 @@ def upload(request, **kwargs):
 
     if request.method == 'PATCH':
         uuid = kwargs.get('resource_id')
-        log.info(f'Starting file upload! UUID: "{str(uuid)}".')
+        log.info(f'Received chunk for upload with UUID: "{str(uuid)}".')
         # forward request to tus view
         return (TusUpload.as_view()(request, uuid))
 
@@ -89,9 +89,9 @@ def parse_metadata(metadata):
     for entry in metadata:
         key, value = entry.split(' ')
         if key.startswith('collection'):
-            parsed_metadata['collection'] = base64.b64decode(value).decode('ascii')
+            parsed_metadata['collection'] = base64.b64decode(value).decode('utf-8')
         elif key.startswith('name'):
-            parsed_metadata['filename'] = base64.b64decode(value).decode('ascii')
+            parsed_metadata['filename'] = base64.b64decode(value).decode('utf-8')
         elif key.startswith('dirpk'):
             directory_str = base64.b64decode(value).decode('ascii')
             parsed_metadata['directory_pk'] = parse_directory_id(directory_str)

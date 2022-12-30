@@ -168,11 +168,11 @@ SNOOP_FORWARD_HEADERS = ['Content-Disposition', 'Accept-Ranges', 'Content-Range'
 # all django_tus related settings can be found here: https://github.com/alican/django-tus
 
 # this is where django_tus saves the resumable uploads
-TUS_UPLOAD_DIR = Path(os.getenv('TUS_UPLOAD_DIR', '/tmp/tus/uploads'))
+TUS_UPLOAD_DIR = Path(os.getenv('TUS_UPLOAD_DIR', '/alloc/tmp/tus/uploads'))
 
 # this is where django_tus moves the finished uploads. We use the signal that is sent after an upload
 # is finished to move it from there into the correct collection.
-TUS_DESTINATION_DIR = Path(os.getenv('TUS_DESTINATION_DIR', '/tmp/tus/files'))
+TUS_DESTINATION_DIR = Path(os.getenv('TUS_DESTINATION_DIR', '/alloc/tmp/tus/files'))
 
 TUS_FILE_NAME_FORMAT = 'increment'  # Other options are: 'random-suffix', 'random', 'keep'
 TUS_EXISTING_FILE = 'error'  # Other options are: 'overwrite',  'error', 'rename'
