@@ -76,6 +76,16 @@ def upload(request, **kwargs):
         # forward request to tus view
         return (TusUpload.as_view()(request, uuid))
 
+    # head request is used when resuming an upload
+    if request.method == 'HEAD':
+        uuid = kwargs.get('resource_id')
+        log.info(f'Request to resume upload with UUID: "{str(uuid)}".')
+        return (TusUpload.as_view()(request, uuid))
+
+    # return the tus version
+    if request.method == 'OPTIONS':
+        return (TusUpload.as_view()(request))
+
 
 def parse_metadata(metadata):
     """Parses the metadata from a metadata string and creates a dictionary.
