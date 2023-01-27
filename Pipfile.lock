@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "dd7dfb183ea81241d04f5a4d614a34de4af9fbb63fddde728c67ab7e62898e35"
+            "sha256": "f47526bcd15a55458f1f54401d213877975ab0cbdfaff994b4f4769685edf303"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -480,10 +480,26 @@
             "markers": "python_version >= '3.7'",
             "version": "==0.36b0"
         },
+        "opentelemetry-instrumentation-dbapi": {
+            "hashes": [
+                "sha256:7b51909ca754871655fc1231de6cec61a642da885797f4bc9143f19f1c52f079",
+                "sha256:8537060e5010f8a72bd0b45b710263a251fc1dcb36ab9d73160a434e6760e2e8"
+            ],
+            "markers": "python_version >= '3.7'",
+            "version": "==0.36b0"
+        },
         "opentelemetry-instrumentation-django": {
             "hashes": [
                 "sha256:859a961d303460dba03844d587c73e2a2493e89fbf7c4fd71f2f6c3e0a7c08aa",
                 "sha256:e112fb9a0e165af263dd224b094a1162790e29a2251dc4c267c448e3ff498646"
+            ],
+            "index": "pypi",
+            "version": "==0.36b0"
+        },
+        "opentelemetry-instrumentation-psycopg2": {
+            "hashes": [
+                "sha256:8f4808b15c44f4a842c247201ced16b77be182788d746640f847913cb4d7f10f",
+                "sha256:c2b8f347924828430282e4c781355b8e6669a823edcc4fca647f35bfb1ac6f7f"
             ],
             "index": "pypi",
             "version": "==0.36b0"
