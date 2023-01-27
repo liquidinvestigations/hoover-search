@@ -32,6 +32,8 @@ celery = "*"
 pytest-celery = '*'
 django-celery-results = "*"
 pytest-mock = "*"
+uptrace = "*"
+opentelemetry-instrumentation-django = "*"
 
 [requires]
 python_version = "3.9"
