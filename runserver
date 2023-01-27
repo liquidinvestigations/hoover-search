@@ -1,5 +1,26 @@
 #!/bin/bash -ex
 
 /wait
-# exec ./manage.py runserver 0.0.0.0:80
-exec waitress-serve --port 80 hoover.site.wsgi:application
+
+./manage.py migrate
+./manage.py healthcheck
+./manage.py synccollections "$SNOOP_COLLECTIONS"
+
+if [[ "$DEBUG" == "true" ]]; then
+	    # --max-requests 1 \  # poor man's autoreload
+	  exec gunicorn --reload \
+	    --access-logfile '-' \
+	    --error-logfile '-' \
+	    --log-level 'info' \
+	    --threads 20 \
+	    --timeout 600 \
+ 	 -b 0.0.0.0:8000 \
+ hoover.site.wsgi:application
+else
+	exec gunicorn \
+	    --error-logfile '-' \
+	 --threads 20 \
+	  --timeout 600 \
+	 -b 0.0.0.0:8000 \
+ hoover.site.wsgi:application
+fi
