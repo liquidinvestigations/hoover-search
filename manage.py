@@ -16,7 +16,7 @@ if __name__ == "__main__":
             service_version="0.0.0",
         )
         # LoggingInstrumentor().instrument(set_logging_format=True)
-        Psycopg2Instrumentor().instrument()
+        Psycopg2Instrumentor().instrument(skip_dep_check=True)
         DjangoInstrumentor().instrument()
 
     from django.core.management import execute_from_command_line

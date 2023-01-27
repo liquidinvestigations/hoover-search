@@ -18,5 +18,5 @@ def post_fork(server, worker):
                 service_version="0.0.0",
             )
             # LoggingInstrumentor().instrument(set_logging_format=True)
-            Psycopg2Instrumentor().instrument()
+            Psycopg2Instrumentor().instrument(skip_dep_check=True)
             DjangoInstrumentor().instrument()
