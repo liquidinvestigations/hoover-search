@@ -35,6 +35,7 @@ pytest-mock = "*"
 uptrace = "*"
 opentelemetry-instrumentation-django = "*"
 opentelemetry-instrumentation-psycopg2 = "*"
+opentelemetry-instrumentation-logging = "*"
 
 [requires]
 python_version = "3.9"
