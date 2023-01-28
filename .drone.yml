@@ -15,7 +15,15 @@ name: build
 depends_on:
 - static-tests
 
+clone:
+  depth: 5000
+
 steps:
+- name: fetch
+  image: alpine/git
+  commands:
+  - git fetch --tags
+
 # - name: GH CR docker push branch
 #   image: plugins/docker
 #   settings:

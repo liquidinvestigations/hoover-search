@@ -21,7 +21,7 @@ from opentelemetry.instrumentation.elasticsearch import ElasticsearchInstrumento
 # from opentelemetry.instrumentation.celery import CeleryInstrumentor
 
 SERVICE_NAME = "hoover-search"
-SERVICE_VERSION = subprocess.check_output("git describe --tags", shell=True).decode().strip()
+SERVICE_VERSION = subprocess.check_output("git describe --tags --always", shell=True).decode().strip()
 
 log = logging.getLogger(__name__)
 
@@ -76,9 +76,17 @@ class Tracer:
         finally:
             if we_are_first:
                 log.debug('destroying tracer for module %s...', self.name)
-                trace.get_tracer_provider().force_flush()
-                trace.get_tracer_provider().shutdown()
-                local.tracer = None
+                try:
+                    trace.get_tracer_provider().force_flush()
+                    trace.get_tracer_provider().shutdown()
+                # the ProxyTracerProvider we get when no tracing is configured
+                # doesn't have these methods.
+                except AttributeError:
+                    pass
+                except Exception as e:
+                    log.warning('tracer shutdown exception: ' + str(e))
+                finally:
+                    local.tracer = None
 
     def wrap_function(self):
         """Returns a function wrapper that has a telemetry span around the function.
