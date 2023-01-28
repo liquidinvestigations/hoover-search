@@ -40,6 +40,8 @@ class Command(BaseCommand):
             argv = celery_argv(settings.HOOVER_CELERY_SEARCH_QUEUES)
         elif worker_type == 'batch':
             argv = celery_argv(settings.HOOVER_CELERY_BATCH_QUEUES)
+        else:
+            raise RuntimeError('bad worker_type (valid: batch, search)')
 
         print('+' + ' '.join(argv))
         os.execv(argv[0], argv)

@@ -2,23 +2,16 @@
 import os
 import sys
 
-import uptrace
-from opentelemetry.instrumentation.django import DjangoInstrumentor
-from opentelemetry.instrumentation.psycopg2 import Psycopg2Instrumentor
-from opentelemetry.instrumentation.logging import LoggingInstrumentor
+from hoover.search.tracing import Tracer, init_tracing
 
 if __name__ == "__main__":
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "hoover.site.settings")
 
-    if os.getenv('UPTRACE_DSN'):
-        uptrace.configure_opentelemetry(
-            service_name="hoover-search",
-            service_version="0.0.0",
-        )
-        LoggingInstrumentor().instrument(set_logging_format=True)
-        Psycopg2Instrumentor().instrument(skip_dep_check=True)
-        DjangoInstrumentor().instrument()
+    init_tracing('manage.py')
+    tracer = Tracer('manage.py')
 
     from django.core.management import execute_from_command_line
 
-    execute_from_command_line(sys.argv)
+    with tracer.span("-".join(['manage'] + sys.argv[1:2])) as span:
+        span.set_attribute('cmdline.args', " ".join(sys.argv))
+        execute_from_command_line(sys.argv)

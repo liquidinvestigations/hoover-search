@@ -22,6 +22,8 @@ import re
 from ratelimit.decorators import ratelimit
 from ratelimit.exceptions import Ratelimited
 
+from hoover.search.tracing import Tracer
+tracer = Tracer(__name__)
 
 log = logging.getLogger(__name__)
 SEARCH_KEY = 'hoover.search.search'
@@ -75,6 +77,7 @@ def search_fields(request):
 
 
 @cel.app.task(bind=True, serializer='json', name=SEARCH_KEY, routing_key=SEARCH_KEY)
+@tracer.wrap_function()
 def _search(self, *args, **kwargs):
     """Background task that actually runs the search through elasticsearch and annotates results.
 
@@ -144,6 +147,7 @@ def _fix_string(s):
     #     .decode('utf-8', errors='replace')
 
 
+@tracer.wrap_function()
 def _cached_search(collections, user, kwargs, refresh=False, wait=True):
     # queryset with all valid cache objects for this search
     all_q = models.SearchResultCache.objects.filter(
@@ -209,6 +213,7 @@ def rates(group, request):
         return None
 
 
+@tracer.wrap_function()
 @csrf_exempt
 @ratelimit(key='user', rate=rates, block=True)
 def search(request):
@@ -257,6 +262,7 @@ def search(request):
         })
 
 
+@tracer.wrap_function()
 @csrf_exempt
 @ratelimit(key='user', rate=rates, block=True)
 def async_search(request):
@@ -303,6 +309,7 @@ def async_search(request):
         })
 
 
+@tracer.wrap_function()
 @csrf_exempt
 @ratelimit(key='user', rate=rates, block=True)
 def async_search_get(request, uuid):
@@ -333,6 +340,7 @@ def thumbnail_rate(group, request):
         return None
 
 
+@tracer.wrap_function()
 @ratelimit(key='user', rate=thumbnail_rate, block=True)
 def doc(request, collection_name, id, suffix):
     for collection in Collection.objects_for_user(request.user):
@@ -357,6 +365,7 @@ def doc(request, collection_name, id, suffix):
         })
 
 
+@tracer.wrap_function()
 @csrf_exempt
 @ratelimit(key='user', rate=rates, block=True)
 def doc_tags(request, collection_name, id, suffix):
@@ -389,6 +398,7 @@ def doc_tags(request, collection_name, id, suffix):
     )
 
 
+@tracer.wrap_function()
 def whoami(request):
     if settings.HOOVER_AUTHPROXY:
         logout_url = "/oauth2/sign_out?rd=" + urllib.parse.quote(str(os.getenv('LIQUID_CORE_LOGOUT_URL')), safe='')
@@ -425,6 +435,7 @@ def whoami(request):
     })
 
 
+@tracer.wrap_function()
 @csrf_exempt
 @ratelimit(key='user', rate=rates, block=True)
 def batch(request):
@@ -470,6 +481,7 @@ def batch(request):
         })
 
 
+@tracer.wrap_function()
 @csrf_exempt
 @ratelimit(key='user', rate=rates, block=True)
 def async_batch(request):
@@ -515,6 +527,7 @@ def async_batch(request):
         })
 
 
+@tracer.wrap_function()
 @csrf_exempt
 @ratelimit(key='user', rate=rates, block=True)
 def async_batch_get(request, uuid):
@@ -534,6 +547,7 @@ def async_batch_get(request, uuid):
     return JsonResponse(batch_result.to_dict())
 
 
+@tracer.wrap_function()
 def _cached_batch(collections, user, kwargs, wait=True):
     all_q = models.BatchResultCache.objects.filter(
         user=user,
@@ -581,6 +595,7 @@ def _cached_batch(collections, user, kwargs, wait=True):
 
 
 @cel.app.task(bind=True, serializer='json', name=BATCH_KEY, routing_key=BATCH_KEY)
+@tracer.wrap_function()
 def _batch(self, *args, **kwargs):
     """Background task that actually runs the batch count search through elasticsearch.
 

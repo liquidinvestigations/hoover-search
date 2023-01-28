@@ -6,6 +6,8 @@ from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import NotFoundError, RequestError, ConnectionError
 from elasticsearch.helpers import bulk
 
+from hoover.search.tracing import Tracer
+tracer = Tracer(__name__)
 
 log = logging.getLogger(__name__)
 DOCTYPE = 'doc'
@@ -152,7 +154,8 @@ class SearchError(Exception):
 @contextmanager
 def elasticsearch():
     try:
-        yield Elasticsearch(settings.HOOVER_ELASTICSEARCH_URL)
+        with tracer.span('with elasticsearch client') as _:
+            yield Elasticsearch(settings.HOOVER_ELASTICSEARCH_URL)
     except ConnectionError:
         raise SearchError('Could not connect to Elasticsearch.')
     except RequestError as e:
@@ -165,6 +168,7 @@ def elasticsearch():
         raise SearchError('Elasticsearch failed: ' + reason)
 
 
+@tracer.wrap_function()
 def create_index(collection_id, name):
     with elasticsearch() as es:
         es.indices.create(index=_index_name(collection_id))
@@ -180,6 +184,7 @@ def _index_id(index):
     return Collection.objects.get(index=index).id
 
 
+@tracer.wrap_function()
 def index(collection_id, doc_id, body):
     with elasticsearch() as es:
         es.index(
@@ -190,6 +195,7 @@ def index(collection_id, doc_id, body):
         )
 
 
+@tracer.wrap_function()
 def bulk_index(collection_id, docs):
     def index(id, data):
         return dict(
@@ -211,6 +217,7 @@ def bulk_index(collection_id, docs):
         raise RuntimeError("Bulk indexing failed on %d documents" % err)
 
 
+@tracer.wrap_function()
 def versions(collection_id, doc_id_list):
     with elasticsearch() as es:
         res = es.search(
@@ -232,6 +239,7 @@ def versions(collection_id, doc_id_list):
     }
 
 
+@tracer.wrap_function()
 def get(collection_id, doc_id):
     with elasticsearch() as es:
         return es.get(
@@ -250,6 +258,7 @@ def _get_indices(collections):
     return indices
 
 
+@tracer.wrap_function()
 def batch_count(query_strings, collections, aggs=None, split=500):
     if not query_strings:
         return {'responses': []}
@@ -267,6 +276,7 @@ def batch_count(query_strings, collections, aggs=None, split=500):
     return results
 
 
+@tracer.wrap_function()
 def batch_count_single(query_strings, collections, aggs=None):
     def _build_query_lines(query_string, meta={}, aggs=None):
         query_body = {
@@ -304,6 +314,7 @@ def batch_count_single(query_strings, collections, aggs=None):
     return rv
 
 
+@tracer.wrap_function()
 def search(query, _source, highlight, collections, from_, size, sort, aggs, post_filter, search_after):
     indices = _get_indices(collections)
 
@@ -370,6 +381,7 @@ def search(query, _source, highlight, collections, from_, size, sort, aggs, post
     return (rv, count_by_index)
 
 
+@tracer.wrap_function()
 def delete_index(collection_id, ok_missing=False):
     with elasticsearch() as es:
         es.indices.delete(
@@ -378,6 +390,7 @@ def delete_index(collection_id, ok_missing=False):
         )
 
 
+@tracer.wrap_function()
 def delete_all():
     with elasticsearch() as es:
         for index in es.indices.get(index='*'):
