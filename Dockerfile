@@ -14,6 +14,7 @@ ADD Pipfile Pipfile.lock ./
 RUN pipenv install --system --deploy --ignore-pipfile
 
 COPY . .
+COPY .git .
 
 ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.3.0/wait /wait
 
