@@ -22,10 +22,14 @@ def celery_argv(queues):
         f'--loglevel={loglevel}',
         '-Ofair',
         '--max-memory-per-child', str(500),
+        # '--max-tasks-per-child', str(1),
+        '--prefetch-multiplier', str(1),
         '--soft-time-limit', '3600',  # 1h
         '--time-limit', '4000',
         '-Q', ','.join(queues),
         '-c', str(settings.SEARCH_WORKER_COUNT),
+        '--pool', 'prefork',
+        # '--pool', 'solo',
     ]
 
 

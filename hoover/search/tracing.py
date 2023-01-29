@@ -15,7 +15,8 @@ from opentelemetry import trace
 from opentelemetry.instrumentation.django import DjangoInstrumentor
 from opentelemetry.instrumentation.psycopg2 import Psycopg2Instrumentor
 from opentelemetry.instrumentation.logging import LoggingInstrumentor
-from opentelemetry.instrumentation.requests import RequestsInstrumentor
+# disabled because of error "TypeError: 'HttpHeaders' object does not support item assignment"
+# from opentelemetry.instrumentation.requests import RequestsInstrumentor
 from opentelemetry.instrumentation.elasticsearch import ElasticsearchInstrumentor
 # commented out because of leaked socket warning, but it seems to be harmless as it uses same fd
 # from opentelemetry.instrumentation.celery import CeleryInstrumentor
@@ -42,7 +43,7 @@ def init_tracing(_from):
         LoggingInstrumentor().instrument(set_logging_format=True)
         Psycopg2Instrumentor().instrument(skip_dep_check=True)
         DjangoInstrumentor().instrument()
-        RequestsInstrumentor().instrument()
+        # RequestsInstrumentor().instrument()
         ElasticsearchInstrumentor().instrument()
         # CeleryInstrumentor().instrument()
 
