@@ -63,6 +63,8 @@ steps:
   when:
     event:
     - push
+  depends_on:
+  - fetch
 
 - name: docker push autotag + latest
   image: plugins/docker
