@@ -41,9 +41,7 @@ def move_file(sender, **kwargs):
     upload.directory_path = snoop_path
     upload.save()
     # notify snoop about the new directory and receive the full path as a string
-    destination_path = Path(f'/opt/hoover/collections/{collection_name}/data'
-                            + snoop_path
-                            )
+    destination_path = settings.SNOOP_COLLECTION_DIR / collection_name / 'data' / snoop_path
     nonexistent_destination_path, snoop_filename = get_nonexistent_filename(destination_path, orig_filename)
     shutil.move(upload_path, nonexistent_destination_path)
     notify_snoop(collection_name, directory_pk)

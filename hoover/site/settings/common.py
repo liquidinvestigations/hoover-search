@@ -164,6 +164,7 @@ CELERY_BROKER_URL = os.getenv('SEARCH_AMQP_URL')
 
 SNOOP_FORWARD_HEADERS = ['Content-Disposition', 'Accept-Ranges', 'Content-Range', 'Content-Length']
 
+SNOOP_COLLECTION_DIR = Path(os.getenv('SNOOP_COLLECTION_DIR', '/opt/hoover/collections'))
 
 # all django_tus related settings can be found here: https://github.com/alican/django-tus
 

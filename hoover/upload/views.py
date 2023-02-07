@@ -1,8 +1,10 @@
-from django.http import Http404, HttpResponseForbidden, JsonResponse
+from django.conf import settings
+from django.http import Http404, HttpResponse, HttpResponseForbidden, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django_tus.views import TusUpload
 import base64
 import logging
+import shutil
 
 from ..search import models
 from .utils import get_path
@@ -53,10 +55,14 @@ def upload(request, **kwargs):
     if request.method == 'POST':
         metadata = parse_metadata(request.META['HTTP_UPLOAD_METADATA'])
         collection_name = metadata.get('collection')
+        upload_size = int(request.META['HTTP_UPLOAD_LENGTH'])
 
         if not can_upload(collection_name, request.user):
             log.warning(f'User "{request.user.username}" cannot upload to collection: "{collection_name}"')
             return HttpResponseForbidden()
+
+        if not enough_disk_space(collection_name, upload_size):
+            return HttpResponse(status=507)
 
         log.info('Created initial upload! Metadata: ' + request.META['HTTP_UPLOAD_METADATA'])
         # forwarding request to tus view
@@ -157,3 +163,17 @@ def get_directory_uploads(request, collection_name, directory_id, **kwargs):
                            }
                           for upload in uploads]}
     return JsonResponse(result, safe=False)
+
+
+def enough_disk_space(collection, upload_size):
+    directories = [
+        settings.TUS_UPLOAD_DIR,
+        settings.TUS_DESTINATION_DIR,
+        settings.SNOOP_COLLECTION_DIR / collection / 'data',
+    ]
+    free_space = min([shutil.disk_usage(path).free for path in directories])
+    log.info(f'Free space available for uploads: {free_space / 1024**3}')
+    if upload_size > free_space / 2:
+        return False
+    else:
+        return True
