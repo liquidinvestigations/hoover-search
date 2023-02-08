@@ -39,6 +39,7 @@ opentelemetry-instrumentation-logging = "*"
 opentelemetry-instrumentation-celery = "*"
 opentelemetry-instrumentation-requests = "*"
 opentelemetry-instrumentation-elasticsearch = "*"
+django-tus = {editable = true, ref = "25e91e2ac2a5f9d91ac843af2e2054819e778d7d", git = "https://github.com/liquidinvestigations/django-tus.git"}
 
 [requires]
 python_version = "3.9"

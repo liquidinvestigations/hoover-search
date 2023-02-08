@@ -6,6 +6,7 @@ from drf_yasg import openapi
 
 from ..search.admin import admin_site
 from ..search import views
+from ..upload import views as upload_views
 
 
 api_urlpatterns_v0 = [
@@ -28,6 +29,12 @@ api_urlpatterns_v1 = [
     path('search_fields', views.search_fields, name='search_fields'),
     re_path(r'^doc/(?P<collection_name>[^/]+)/(?P<id>[^/]+)/tags(?P<suffix>.*)$', views.doc_tags),
     re_path(r'^doc/(?P<collection_name>[^/]+)/(?P<id>[^/]+)(?P<suffix>.*)$', views.doc),
+    path('upload/', upload_views.upload, name='tus_upload'),
+    path('upload/<uuid:resource_id>', upload_views.upload,
+         name='tus_upload_chunks'),
+    path('get_uploads', upload_views.get_uploads_list, name='get_uploads'),
+    path('<collection_name>/<directory_id>/get_directory_uploads',
+         upload_views.get_directory_uploads, name='get_directory_uploads'),
 ]
 
 urlpatterns = [
@@ -35,7 +42,7 @@ urlpatterns = [
     path('accounts/', include('django.contrib.auth.urls')),
     path('api/v0/', include(api_urlpatterns_v0)),
     path('api/v1/', include(api_urlpatterns_v1)),
-    path('viewer/web/viewer.html', views.web_viewer_redirect_v0),
+    path('viewer/web/viewer.html', views.web_viewer_redirect_v0)
 ]
 
 # DRF-YASG

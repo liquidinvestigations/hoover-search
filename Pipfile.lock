@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "678915dcb4b2e2437ac3e4175331f61bc90524442911c06b70fb46d51d80aefe"
+            "sha256": "5cfb7021ecb0b1ca26bdc8991209153be8dd360933746b8898ef1c05a7342303"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -175,6 +175,14 @@
             "index": "pypi",
             "version": "==3.1.3"
         },
+        "django-appconf": {
+            "hashes": [
+                "sha256:ae9f864ee1958c815a965ed63b3fba4874eec13de10236ba063a788f9a17389d",
+                "sha256:be3db0be6c81fa84742000b89a81c016d70ae66a7ccb620cdef592b1f1a6aaa4"
+            ],
+            "markers": "python_version >= '3.6'",
+            "version": "==1.0.5"
+        },
         "django-celery-results": {
             "hashes": [
                 "sha256:cc0285090a306f97f1d4b7929ed98af0475bf6db2568976b3387de4fbe812edc",
@@ -206,6 +214,11 @@
             ],
             "index": "pypi",
             "version": "==3.0.1"
+        },
+        "django-tus": {
+            "editable": true,
+            "git": "https://github.com/liquidinvestigations/django-tus.git",
+            "ref": "25e91e2ac2a5f9d91ac843af2e2054819e778d7d"
         },
         "djangorestframework": {
             "hashes": [
@@ -592,6 +605,14 @@
             "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'",
             "version": "==20.7"
         },
+        "pathvalidate": {
+            "hashes": [
+                "sha256:1697c8ea71ff4c48e7aa0eda72fe4581404be8f41e51a17363ef682dd6824d35",
+                "sha256:32d30dbacb711c16bb188b12ce7e9a46b41785f50a12f64500f747480a4b6ee3"
+            ],
+            "markers": "python_version >= '3.5'",
+            "version": "==2.3.0"
+        },
         "pillow": {
             "hashes": [
                 "sha256:006de60d7580d81f4a1a7e9f0173dc90a932e3905cc4d47ea909bc946302311a",
@@ -718,6 +739,13 @@
             ],
             "markers": "python_version >= '2.6' and python_version not in '3.0, 3.1, 3.2, 3.3'",
             "version": "==2.4.7"
+        },
+        "pypng": {
+            "hashes": [
+                "sha256:4a43e969b8f5aaafb2a415536c1a8ec7e341cd6a3f957fd5b5f32a4cfeed902c",
+                "sha256:739c433ba96f078315de54c0db975aee537cbc3e1d0ae4ed9aab0ca1e427e2c1"
+            ],
+            "version": "==0.20220715.0"
         },
         "pyrsistent": {
             "hashes": [

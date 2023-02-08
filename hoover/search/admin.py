@@ -11,10 +11,11 @@ class HooverAdminSite(admin.AdminSite):
 
 
 class CollectionAdmin(admin.ModelAdmin):
-    list_display = ['__str__', 'count', 'user_access_list',
-                    'group_access_list', 'public', 'avg_search_time', 'avg_batch_time']
-    fields = ['title', 'name', 'index', 'public', 'users', 'groups']
-    filter_horizontal = ['users', 'groups']
+    list_display = ['__str__', 'count', 'user_access_list', 'group_access_list',
+                    'uploaders_access_list', 'group_upload_access_list',
+                    'group_access_list', 'public', 'writeable', 'avg_search_time', 'avg_batch_time']
+    fields = ['title', 'name', 'index', 'public', 'writeable', 'users', 'groups', 'uploader_users', 'uploader_groups']
+    filter_horizontal = ['users', 'groups', 'uploader_users', 'uploader_groups']
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)

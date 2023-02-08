@@ -32,10 +32,15 @@ class Collection(models.Model):
     index = models.CharField(max_length=256)
 
     public = models.BooleanField(default=False)
+    writeable = models.BooleanField(default=False)
     users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True,
                                    related_name='hoover_search_collections')
     groups = models.ManyToManyField('auth.Group', blank=True,
                                     related_name='hoover_search_collections')
+    uploader_users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True,
+                                            related_name='hoover_search_upload_collections')
+    uploader_groups = models.ManyToManyField('auth.Group', blank=True,
+                                             related_name='hoover_search_upload_collections')
 
     doc_count = models.IntegerField(default=0)
     avg_search_time = models.FloatField(default=0)
@@ -172,8 +177,14 @@ class Collection(models.Model):
     def user_access_list(self):
         return ', '.join(u.username for u in self.users.all())
 
+    def uploaders_access_list(self):
+        return ', '.join(u.username for u in self.uploader_users.all() & self.users.all())
+
     def group_access_list(self):
         return ', '.join(g.name for g in self.groups.all())
+
+    def group_upload_access_list(self):
+        return ', '.join(g.name for g in self.uploader_groups.all() & self.groups.all())
 
     def get_document(self, doc_id):
         return es.get(self.id, doc_id)
@@ -318,3 +329,43 @@ class BatchResultCache(models.Model):
             res['queue_sec'] = int(others_search_time)
             res['queue_length'] = queue_len
         return res
+
+
+class Upload(models.Model):
+    """Database model to keep track of user uploads."""
+
+    upload_id = models.UUIDField(null=True)
+    """UUID of the upload, given by django tus, when upload is started."""
+
+    started = models.DateTimeField(auto_now_add=True)
+    """Timestamp when the upload started."""
+
+    finished = models.DateTimeField(null=True, blank=True)
+    """Timestamp when the upload finished."""
+
+    uploader = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    """Reference to the user who is uploading."""
+
+    collection = models.ForeignKey(Collection, on_delete=models.CASCADE)
+    """Reference to the collection in which the file is being uploaded."""
+
+    directory_id = models.IntegerField()
+    """The directory id that corresponds to the directory the file is being uploaded to."""
+
+    directory_path = models.CharField(max_length=256)
+    """The path to the directory that the file was uploaded to."""
+
+    filename = models.CharField(max_length=256)
+    """The filename of the uploaded file."""
+
+    processed = models.BooleanField(default=False)
+    """Boolean flag to show if the file has been processed on snoop."""
+
+    snoop_tasks_done = models.IntegerField(default=0)
+    """Count of snoop tasks that are finished."""
+
+    snoop_tasks_total = models.IntegerField(default=0)
+    """Count of all snoop tasks for the uploaded file."""
+
+    poll_task = models.CharField(max_length=64, null=True)
+    """The task id for the task that checks to processing status of the uploaded file."""

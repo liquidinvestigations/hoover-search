@@ -1,12 +1,8 @@
-from django.http import HttpResponse
 from django.urls import reverse
-import json
-from .test_search import external, JsonResponse
 import pytest
 from time import sleep
 from hoover.search import models
 import responses
-import requests
 from django.conf import settings
 
 pytestmark = pytest.mark.django_db
