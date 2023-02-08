@@ -42,8 +42,6 @@ def move_file(sender, **kwargs):
     upload.save()
     # notify snoop about the new directory and receive the full path as a string
     destination_path = settings.SNOOP_COLLECTION_DIR / collection_name / f'data{snoop_path}'
-    print(destination_path)
-    print(type(settings.SNOOP_COLLECTION_DIR))
     nonexistent_destination_path, snoop_filename = get_nonexistent_filename(destination_path, orig_filename)
     shutil.move(upload_path, nonexistent_destination_path)
     notify_snoop(collection_name, directory_pk)

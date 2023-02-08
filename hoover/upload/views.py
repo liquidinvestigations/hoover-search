@@ -121,12 +121,10 @@ def b64_encode(s):
 
 
 def get_uploads_list(request, **kwargs):
-    """TODO"""
+    """Return a JSON with uploads and the corresponding metadata for each upload."""
     uploads = models.Upload.objects.all()
     uploads = (uploads.filter(collection__users__in=[request.user])
                .filter(collection__uploader_users__in=[request.user]))
-    print(uploads.query)
-    print(uploads)
     result = [{'started': upload.started,
                'finished': upload.finished,
                'uploader': upload.uploader.username,
@@ -140,7 +138,7 @@ def get_uploads_list(request, **kwargs):
 
 
 def get_directory_uploads(request, collection_name, directory_id, **kwargs):
-    """TODO"""
+    """Return a JSON with uploads metadata for a specific directory."""
 
     if not can_upload(collection_name, request.user):
         log.warning(f'User "{request.user.username}" has no upload permission for: "{collection_name}"')
@@ -166,6 +164,10 @@ def get_directory_uploads(request, collection_name, directory_id, **kwargs):
 
 
 def enough_disk_space(collection, upload_size):
+    """Check if there is enough disk space to upload a file of the specified size.
+
+    If the file is > 50% of the free space, return False
+    """
     directories = [
         settings.TUS_UPLOAD_DIR,
         settings.TUS_DESTINATION_DIR,

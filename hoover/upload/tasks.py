@@ -18,7 +18,17 @@ UPLOAD_KEY = 'hoover.search.upload'
 
 @cel.app.task(bind=True, queue=UPLOAD_KEY, name=UPLOAD_KEY, max_retries=None)
 def poll_processing_status(self, *args, **kwargs):
-    """TODO docstring!"""
+    """Task that polls for the processing status of an uploaded file in snoop.
+
+    First polls, if the file has been already created in snoop. If the file exists
+    the tasks polls to get the processing status for that upload and saves it in the database.
+    After processing is done it saves the upload as done.
+
+    Args:
+        kwargs['collection_name']: The collection name as a string.
+        kwargs['directory_pk']: The primary key of the directory in snoop.
+        kwargs['upload_pk']: The primary key of the upload that should be monitored..
+    """
     try:
         collection_name = kwargs.get('collection_name')
         filename = kwargs.get('filename')
@@ -83,7 +93,15 @@ def file_exists(collection_name, directory_pk, filename):
 
 
 def processing_status(collection_name, blob_pk):
-    """TODO"""
+    """Calls a snoop endpoint to check the processing status of a given blob.
+
+    Args:
+        collection_name: The collection name as a string.
+        blob_pk: The primary key (hash) of the blob in snoop.
+
+    Returns:
+        A json that looks like this: {'finished': False, 'done_count': 0, 'total_count': 0}
+    """
     url = settings.SNOOP_BASE_URL + f'/collections/{collection_name}/{blob_pk}/processing_status'
 
     resp = requests.get(url)
