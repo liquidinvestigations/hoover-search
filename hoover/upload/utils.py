@@ -7,7 +7,7 @@ def parse_directory_id(raw_id):
 
 
 def get_path(collection_name, directory_pk):
-    """Calls a snoop endpoint to notify snoop that there is new file and queue a rescan of the directory.
+    """Calls a snoop endpoint to get the full path of the directory.
 
     Returns: A string that is the full path of the directory.
     """

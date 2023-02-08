@@ -174,6 +174,7 @@ def enough_disk_space(collection, upload_size):
     free_space = min([shutil.disk_usage(path).free for path in directories])
     log.info(f'Free space available for uploads: {free_space / 1024**3}')
     if upload_size > free_space / 2:
+        log.info('Not enough free space!')
         return False
     else:
         return True

@@ -30,4 +30,6 @@ RUN set -e \
  && SECRET_KEY=temp HOOVER_DB='postgresql://search:search@search-pg:5432/search' ./manage.py collectstatic --noinput \
  && chmod +x /wait
 
+RUN git config --global --add safe.directory "*"
+
 CMD ./runserver

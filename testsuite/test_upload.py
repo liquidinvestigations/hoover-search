@@ -47,6 +47,21 @@ def test_search_upload(client, django_user_model):
                   status=200,
                   )
 
+    responses.add(responses.GET,
+                  settings.SNOOP_BASE_URL + '/collections/testdata/1/exists',
+                  body='1',
+                  status=200,)
+
+    responses.add(responses.GET,
+                  settings.SNOOP_BASE_URL + '/collections/testdata/1/test.pdf/exists',
+                  body='1',
+                  status=200,)
+
+    responses.add(responses.GET,
+                  settings.SNOOP_BASE_URL + '/collections/testdata/1/processing_status',
+                  json={'finished': True, 'done_count': 5, 'total_count': 5},
+                  status=200,)
+
     # for details see https://tus.io/protocols/resumable-upload.html#post
     post_headers = {
         'HTTP_UPLOAD_METADATA': ('name ' + encode_str('test.pdf')

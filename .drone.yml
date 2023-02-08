@@ -133,6 +133,7 @@ steps:
     SEARCH_AMQP_URL: "amqp://search-rabbitmq"
 
   commands:
+  - git config --global --add safe.directory "*"
   - mkdir -p volumes volumes/metrics volumes/metrics/users collections volumes/search-es-snapshots volumes/search-es/data
   - /wait
   - mkdir -p /opt/hoover/collections/testdata/data
