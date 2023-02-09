@@ -39,15 +39,16 @@ class CollectionAdmin(admin.ModelAdmin):
         else:
             return ['index']
 
-
     def get_fields(self, request, obj=None):
         if obj:
             return [
                 'name', 'index', 'title',
                 'public', 'writeable',
-                'users', 'groups',
-                'uploader_users', 'uploader_groups',
-           ]
+                'users',
+                'groups',
+                'uploader_users',
+                'uploader_groups',
+            ]
         else:
             return ['name', 'title']
 
