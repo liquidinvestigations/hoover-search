@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib import admin
+# from django.contrib.admin import action
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.contrib.auth.admin import User, Group, UserAdmin, GroupAdmin
 from django.forms import ModelForm
@@ -10,12 +11,45 @@ class HooverAdminSite(admin.AdminSite):
     pass
 
 
+class CollectionCreateForm(forms.ModelForm):
+
+    class Meta:
+        fields = ['name', 'title']
+        model = models.Collection
+
+
 class CollectionAdmin(admin.ModelAdmin):
+    actions = ['make_collection_writeable', 'make_collection_public']
     list_display = ['__str__', 'count', 'user_access_list', 'group_access_list',
                     'uploaders_access_list', 'group_upload_access_list',
                     'group_access_list', 'public', 'writeable', 'avg_search_time', 'avg_batch_time']
-    fields = ['title', 'name', 'index', 'public', 'writeable', 'users', 'groups', 'uploader_users', 'uploader_groups']
     filter_horizontal = ['users', 'groups', 'uploader_users', 'uploader_groups']
+
+    # @action(description='Mark collections as Public')
+    # def make_collection_public(self, request, queryset):
+    #     queryset.update(public=True)
+
+    # @action(description='Mark collections as Writeable')
+    # def make_collection_writeable(self, request, queryset):
+    #     queryset.update(writeable=True)
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj:
+            return ['name', 'index']
+        else:
+            return ['index']
+
+
+    def get_fields(self, request, obj=None):
+        if obj:
+            return [
+                'name', 'index', 'title',
+                'public', 'writeable',
+                'users', 'groups',
+                'uploader_users', 'uploader_groups',
+           ]
+        else:
+            return ['name', 'title']
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -25,8 +59,8 @@ class CollectionAdmin(admin.ModelAdmin):
         qs_groups = qs.filter(groups__in=request.user.groups.all())
         return qs_user | qs_groups
 
-    def get_prepopulated_fields(self, request, obj=None):
-        return {} if obj else {'name': ['title'], 'index': ['name']}
+    # def get_prepopulated_fields(self, request, obj=None):
+    #     return {} if obj else {'name': ['title'], 'index': ['name']}
 
     def formfield_for_manytomany(self, db_field, request=None, **kwargs):
         field = super().formfield_for_manytomany(db_field, request, **kwargs)
@@ -45,14 +79,22 @@ class CollectionAdmin(admin.ModelAdmin):
         else:
             return username
 
+    def get_form(self, request, obj=None, **kwargs):
+        if not obj:
+            print('collection add form', str(obj), str(kwargs))
+            kwargs['form'] = CollectionCreateForm
+        else:
+            print('collection edit form', str(obj))
+        return super().get_form(request, obj, **kwargs)
+
     def has_add_permission(self, request):
-        return False
+        return True
 
     def has_change_permission(self, request, obj=None):
         return True
 
     def has_delete_permission(self, request, obj=None):
-        return False
+        return True
 
 
 class GroupAdminForm(ModelForm):

@@ -23,13 +23,18 @@ def _get_collection_loader(name):
     return ExternalLoader(url=settings.SNOOP_BASE_URL + f'/collections/{name}/json')
 
 
+def _is_valid_collection_name(name):
+    # TODO: FIXME: get regex
+    return True
+
+
 class Collection(models.Model):
     UPDATE_INTERVAL_SEC = 100
     SEARCH_OVERHEAD = 0.001
 
-    title = models.CharField(max_length=2048, blank=True)
+    title = models.CharField(max_length=2048, blank=True, default='')
     name = models.CharField(max_length=256, unique=True)
-    index = models.CharField(max_length=256)
+    index = models.CharField(max_length=256, blank=True, default='')
 
     public = models.BooleanField(default=False)
     writeable = models.BooleanField(default=False)
@@ -41,11 +46,19 @@ class Collection(models.Model):
                                             related_name='hoover_search_upload_collections')
     uploader_groups = models.ManyToManyField('auth.Group', blank=True,
                                              related_name='hoover_search_upload_collections')
+    stats = models.JSONField(default=dict)
 
     doc_count = models.IntegerField(default=0)
     avg_search_time = models.FloatField(default=0)
     avg_batch_time = models.FloatField(default=0)
     last_update = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        if not self.title:
+            self.title = self.name
+        if not self.index:
+            self.index = self.name
+        return super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
@@ -54,7 +67,11 @@ class Collection(models.Model):
         return _get_collection_loader(self.name)
 
     def get_meta(self):
-        return self.get_loader().api.meta
+        try:
+            return self.get_loader().api.meta
+        except Exception as e:
+            log.exception(e)
+            return dict()
 
     def label(self):
         return self.title or self.name
@@ -159,6 +176,10 @@ class Collection(models.Model):
         # compute new ES index size
         try:
             self.doc_count = es.count(self.id)
+        except Exception as e:
+            log.exception(e)
+        try:
+            self.stats = self.get_meta()['stats']
         except Exception as e:
             log.exception(e)
 

@@ -63,7 +63,7 @@ def home(request):
 
 def collections(request):
     return JsonResponse([
-        {'name': col.name, 'title': col.title, 'stats': col.get_meta()['stats']}
+        {'name': col.name, 'title': col.title, 'stats': col.stats}
         for col in Collection.objects_for_user(request.user)
     ], safe=False)
 
