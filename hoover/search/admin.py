@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib import admin
-# from django.contrib.admin import action
+from django.contrib.admin import action
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.contrib.auth.admin import User, Group, UserAdmin, GroupAdmin
 from django.forms import ModelForm
@@ -25,13 +25,13 @@ class CollectionAdmin(admin.ModelAdmin):
                     'group_access_list', 'public', 'writeable', 'avg_search_time', 'avg_batch_time']
     filter_horizontal = ['users', 'groups', 'uploader_users', 'uploader_groups']
 
-    # @action(description='Mark collections as Public')
-    # def make_collection_public(self, request, queryset):
-    #     queryset.update(public=True)
+    @action(description='Mark collections as Public')
+    def make_collection_public(self, request, queryset):
+        queryset.update(public=True)
 
-    # @action(description='Mark collections as Writeable')
-    # def make_collection_writeable(self, request, queryset):
-    #     queryset.update(writeable=True)
+    @action(description='Mark collections as Writeable')
+    def make_collection_writeable(self, request, queryset):
+        queryset.update(writeable=True)
 
     def get_readonly_fields(self, request, obj=None):
         if obj:

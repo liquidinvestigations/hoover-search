@@ -21,7 +21,7 @@ def lock_table(model):
 
 
 class Command(BaseCommand):
-    help = "Register a collection"
+    help = "Run collection registration, reading from env"
 
     def add_arguments(self, parser):
         parser.add_argument('snoop_collections_json')
@@ -35,9 +35,9 @@ class Command(BaseCommand):
 
         print('locking table...')
         with lock_table(models.Collection):
-            to_delete = models.Collection.objects.exclude(name__in=[c['name'] for c in snoop_collections])
-            print('Deleting', to_delete.count(), 'collections')
-            to_delete.delete()
+            # to_delete = models.Collection.objects.exclude(name__in=[c['name'] for c in snoop_collections])
+            # print('Deleting', to_delete.count(), 'collections')
+            # to_delete.delete()
 
             for conf in snoop_collections:
                 name = conf['name']
