@@ -41,16 +41,17 @@ class Command(BaseCommand):
 
             for conf in snoop_collections:
                 name = conf['name']
+                print(conf)
                 print('Handling collection', name)
                 col, created = models.Collection.objects.update_or_create(
                     name=name,
                     defaults=dict(
                         index=name,
+                        title=name,
+                        config=conf,
                     ),
                 )
-                if created or not col.title:
-                    col.title = name
-                    col.save()
+                col.save()
 
                 action = "Created" if created else "Updated"
                 print(action, col)

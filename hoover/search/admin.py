@@ -19,23 +19,66 @@ class CollectionCreateForm(forms.ModelForm):
 
 
 class CollectionAdmin(admin.ModelAdmin):
-    actions = ['make_collection_writeable', 'make_collection_public']
     list_display = ['__str__', 'count', 'user_access_list', 'group_access_list',
                     'uploaders_access_list', 'group_upload_access_list',
-                    'group_access_list', 'public', 'writeable', 'avg_search_time', 'avg_batch_time']
+                    'group_access_list', 'public', 'writeable', 'avg_search_time',
+                    'avg_batch_time',
+                    'process', 'progress', 'sync']
     filter_horizontal = ['users', 'groups', 'uploader_users', 'uploader_groups']
+    actions = [
+        'make_collection_writeable',
+        'make_collection_not_writeable',
+        'make_collection_public',
+        'make_collection_not_public',
+        'enable_collection_process',
+        'disable_collection_process',
+        "enable_collection_sync",
+        "disable_collection_sync",
+    ]
 
-    @action(description='Mark collections as Public')
+    @action(description='Set collections as Public')
     def make_collection_public(self, request, queryset):
         queryset.update(public=True)
 
-    @action(description='Mark collections as Writeable')
+    @action(description='Set collections as Not Public')
+    def make_collection_not_public(self, request, queryset):
+        queryset.update(public=False)
+
+    @action(description='Set collections as Writeable')
     def make_collection_writeable(self, request, queryset):
         queryset.update(writeable=True)
 
+    @action(description='Set collections as Not Writeable')
+    def make_collection_not_writeable(self, request, queryset):
+        queryset.update(writeable=False)
+
+    @action(description='Enable processing for collections')
+    def enable_collection_process(self, request, queryset):
+        for item in queryset:
+            item.config['process'] = True
+            item.save()
+
+    @action(description='Disable processing for collections')
+    def disable_collection_process(self, request, queryset):
+        for item in queryset:
+            item.config['process'] = False
+            item.save()
+
+    @action(description='Enable Sync for collections')
+    def enable_collection_sync(self, request, queryset):
+        for item in queryset:
+            item.config['sync'] = True
+            item.save()
+
+    @action(description='Disable Sync for collections')
+    def disable_collection_sync(self, request, queryset):
+        for item in queryset:
+            item.config['sync'] = False
+            item.save()
+
     def get_readonly_fields(self, request, obj=None):
         if obj:
-            return ['name', 'index']
+            return ['name', 'index', 'process', 'progress', 'sync', 'config', 'stats']
         else:
             return ['index']
 
@@ -46,6 +89,8 @@ class CollectionAdmin(admin.ModelAdmin):
                 'public', 'writeable',
                 'users', 'groups',
                 'uploader_users', 'uploader_groups',
+                'process', 'progress', 'sync',
+                'config',
             ]
         else:
             return ['name', 'title']
@@ -69,6 +114,9 @@ class CollectionAdmin(admin.ModelAdmin):
 
     def count(self, collection):
         return collection.count
+
+    def progress(self, collection):
+        return collection.stats.get('progress_str')
 
     def get_user_label(self, user):
         name = user.get_full_name()

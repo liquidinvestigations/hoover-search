@@ -9,6 +9,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.auth import get_user_model
 from django.utils import timezone
+import requests
 
 from . import es
 from .loaders.external import Loader as ExternalLoader
@@ -47,6 +48,7 @@ class Collection(models.Model):
     uploader_groups = models.ManyToManyField('auth.Group', blank=True,
                                              related_name='hoover_search_upload_collections')
     stats = models.JSONField(default=dict)
+    config = models.JSONField(default=dict)
 
     doc_count = models.IntegerField(default=0)
     avg_search_time = models.FloatField(default=0)
@@ -58,7 +60,38 @@ class Collection(models.Model):
             self.title = self.name
         if not self.index:
             self.index = self.name
-        return super().save(*args, **kwargs)
+        save_result = super().save(*args, **kwargs)
+        self._send_collection_to_snoop()
+        return save_result
+
+    def _send_collection_to_snoop(self):
+        # TODO: FIXME: actually send JSON to endpoint
+        if not self.config or not self.config.get('name', None):
+            log.warning('no config data to send to snoop!')
+            return
+        try:
+            url = settings.SNOOP_BASE_URL + f'/collections/{collection_name}/write_settings'  # noqa: E501
+            requests.post(url, json=dict(self.config))
+        except Exception as e:
+            log.exception(e)
+
+    @property
+    def process(self):
+        return self.config.get('process')
+
+    @process.setter
+    def process_setter(self, value):
+        if value != self.config.get('process'):
+            self.config['process'] = value
+
+    @property
+    def sync(self):
+        return self.config.get('sync')
+
+    @sync.setter
+    def sync_setter(self, value):
+        if value != self.config.get('sync'):
+            self.config['sync'] = value
 
     def __str__(self):
         return self.name
