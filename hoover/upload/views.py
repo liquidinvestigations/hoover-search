@@ -49,7 +49,10 @@ def upload(request, **kwargs):
     ([[https://github.com/alican/django-tus]]).
 
     The request is expected to include the following HTTP_UPLOAD_METADATA:
-    name: <filename>, collection: <collection_name>, dirpk: <target_directory_primary_key>
+    - name: filename
+    - collection: collection_name
+    - dirpk: target_directory_primary_key
+    - path: relative path of import, if set
 
     """
     if request.method == 'POST':
@@ -70,7 +73,7 @@ def upload(request, **kwargs):
             uploader=request.user,
             collection=models.Collection.objects.get(name=collection_name),
             directory_id=metadata.get('directory_pk'),
-            filename=metadata.get('filename'),
+            filename=metadata.get('relativePath') or metadata.get('filename'),
         )
         request.META['HTTP_UPLOAD_METADATA'] = (request.META['HTTP_UPLOAD_METADATA']
                                                 + ',upload_pk ' + b64_encode(str(upload.pk)))
@@ -111,6 +114,8 @@ def parse_metadata(metadata):
         elif key.startswith('dirpk'):
             directory_str = base64.b64decode(value).decode('ascii')
             parsed_metadata['directory_pk'] = parse_directory_id(directory_str)
+        elif key.startswith('relativePath'):
+            parsed_metadata['relativePath'] = base64.b64decode(value).decode('utf-8')
     return parsed_metadata
 
 

@@ -23,7 +23,7 @@ def move_file(sender, **kwargs):
     Takes the filename and the collection name from the signals kwargs and
     moves the file accordingly.
     """
-    orig_filename = kwargs.get('metadata').get('name')
+    orig_filename = kwargs.get('metadata').get('relativePath') or kwargs.get('metadata').get('name')
     collection_name = kwargs.get('metadata').get('collection')
     directory_pk_raw = kwargs.get('metadata').get('dirpk')
     directory_pk = int(parse_directory_id(directory_pk_raw))
