@@ -19,12 +19,6 @@ class CollectionCreateForm(forms.ModelForm):
 
 
 class CollectionAdmin(admin.ModelAdmin):
-    list_display = ['__str__', 'count', 'user_access_list', 'group_access_list',
-                    'uploaders_access_list', 'group_upload_access_list',
-                    'group_access_list', 'public', 'writeable', 'avg_search_time',
-                    'avg_batch_time',
-                    'process', 'progress', 'sync']
-    filter_horizontal = ['users', 'groups', 'uploader_users', 'uploader_groups']
     actions = [
         'make_collection_writeable',
         'make_collection_not_writeable',
@@ -76,6 +70,13 @@ class CollectionAdmin(admin.ModelAdmin):
             item.config['sync'] = False
             item.save()
 
+    list_display = ['__str__', 'count', 'user_access_list', 'group_access_list',
+                    'uploaders_access_list', 'group_upload_access_list',
+                    'group_access_list', 'public', 'writeable', 'avg_search_time',
+                    'avg_batch_time',
+                    'process', 'progress', 'sync']
+    filter_horizontal = ['users', 'groups', 'uploader_users', 'uploader_groups']
+
     def get_readonly_fields(self, request, obj=None):
         if obj:
             return ['name', 'index', 'process', 'progress', 'sync', 'config', 'stats']
@@ -90,7 +91,7 @@ class CollectionAdmin(admin.ModelAdmin):
                 'users', 'groups',
                 'uploader_users', 'uploader_groups',
                 'process', 'progress', 'sync',
-                'config',
+                'config', 'stats',
             ]
         else:
             return ['name', 'title']

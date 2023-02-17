@@ -1,3 +1,4 @@
+import re
 import uuid
 from datetime import timedelta
 import logging
@@ -25,8 +26,7 @@ def _get_collection_loader(name):
 
 
 def _is_valid_collection_name(name):
-    # TODO: FIXME: get regex
-    return True
+    return re.match(r'^[a-zA-Z0-9-_]+$', name)
 
 
 class Collection(models.Model):
@@ -60,6 +60,10 @@ class Collection(models.Model):
             self.title = self.name
         if not self.index:
             self.index = self.name
+        if not _is_valid_collection_name(self.name):
+            raise RuntimeError('collection name invalid: ' + self.name)
+        if not _is_valid_collection_name(self.index):
+            raise RuntimeError('collection index name invalid: ' + self.index)
         save_result = super().save(*args, **kwargs)
         self._send_collection_to_snoop()
         return save_result
@@ -70,7 +74,7 @@ class Collection(models.Model):
             log.warning('no config data to send to snoop!')
             return
         try:
-            url = settings.SNOOP_BASE_URL + f'/collections/{collection_name}/write_settings'  # noqa: E501
+            url = settings.SNOOP_BASE_URL + f'/collections/{self.name}/write_settings'  # noqa: E501
             requests.post(url, json=dict(self.config))
         except Exception as e:
             log.exception(e)
