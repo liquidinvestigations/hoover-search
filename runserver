@@ -12,15 +12,23 @@ if [[ "$DEBUG" == "true" ]]; then
 	    --access-logfile '-' \
 	    --error-logfile '-' \
 	    --log-level 'info' \
-	    --threads 20 \
-	    --timeout 600 \
+          --worker-class sync \
+           --workers 30 \
+           --threads 1 \
+           --max-requests 1 \
+           --keep-alive 60 \
+           --timeout 600 \
  	 -b 0.0.0.0:8000 \
  hoover.site.wsgi:application
 else
 	exec gunicorn \
 	    --error-logfile '-' \
-	 --threads 20 \
-	  --timeout 600 \
+          --worker-class sync \
+           --workers 30 \
+           --threads 1 \
+           --max-requests 1 \
+           --keep-alive 60 \
+           --timeout 600 \
 	 -b 0.0.0.0:8000 \
  hoover.site.wsgi:application
 fi
