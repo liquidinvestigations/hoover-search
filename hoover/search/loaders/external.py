@@ -1,7 +1,12 @@
+import time
+import logging
+from urllib.parse import urljoin
+
 from django.http import HttpResponse, Http404
 from django.conf import settings
 import requests
-from urllib.parse import urljoin
+
+log = logging.getLogger(__name__)
 
 
 def get_json(url):
@@ -37,12 +42,25 @@ class Api:
 
 
 class Document:
+    RETRY_COUNT = 5
+    RETRY_INTERVAL_SEC = 1.0
 
     def __init__(self, loader, doc_id):
         self.loader = loader
         self.doc_id = doc_id
 
     def view(self, request, suffix):
+        for retry in range(1, self.RETRY_COUNT + 1):
+            try:
+                return self._view(request, suffix)
+            except Exception as e:
+                log.warning('upstream view failed, retry %s/%s: %s', retry, self.RETRY_COUNT, str(type(e)))
+                if retry >= self.RETRY_COUNT:
+                    raise e
+                else:
+                    time.sleep(self.RETRY_INTERVAL_SEC * retry)
+
+    def _view(self, request, suffix):
         url = self.loader.api.data_url(self.doc_id)
 
         if not suffix:
@@ -56,7 +74,8 @@ class Document:
         headers = {}
         if 'HTTP_RANGE' in request.META:
             headers = {'Range': request.headers['Range']}
-        data_resp = requests.get(url_with_suffix, params=request.GET, headers=headers)
+        data_resp = requests.get(
+            url_with_suffix, params=request.GET, headers=headers)
         if 200 <= data_resp.status_code < 300:
             resp = HttpResponse(data_resp.content,
                                 content_type=data_resp.headers['Content-Type'],
@@ -68,8 +87,8 @@ class Document:
         elif data_resp.status_code == 404:
             raise Http404
         else:
-            raise RuntimeError("Unexpected response {!r} for {!r}"
-                               .format(data_resp, url_with_suffix))
+            raise RuntimeError(
+                "Unexpected response {!r} for {!r}".format(data_resp, url_with_suffix))
 
 
 class Loader:
