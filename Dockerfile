@@ -32,4 +32,9 @@ RUN set -e \
 
 RUN git config --global --add safe.directory "*"
 
+ENV GUNICORN_WORKER_CLASS=sync
+ENV GUNICORN_WORKERS=2
+ENV GUNICORN_THREADS=1
+ENV GUNICORN_MAX_REQUESTS=1
+
 CMD ./runserver
