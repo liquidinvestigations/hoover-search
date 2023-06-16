@@ -2,10 +2,6 @@
 
 /wait
 
-./manage.py migrate
-./manage.py healthcheck
-./manage.py synccollections "$SNOOP_COLLECTIONS"
-
 if [[ "$DEBUG" == "true" ]]; then
 	    # --max-requests 1 \  # poor man's autoreload
 	  exec gunicorn --reload \
