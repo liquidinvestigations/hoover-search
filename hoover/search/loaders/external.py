@@ -9,12 +9,16 @@ import requests
 log = logging.getLogger(__name__)
 
 
-def get_json(url):
-    resp = requests.get(url)
-    if resp.status_code != 200:
-        raise RuntimeError("Unexpected response from {}: {!r}"
-                           .format(url, resp))
-    return resp.json()
+def get_json(url, retries=5, retry_delay_sec=.5):
+    """Gets JSON content using requests.get. Tries a few times to get a 200 OK response."""
+
+    for i in range(retries):
+        resp = requests.get(url)
+        if resp.status_code == 200:
+            return resp.json()
+        log.warning(f'HTTP {resp.status_code} for {url} (retrying {i+1}/{retries})')
+        time.sleep(retry_delay_sec)
+    raise RuntimeError(f"Unexpected HTTP {resp.status_code} response from {url}! Content: {resp.content[:2000]}")
 
 
 class Api:
