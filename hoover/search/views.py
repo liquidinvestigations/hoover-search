@@ -30,11 +30,11 @@ SEARCH_KEY = 'hoover.search.search'
 BATCH_KEY = 'hoover.search.batch_search'
 
 # keep results valid for this interval
-SEARCH_CACHE_AGE = timedelta(hours=12)
-BATCH_CACHE_AGE = timedelta(hours=48)
+SEARCH_CACHE_AGE = timedelta(minutes=15)
+BATCH_CACHE_AGE = timedelta(hours=12)
 
 # join refreshed/recent requests with
-SEARCH_CACHE_JOIN_RUNNING_MAX_AGE = timedelta(minutes=2)
+SEARCH_CACHE_JOIN_RUNNING_MAX_AGE = timedelta(minutes=3)
 BATCH_CACHE_JOIN_RUNNING_MAX_AGE = timedelta(minutes=15)
 
 # time to wait for celery task to finish
