@@ -180,3 +180,9 @@ TUS_EXISTING_FILE = 'error'  # Other options are: 'overwrite',  'error', 'rename
 
 # 5 MB in bytes, this needs to be higher than the chunksize of the tus client.
 DATA_UPLOAD_MAX_MEMORY_SIZE = 5 * 2**20
+
+if os.getenv('SENTRY_DSN'):
+    import sentry_sdk
+    SENTRY_DSN = os.getenv('SENTRY_DSN')
+    SENTRY_SAMPLE_RATE = float(os.getenv('SENTRY_SAMPLE_RATE', '1.0'))
+    sentry_sdk.init(dsn=SENTRY_DSN, traces_sample_rate=SENTRY_SAMPLE_RATE)
