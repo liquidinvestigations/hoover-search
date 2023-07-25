@@ -25,6 +25,7 @@ api_urlpatterns_v1 = [
     re_path('^async_batch/(?P<uuid>[0-9a-f-]+)$', views.async_batch_get, name='async_batch_get'),
     path('limits', views.limits, name='limits'),
     path('collections', views.collections, name='collections'),
+    path('nextcloud_collections', views.nextcloud_collections, name='nextcloud_collections'),
     path('collection_access/<collection_name>', views.collection_access, name='collection_access'),
     path('search_fields', views.search_fields, name='search_fields'),
     re_path(r'^doc/(?P<collection_name>[^/]+)/(?P<id>[^/]+)/tags(?P<suffix>.*)$', views.doc_tags),

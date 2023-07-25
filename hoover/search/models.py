@@ -378,3 +378,65 @@ class Upload(models.Model):
 
     poll_task = models.CharField(max_length=64, null=True)
     """The task id for the task that checks to processing status of the uploaded file."""
+
+
+class NextcloudDirectory(models.Model):
+    name = models.CharField(max_length=256)
+    path = models.CharField(max_length=512, unique=True)
+    modified = models.DateTimeField()
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.path
+
+
+class WebDAVPassword(models.Model):
+    password = models.CharField(max_length=256)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+
+
+class NextcloudCollection(models.Model):
+    directory = models.OneToOneField(NextcloudDirectory,
+                                     on_delete=models.CASCADE,
+                                     unique=True,
+                                     )
+
+    process = models.BooleanField(default=True)
+    sync = models.BooleanField(default=True)
+    ocr_languages = models.CharField(max_length=256, default='', blank=True)
+    max_result_window = models.IntegerField(default=100000)
+    pdf_preview_enabled = models.BooleanField(default=False)
+    thumbnail_generator_enabled = models.BooleanField(default=False)
+    image_classification_object_detection_enabled = models.BooleanField(default=False)
+    image_classification_classify_images_enabled = models.BooleanField(default=False)
+    nlp_language_detection_enabled = models.BooleanField(default=False)
+    nlp_fallback_language = models.CharField(default='en', max_length=256)
+    nlp_entity_extraction_enabled = models.BooleanField(default=False)
+    translation_enabled = models.BooleanField(default=False)
+    translation_target_languages = models.CharField(default='en', max_length=256)
+    translation_text_length_limit = models.IntegerField(default=400)
+    default_table_header = models.CharField(default='', max_length=512, blank=True)
+    explode_table_rows = models.BooleanField(default=False)
+    s3_blobs_address = models.CharField(default='', max_length=512, blank=True)
+    s3_blobs_access_key = models.CharField(default='', max_length=512, blank=True)
+    s3_blobs_secret_key = models.CharField(default='', max_length=512, blank=True)
+
+    @property
+    def url(self):
+        return self.directory.path
+
+    @property
+    def username(self):
+        return self.directory.user.get_username()
+
+    @property
+    def name(self):
+        return self.directory.name
+
+    @property
+    def password(self):
+        pw = WebDAVPassword.objects.get(user=self.directory.user)
+        return pw.password
+
+    def __str__(self):
+        return self.name

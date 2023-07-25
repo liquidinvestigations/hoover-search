@@ -56,6 +56,56 @@ class CollectionAdmin(admin.ModelAdmin):
         return False
 
 
+class NextcloudDirectoryAdmin(admin.ModelAdmin):
+    search_fields = ['name']
+
+
+class NextcloudCollectionForm(ModelForm):
+    class Meta:
+        model = models.NextcloudCollection
+        fields = [
+            'directory',
+            'process',
+            'sync',
+            'ocr_languages',
+            'max_result_window',
+            'pdf_preview_enabled',
+            'thumbnail_generator_enabled',
+            'image_classification_object_detection_enabled',
+            'image_classification_classify_images_enabled',
+            'nlp_language_detection_enabled',
+            'nlp_fallback_language',
+            'nlp_entity_extraction_enabled',
+            'translation_enabled',
+            'translation_target_languages',
+            'translation_text_length_limit',
+            'default_table_header',
+            'explode_table_rows',
+            's3_blobs_address',
+            's3_blobs_access_key',
+            's3_blobs_secret_key',
+        ]
+
+
+class NextcloudCollectionAdmin(admin.ModelAdmin):
+    form = NextcloudCollectionForm
+    autocomplete_fields = ['directory']
+    list_display = [
+        'name',
+        'password',
+        'username',
+    ]
+
+    def username(self, obj):
+        return obj.username
+
+    def name(self, obj):
+        return obj.name
+
+    def password(self, obj):
+        return obj.password
+
+
 class GroupAdminForm(ModelForm):
     class Meta:
         model = Group
@@ -96,8 +146,14 @@ class ProfileInline(admin.StackedInline):
     list_display = ('user', 'uuid', 'preferences')
 
 
+class WebDAVPasswordInline(admin.StackedInline):  # You can use TabularInline as an alternative
+    model = models.WebDAVPassword
+    can_delete = False
+
+
 class HooverUserAdmin(UserAdmin):
-    inlines = (ProfileInline,)
+    inlines = (ProfileInline,
+               WebDAVPasswordInline,)
     actions = []
     fieldsets = (
         ('Personal info', {'fields': ('username', 'first_name', 'last_name', 'email')}),
@@ -198,6 +254,8 @@ class HooverUserAdmin(UserAdmin):
 
 admin_site = HooverAdminSite(name='hoover-admin')
 admin_site.register(models.Collection, CollectionAdmin)
+admin_site.register(models.NextcloudCollection, NextcloudCollectionAdmin)
+admin_site.register(models.NextcloudDirectory, NextcloudDirectoryAdmin)
 admin_site.register(Group, HooverGroupAdmin)
 admin_site.register(User, HooverUserAdmin)
 

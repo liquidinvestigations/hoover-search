@@ -10,6 +10,13 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 
 HOSTNAME = os.environ.get('HOOVER_HOSTNAME', 'example.org')
 
+SNOOP_HOST = os.environ.get('SNOOP_HOST')
+
+ALLOWED_HOSTS = [
+    SNOOP_HOST,
+    HOSTNAME,
+]
+
 
 def bool_env(value):
     return (value or '').lower() in ['on', 'true']
@@ -54,6 +61,7 @@ HOOVER_TITLE = os.environ.get('HOOVER_TITLE', 'Hoover')
 HOOVER_LIQUID_TITLE = os.environ.get('HOOVER_LIQUID_TITLE', 'Liquid')
 HOOVER_LIQUID_URL = os.environ.get('HOOVER_LIQUID_URL', 'http://liquid')
 HOOVER_HYPOTHESIS_EMBED = os.environ.get('HOOVER_HYPOTHESIS_EMBED')
+HOOVER_NEXTCLOUD_URL = os.environ.get('HOOVER_NEXTCLOUD_URL')
 
 DEBUG_WAIT_PER_COLLECTION = int(os.environ.get('DEBUG_WAIT_PER_COLLECTION', 0))
 
