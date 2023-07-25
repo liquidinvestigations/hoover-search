@@ -12,13 +12,14 @@ from django.views.decorators.csrf import csrf_exempt
 from django.urls import reverse
 from django.urls.exceptions import NoReverseMatch
 from django.conf import settings
+from django.core import serializers
 from django.views.defaults import permission_denied
 from django.core.exceptions import PermissionDenied
 from django.utils import timezone
 from django.views.decorators.cache import cache_control, never_cache
 from . import es
 from . import models
-from .models import Collection
+from .models import Collection, NextcloudCollection
 from . import signals
 from . import celery as cel
 import requests
@@ -71,6 +72,84 @@ def collections_acl(user, collections_arg, empty_ok=False):
         msg = 'collections not found or access denied: ' + str(collections_arg)
         raise PermissionDenied(msg)
     return approved
+
+
+def ping(request):
+    Collection.objects.count()
+    return HttpResponse('ok\n')
+
+
+def home(request):
+    return render(request, 'home.html')
+
+
+def collections(request):
+    return JsonResponse([
+        {'name': col.name, 'title': col.title, 'stats': col.get_meta()['stats']}
+        for col in Collection.objects_for_user(request.user)
+    ], safe=False)
+
+
+def nextcloud_collections(request):
+    return JsonResponse([{
+        'name': col.name,
+        'url': col.url,
+        'mount_path': col.mount_path,
+        'username': col.username,
+        'password': col.password,
+    } for col in NextcloudCollection.objects.all()], safe=False)
+
+
+def search_fields(request):
+    assert request.user
+    assert request.user.username
+    return JsonResponse({
+        'fields': es.get_fields(request.user.profile.uuid),
+    }, safe=False)
+
+
+@cel.app.task(bind=True, serializer='json', name=SEARCH_KEY, routing_key=SEARCH_KEY)
+@tracer.wrap_function()
+def _search(self, *args, **kwargs):
+    """Background task that actually runs the search through elasticsearch and annotates results.
+
+    The result is stored in the `SearchResultCache` table as it becomes available.
+    """
+    try:
+        cache = models.SearchResultCache.objects.get(task_id=self.request.id)
+        cache.date_started = timezone.now()
+        cache.save()
+
+        try:
+            res, counts = es.search(**kwargs)
+            res['status'] = 'ok'
+        except es.SearchError as e:
+            return JsonErrorResponse(e.reason)
+
+        else:
+            from .es import _index_id
+
+            def col_name(id):
+                return Collection.objects.get(id=id).name
+
+            for item in res['hits']['hits']:
+                name = col_name(_index_id(item['_index']))
+                url = 'doc/{}/{}'.format(name, item['_id'])
+                item['_collection'] = name
+                item['_url_rel'] = url
+            res['count_by_index'] = {
+                col_name(i): counts[i]
+                for i in counts
+            }
+        res = _sanitize_utf8_values(res)
+        cache.result = res
+        cache.date_finished = timezone.now()
+        cache.save()
+        return True
+    except Exception as e:
+        log.error('_search celery task execution failed!')
+        log.exception(e)
+        raise
 
 
 def _sanitize_utf8_values(value):

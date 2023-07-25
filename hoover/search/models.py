@@ -378,3 +378,11 @@ class Upload(models.Model):
 
     poll_task = models.CharField(max_length=64, null=True)
     """The task id for the task that checks to processing status of the uploaded file."""
+
+
+class NextcloudCollection(models.Model):
+    name = models.CharField(max_length=256, unique=True)
+    url = models.CharField(max_length=256)
+    mount_path = models.CharField(max_length=256)
+    username = models.CharField(max_length=256)
+    password = models.CharField(max_length=256)
