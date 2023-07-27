@@ -24,6 +24,7 @@ COPY .git .
 ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.3.0/wait /wait
 
 ENV DJANGO_SETTINGS_MODULE hoover.site.settings.docker_local
+ENV OTEL_TRACES_EXPORTER=none OTEL_METRICS_EXPORTER=none OTEL_LOGS_EXPORTER=none
 
 RUN set -e \
  && SECRET_KEY=temp HOOVER_DB='postgresql://search:search@search-pg:5432/search' ./manage.py downloadassets \

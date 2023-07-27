@@ -14,7 +14,6 @@ requests = "*"
 gunicorn = "*"
 django-otp = "*"
 whitenoise = "*"
-Django = "*"
 django-ratelimit = "*"
 PyYAML = "*"
 logzero = "*"
@@ -32,15 +31,11 @@ celery = "*"
 pytest-celery = '*'
 django-celery-results = "*"
 pytest-mock = "*"
-uptrace = "*"
-opentelemetry-instrumentation-django = "*"
-opentelemetry-instrumentation-psycopg2 = "*"
-opentelemetry-instrumentation-logging = "*"
-opentelemetry-instrumentation-celery = "*"
-opentelemetry-instrumentation-requests = "*"
-opentelemetry-instrumentation-elasticsearch = "*"
 django-tus = {editable = true, ref = "25e91e2ac2a5f9d91ac843af2e2054819e778d7d", git = "https://github.com/liquidinvestigations/django-tus.git"}
 sentry-sdk = {extras = ["django"], version = "*"}
+opentelemetry-distro = "*"
+opentelemetry-exporter-otlp = "*"
+django = "==3.*"
 
 [requires]
 python_version = "3.9"
