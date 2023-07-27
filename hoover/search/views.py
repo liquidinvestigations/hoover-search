@@ -12,7 +12,6 @@ from django.views.decorators.csrf import csrf_exempt
 from django.urls import reverse
 from django.urls.exceptions import NoReverseMatch
 from django.conf import settings
-from django.core import serializers
 from django.views.defaults import permission_denied
 from django.core.exceptions import PermissionDenied
 from django.utils import timezone
