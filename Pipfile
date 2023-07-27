@@ -14,7 +14,6 @@ requests = "*"
 gunicorn = "*"
 django-otp = "*"
 whitenoise = "*"
-Django = "*"
 django-ratelimit = "*"
 PyYAML = "*"
 logzero = "*"
@@ -36,6 +35,7 @@ django-tus = {editable = true, ref = "25e91e2ac2a5f9d91ac843af2e2054819e778d7d",
 sentry-sdk = {extras = ["django"], version = "*"}
 opentelemetry-distro = "*"
 opentelemetry-exporter-otlp = "*"
+django = "==3.*"
 
 [requires]
 python_version = "3.9"
