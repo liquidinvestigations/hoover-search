@@ -19,8 +19,8 @@ from . import signals
 from . import celery as cel
 import requests
 import re
-from ratelimit.decorators import ratelimit
-from ratelimit.exceptions import Ratelimited
+from django_ratelimit.decorators import ratelimit
+from django_ratelimit.exceptions import Ratelimited
 
 from hoover.search.tracing import Tracer
 tracer = Tracer(__name__)
