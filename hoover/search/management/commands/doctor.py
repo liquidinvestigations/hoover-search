@@ -1,4 +1,3 @@
-from pathlib import Path
 import re
 import sys
 import urllib.request
@@ -28,7 +27,6 @@ class Command(BaseCommand):
             ('python', self.check_python, False),
             ('database', self.check_database, False),
             ('elasticsearch', self.check_es, False),
-            ('events_dir', self.check_events_dir, settings.HOOVER_EVENTS_DIR is None)
         ]
 
         checkers += self.get_collection_checkers()
@@ -109,13 +107,6 @@ class Command(BaseCommand):
         if version[0] != 2:
             self.print_error("elasticsearch is version {}, but".format(version))
             self.print_error("Hoover needs elasticsearch to version 2.*.")
-            return False
-        return True
-
-    def check_events_dir(self):
-        events_dir = settings.HOOVER_EVENTS_DIR
-        if not Path(events_dir).exists() or not Path(events_dir).is_dir():
-            self.print_error("The path supplied in HOOVER_EVENTS_DIR is not a valid folder.")
             return False
         return True
 
