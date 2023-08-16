@@ -33,6 +33,11 @@ RUN set -e \
 
 RUN git config --global --add safe.directory "*"
 
+RUN apt-get update -y && \
+        apt-get install -y pdftk &&  \
+        apt-get clean && \
+        rm -rf /var/lib/apt/lists/*
+
 ENV GUNICORN_WORKER_CLASS=sync
 ENV GUNICORN_WORKERS=2
 ENV GUNICORN_THREADS=1
