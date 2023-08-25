@@ -6,7 +6,7 @@ import urllib.parse
 from time import time
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, Http404, JsonResponse
-from django.core.exceptions import PermissionDenied
+from django.http import HttpResponseForbidden
 from django.views.decorators.csrf import csrf_exempt
 from django.urls import reverse
 from django.urls.exceptions import NoReverseMatch
@@ -378,7 +378,7 @@ def doc_tags(request, collection_name, id, suffix):
 
     username = request.user.username
     if not username:
-        raise PermissionDenied
+        return HttpResponseForbidden()
     user_uuid = request.user.profile.uuid
     assert user_uuid, 'user has no tags profile uuid!'
     url = settings.SNOOP_BASE_URL + f"/collections/{collection_name}/{id}/tags/{username}/{user_uuid}{suffix}"

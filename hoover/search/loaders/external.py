@@ -2,7 +2,7 @@ import time
 import logging
 from urllib.parse import urljoin
 
-from django.http import HttpResponse, Http404
+from django.http import Http404, StreamingHttpResponse
 from django.conf import settings
 import requests
 
@@ -66,24 +66,24 @@ class Document:
 
     def _view(self, request, suffix):
         url = self.loader.api.data_url(self.doc_id)
+        CHUNK_SIZE = 2**16  # 64k
 
         if not suffix:
             raise Http404
 
-        # fake filename, prevents url encoding errors
-        # if suffix.startswith('/raw/'):
-        #     suffix = '/raw/data'
-
         url_with_suffix = urljoin(url, suffix[1:])
-        headers = {}
-        if 'HTTP_RANGE' in request.META:
-            headers = {'Range': request.headers['Range']}
         data_resp = requests.get(
-            url_with_suffix, params=request.GET, headers=headers)
+            url_with_suffix,
+            params=request.GET,
+            headers=request.headers,
+            stream=True,
+        )
         if 200 <= data_resp.status_code < 300:
-            resp = HttpResponse(data_resp.content,
-                                content_type=data_resp.headers['Content-Type'],
-                                status=data_resp.status_code)
+            resp = StreamingHttpResponse(
+                data_resp.iter_content(chunk_size=CHUNK_SIZE),
+                content_type=data_resp.headers['Content-Type'],
+                status=data_resp.status_code,
+            )
             for k, v in data_resp.headers.items():
                 if k in settings.SNOOP_FORWARD_HEADERS:
                     resp[k] = v

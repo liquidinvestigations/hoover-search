@@ -30,6 +30,7 @@ MIDDLEWARE = [
     'hoover.search.middleware.NoReferral',
     'hoover.search.middleware.NoCache',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    'hoover.search.middleware.PdfPageSplitterMiddleware',
 ]
 
 ROOT_URLCONF = 'hoover.site.urls'
@@ -162,7 +163,9 @@ HOOVER_CELERY_BATCH_QUEUES = ['hoover.search.batch_search']
 SEARCH_WORKER_COUNT = 1
 CELERY_BROKER_URL = os.getenv('SEARCH_AMQP_URL')
 
-SNOOP_FORWARD_HEADERS = ['Content-Disposition', 'Accept-Ranges', 'Content-Range', 'Content-Length']
+SNOOP_FORWARD_HEADERS = [
+    'Content-Disposition', 'Accept-Ranges', 'Content-Range', 'Content-Length', 'Content-Type',
+    'Cache-Control', 'Date', 'Expires', 'Vary', "ETag"]
 
 SNOOP_COLLECTION_DIR = Path(os.getenv('SNOOP_COLLECTION_DIR', '/opt/hoover/collections'))
 
