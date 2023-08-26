@@ -174,7 +174,10 @@ def collection_access(request, collection_name):
     Returns a JsonResponse with usernames and the reasons why that user can access
     the collection. The reasons can be individual access or access through a group.
     '''
-    col = collections_acl(request.user, [collection_name])[0]
+    col = list(collections_acl(request.user, [collection_name]))
+    if not col:
+        raise Http404
+    col = col[0]
     user_list = {}
     for u in col.users.all():
         user_list[u.username] = 'has individual access'

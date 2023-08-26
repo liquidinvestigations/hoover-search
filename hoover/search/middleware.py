@@ -108,6 +108,7 @@ class PdfToolsMiddleware:
     HEADER_RANGE = 'X-Hoover-PDF-Split-Page-Range'
     HEADER_PDF_INFO = 'X-Hoover-PDF-Info'
     HEADER_PDF_EXTRACT_TEXT = 'X-Hoover-PDF-Extract-Text'
+    HEADER_PDF_EXTRACT_TEXT_METHOD = 'X-Hoover-PDF-Extract-Text-Method'
     HEADER_IGNORED = 'X-Hoover-PDF-Ignored'
 
     def __init__(self, get_response):
@@ -118,6 +119,7 @@ class PdfToolsMiddleware:
         get_info = request.GET.get(self.HEADER_PDF_INFO, '')
         get_range = request.GET.get(self.HEADER_RANGE, '')
         get_text = request.GET.get(self.HEADER_PDF_EXTRACT_TEXT, '')
+        get_text_method = request.GET.get(self.HEADER_PDF_EXTRACT_TEXT_METHOD, '')
 
         if (
             request.method != 'GET'
@@ -135,6 +137,8 @@ class PdfToolsMiddleware:
             del request.GET[self.HEADER_RANGE]
         if get_text:
             del request.GET[self.HEADER_PDF_EXTRACT_TEXT]
+        if get_text_method:
+            del request.GET[self.HEADER_PDF_EXTRACT_TEXT_METHOD]
 
         # pop the request If-Modified-Since and If-None-Match
         # so the upstream service doesn't return 304 -- we will
@@ -181,13 +185,8 @@ class PdfToolsMiddleware:
 
         log.warning('PDF tools request STARTING... ')
 
-        # handle PDF info
-        if get_info:
-            response.streaming_content = get_pdf_info(response.streaming_content)
-            response['content-type'] = 'text/plain'
-            response[self.HEADER_PDF_INFO] = '1'
         # handle range query
-        elif get_range:
+        if get_range:
             # parse the range to make sure it's 1-100 and not some bash injection
             page_start, page_end = get_range.split('-')
             page_start, page_end = int(page_start), int(page_end)
@@ -197,9 +196,13 @@ class PdfToolsMiddleware:
             response[self.HEADER_RANGE] = _range
             response.streaming_content = split_pdf_file(response.streaming_content, _range)
 
-            if get_text:
-                response.streaming_content = pdf_extract_text(response.streaming_content)
-                response[self.HEADER_PDF_EXTRACT_TEXT] = '1'
+        if get_info:
+            response.streaming_content = get_pdf_info(response.streaming_content)
+            response['content-type'] = 'application/json'
+            response[self.HEADER_PDF_INFO] = '1'
+        elif get_text:
+            response.streaming_content = pdf_extract_text(response.streaming_content, get_text_method)
+            response[self.HEADER_PDF_EXTRACT_TEXT] = '1'
 
         del response.headers['Content-Length']
         del response.headers['Content-Disposition']
