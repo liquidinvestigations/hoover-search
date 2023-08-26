@@ -6,9 +6,10 @@ from django.utils.deprecation import MiddlewareMixin
 from django.conf import settings
 from django.contrib.auth.middleware import RemoteUserMiddleware
 from django.contrib.contenttypes.models import ContentType
+from django.http import HttpResponseNotModified
 
 from hoover.search.models import Profile, Collection
-from hoover.search.pdf_tools import split_pdf_file
+from hoover.search.pdf_tools import split_pdf_file, get_pdf_info, pdf_extract_text
 from django.utils.cache import patch_vary_headers
 
 log = logging.getLogger(__name__)
@@ -86,11 +87,28 @@ class AuthproxyUserMiddleware(RemoteUserMiddleware):
             Profile.objects.get_or_create(user=user)
 
 
-class PdfPageSplitterMiddleware:
+class PdfHeadersMiddleware:
+    """Put Vary headers for the browser to use these as part of the cache key"""
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        if response.headers.get('Content-Type') == 'application/pdf':
+            patch_vary_headers(response, [
+                'Cookie', 'Range',
+                PdfToolsMiddleware.HEADER_PDF_INFO,
+                PdfToolsMiddleware.HEADER_RANGE,
+                PdfToolsMiddleware.HEADER_PDF_EXTRACT_TEXT,
+            ])
+        return response
+
+
+class PdfToolsMiddleware:
     HEADER_RANGE = 'X-Hoover-PDF-Split-Page-Range'
     HEADER_PDF_INFO = 'X-Hoover-PDF-Info'
     HEADER_PDF_EXTRACT_TEXT = 'X-Hoover-PDF-Extract-Text'
-    HEADER_IGNORED = 'X-Hoover-PDF-Bad-Request-Or-Response'
+    HEADER_IGNORED = 'X-Hoover-PDF-Ignored'
 
     def __init__(self, get_response):
         self.get_response = get_response
@@ -101,49 +119,70 @@ class PdfPageSplitterMiddleware:
             request.headers.get(self.HEADER_RANGE)
             or request.headers.get(self.HEADER_PDF_INFO)
             or request.headers.get(self.HEADER_PDF_EXTRACT_TEXT)
+            or request.method != 'GET'
         ):
             return self.get_response(request)
 
-        # fetch request from upstream
+        # pop the request If-Modified-Since and If-None-Match
+        # so the upstream service doesn't return 304 -- we will
+        if request.headers.get('If-Modified-Since'):
+            req_cache_date = request.headers['If-Modified-Since']
+            del request.headers['If-Modified-Since']
+        else:
+            req_cache_date = None
+
+        if request.headers.get('If-None-Match'):
+            req_cache_etag = request.headers['If-None-Match']
+            del request.headers['If-None-Match']
+        else:
+            req_cache_etag = None
+
         response = self.get_response(request)
+        response['Etag'] = (
+            response.headers.get('Etag', '')
+            + ':' + request.headers.get(self.HEADER_RANGE, '')
+            + ':' + request.headers.get(self.HEADER_PDF_INFO, '')
+            + ':' + request.headers.get(self.HEADER_PDF_EXTRACT_TEXT, '')
+        )
+        if (
+            req_cache_date and req_cache_etag
+            and req_cache_date == response.headers.get('Last-Modified')
+            and req_cache_etag == response.headers.get('Etag')
+            and 'no-cache' not in request.headers.get('Cache-Control', '')
+            and 'no-cache' not in request.headers.get('Pragma', '')
+        ):
+            return HttpResponseNotModified()
+
         # mark failure in case of unsupported operation
         if (
             request.headers.get('range')
-            or request.method != 'GET'
             or response.status_code != 200
             or response.headers.get('Content-Type') != 'application/pdf'
         ):
+            response = self.get_response(request)
             response[self.HEADER_IGNORED] = '1'
             return response
 
         assert response.streaming, 'pdf split - can only be used with streaming repsonses'
         assert not response.is_async, 'pdf split - upstream async not supported'
-        patch_vary_headers(response, [
-            'Cookie', 'Range',
-            self.HEADER_RANGE, self.HEADER_PDF_INFO, self.HEADER_PDF_EXTRACT_TEXT],
-        )
-        response['ETag'] = (
-            (response.headers.get('ETag') or '')
-            + ':' + request.headers.get(self.HEADER_RANGE)
-            + ':' + request.headers.get(self.HEADER_PDF_INFO)
-            + ':' + request.headers.get(self.HEADER_PDF_EXTRACT_TEXT)
-        )
 
+        # handle PDF info
+        if request.headers.get(self.HEADER_PDF_INFO):
+            response.streaming_content = get_pdf_info(response.streaming_content)
+            response['content-type'] = 'application/json'
+            response[self.HEADER_PDF_INFO] = '1'
         # handle range query
-        if request.headers.get(self.HEADER_RANGE):
+        elif request.headers.get(self.HEADER_RANGE):
             # parse the range to make sure it's 1-100 and not some bash injection
             page_start, page_end = request.headers.get(self.HEADER_RANGE).split('-')
             page_start, page_end = int(page_start), int(page_end)
             assert page_start > 0 and page_end > 0 and page_end > page_start, 'bad page interval'
             _range = f'{page_start}-{page_end}'
 
-            path = request.get_full_path()
-            username = request.user.username or '__anonymous_user__'
-            key = f'split-pages user={username} path={path} range={_range}'
-            log.warning('PDF SPLITTING %s', key)
-
-            # TODO return from cache here using the key
             response[self.HEADER_RANGE] = _range
             response.streaming_content = split_pdf_file(response.streaming_content, _range)
-        # TODO other casees - pdf info, pdf extract text
+
+            if request.headers.get(self.HEADER_PDF_EXTRACT_TEXT):
+                response.streaming_content = pdf_extract_text(response.streaming_content)
+                response[self.HEADER_PDF_EXTRACT_TEXT] = '1'
         return response

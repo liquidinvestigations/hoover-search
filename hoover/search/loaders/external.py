@@ -78,10 +78,9 @@ class Document:
             headers=request.headers,
             stream=True,
         )
-        if 200 <= data_resp.status_code < 300:
+        if 200 <= data_resp.status_code < 400:
             resp = StreamingHttpResponse(
                 data_resp.iter_content(chunk_size=CHUNK_SIZE),
-                content_type=data_resp.headers['Content-Type'],
                 status=data_resp.status_code,
             )
             for k, v in data_resp.headers.items():
