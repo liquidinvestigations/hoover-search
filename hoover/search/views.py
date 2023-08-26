@@ -103,17 +103,27 @@ def rates(group, request):
 #                                BASIC VIEWS
 # ================================================================================
 
+# these views don't have any user data and can be cached on the browser side for
+# a minute or two, to limit the request count and browsing lag because of these 5-6
+# new connections every tab
+
+BASIC_VIEW_CACHE_OPT = dict(
+    private=True,
+    max_age=30,
+    stale_while_revalidate=30,
+)
+
 def ping(request):
     Collection.objects.count()
     return HttpResponse('ok\n')
 
 
-@cache_control(private=True, max_age=120)
+@cache_control(**BASIC_VIEW_CACHE_OPT)
 def home(request):
     return render(request, 'home.html')
 
 
-@cache_control(private=True, max_age=120)
+@cache_control(**BASIC_VIEW_CACHE_OPT)
 @ratelimit(key='user', rate=rates, block=True)
 def collections(request):
     return JsonResponse([
@@ -122,7 +132,7 @@ def collections(request):
     ], safe=False)
 
 
-@cache_control(private=True, max_age=120)
+@cache_control(**BASIC_VIEW_CACHE_OPT)
 @ratelimit(key='user', rate=rates, block=True)
 def search_fields(request):
     assert request.user
@@ -132,7 +142,7 @@ def search_fields(request):
     }, safe=False)
 
 
-@cache_control(private=True, max_age=120)
+@cache_control(**BASIC_VIEW_CACHE_OPT)
 @ratelimit(key='user', rate=rates, block=True)
 def is_staff(request):
     if request.user.is_staff:
@@ -141,7 +151,7 @@ def is_staff(request):
         return JsonResponse({'is_staff': False}, status=403)
 
 
-@cache_control(private=True, max_age=120)
+@cache_control(**BASIC_VIEW_CACHE_OPT)
 @ratelimit(key='user', rate=rates, block=True)
 def limits(request):
     """ Get rate limits """
@@ -155,7 +165,7 @@ def limits(request):
     })
 
 
-@never_cache
+@cache_control(**BASIC_VIEW_CACHE_OPT)
 @ratelimit(key='user', rate=rates, block=True)
 def collection_access(request, collection_name):
     '''View that returns a list of users who can access a collection.
@@ -178,7 +188,7 @@ def collection_access(request, collection_name):
 
 
 @tracer.wrap_function()
-@never_cache
+@cache_control(**BASIC_VIEW_CACHE_OPT)
 @ratelimit(key='user', rate=rates, block=True)
 def whoami(request):
     if settings.HOOVER_AUTHPROXY:
@@ -220,6 +230,7 @@ def whoami(request):
 #                                SEARCH VIEWS
 # ================================================================================
 
+# These views shouldn't be cached - we have our own caching mechanism.
 
 @tracer.wrap_function()
 @csrf_exempt
@@ -321,7 +332,7 @@ def async_search(request):
 
 @tracer.wrap_function()
 @csrf_exempt
-@cache_control(private=True, max_age=int(SEARCH_CACHE_AGE.total_seconds()))
+@never_cache
 @ratelimit(key='user', rate=rates, block=True)
 def async_search_get(request, uuid):
     search_result = models.SearchResultCache.objects.get(task_id=uuid)
@@ -507,7 +518,7 @@ def async_batch(request):
 
 @tracer.wrap_function()
 @csrf_exempt
-@cache_control(private=True, max_age=int(BATCH_CACHE_AGE.total_seconds()))
+@never_cache
 @ratelimit(key='user', rate=rates, block=True)
 def async_batch_get(request, uuid):
     batch_result = models.BatchResultCache.objects.get(task_id=uuid)
