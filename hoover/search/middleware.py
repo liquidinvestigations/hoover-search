@@ -115,13 +115,26 @@ class PdfToolsMiddleware:
 
     def __call__(self, request):
         # pass over unrelated requests
-        if not (
-            request.headers.get(self.HEADER_RANGE)
-            or request.headers.get(self.HEADER_PDF_INFO)
-            or request.headers.get(self.HEADER_PDF_EXTRACT_TEXT)
-            or request.method != 'GET'
+        get_info = request.GET.get(self.HEADER_PDF_INFO, '')
+        get_range = request.GET.get(self.HEADER_RANGE, '')
+        get_text = request.GET.get(self.HEADER_PDF_EXTRACT_TEXT, '')
+
+        if (
+            request.method != 'GET'
+            or not (
+                get_info or get_range or get_text
+            )
         ):
             return self.get_response(request)
+
+        # pop off the GET params read above
+        request.GET = request.GET.copy()
+        if get_info:
+            del request.GET[self.HEADER_PDF_INFO]
+        if get_range:
+            del request.GET[self.HEADER_RANGE]
+        if get_text:
+            del request.GET[self.HEADER_PDF_EXTRACT_TEXT]
 
         # pop the request If-Modified-Since and If-None-Match
         # so the upstream service doesn't return 304 -- we will
@@ -140,9 +153,9 @@ class PdfToolsMiddleware:
         response = self.get_response(request)
         response['Etag'] = (
             response.headers.get('Etag', '')
-            + ':' + request.headers.get(self.HEADER_RANGE, '')
-            + ':' + request.headers.get(self.HEADER_PDF_INFO, '')
-            + ':' + request.headers.get(self.HEADER_PDF_EXTRACT_TEXT, '')
+            + ':' + get_info
+            + ':' + get_range
+            + ':' + get_text
         )
         if (
             req_cache_date and req_cache_etag
@@ -164,17 +177,19 @@ class PdfToolsMiddleware:
             return response
 
         assert response.streaming, 'pdf split - can only be used with streaming repsonses'
-        assert not response.is_async, 'pdf split - upstream async not supported'
+        # assert not response.is_async, 'pdf split - upstream async not supported'
+
+        log.warning('PDF tools request STARTING... ')
 
         # handle PDF info
-        if request.headers.get(self.HEADER_PDF_INFO):
+        if get_info:
             response.streaming_content = get_pdf_info(response.streaming_content)
-            response['content-type'] = 'application/json'
+            response['content-type'] = 'text/plain'
             response[self.HEADER_PDF_INFO] = '1'
         # handle range query
-        elif request.headers.get(self.HEADER_RANGE):
+        elif get_range:
             # parse the range to make sure it's 1-100 and not some bash injection
-            page_start, page_end = request.headers.get(self.HEADER_RANGE).split('-')
+            page_start, page_end = get_range.split('-')
             page_start, page_end = int(page_start), int(page_end)
             assert page_start > 0 and page_end > 0 and page_end > page_start, 'bad page interval'
             _range = f'{page_start}-{page_end}'
@@ -182,7 +197,11 @@ class PdfToolsMiddleware:
             response[self.HEADER_RANGE] = _range
             response.streaming_content = split_pdf_file(response.streaming_content, _range)
 
-            if request.headers.get(self.HEADER_PDF_EXTRACT_TEXT):
+            if get_text:
                 response.streaming_content = pdf_extract_text(response.streaming_content)
                 response[self.HEADER_PDF_EXTRACT_TEXT] = '1'
+
+        del response.headers['Content-Length']
+        del response.headers['Content-Disposition']
+        del response.headers['Accept-Ranges']
         return response

@@ -2,17 +2,26 @@ FROM python:3.9
 ENV PYTHONUNBUFFERED 1
 
 RUN set -e \
- && echo 'deb http://deb.debian.org/debian stable non-free' >> /etc/apt/sources.list \
- && echo 'deb http://deb.debian.org/debian stable-updates non-free' >> /etc/apt/sources.list \
- && echo 'deb http://security.debian.org stable/updates non-free' >> /etc/apt/sources.list \
  && pip install pipenv \
  && mkdir -p /opt/hoover/search
+
+
+RUN set -e \
+ && apt-get update -y \
+ && apt-get install -y pdftk \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /opt/hoover/search
 
 ADD Pipfile Pipfile.lock ./
 RUN pipenv install --system --deploy --ignore-pipfile
-RUN mkdir /opt/hoover/src && mv /opt/hoover/search/src/django-tus /opt/hoover/src/django-tus
+
+RUN mkdir -p /opt/hoover/src/django-tus \
+ && cd /opt/hoover/src/django-tus \
+ && git clone "https://github.com/liquidinvestigations/django-tus.git" . \
+ && git checkout "25e91e2ac2a5f9d91ac843af2e2054819e778d7d"
+
 ENV PYTHONPATH "${PYTHONPATH}:/opt/hoover/src/django-tus"
 # global installs from git need a source folder
 # https://pip.pypa.io/en/stable/topics/vcs-support/#editable-vcs-installs
@@ -32,11 +41,6 @@ RUN set -e \
  && chmod +x /wait
 
 RUN git config --global --add safe.directory "*"
-
-RUN apt-get update -y && \
-        apt-get install -y pdftk &&  \
-        apt-get clean && \
-        rm -rf /var/lib/apt/lists/*
 
 ENV GUNICORN_WORKER_CLASS=sync
 ENV GUNICORN_WORKERS=2

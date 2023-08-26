@@ -113,6 +113,7 @@ BASIC_VIEW_CACHE_OPT = dict(
     stale_while_revalidate=30,
 )
 
+
 def ping(request):
     Collection.objects.count()
     return HttpResponse('ok\n')

@@ -31,7 +31,7 @@ celery = "*"
 pytest-celery = '*'
 django-celery-results = "*"
 pytest-mock = "*"
-django-tus = {editable = true, ref = "25e91e2ac2a5f9d91ac843af2e2054819e778d7d", git = "https://github.com/liquidinvestigations/django-tus.git"}
+django-tus = {ref = "25e91e2ac2a5f9d91ac843af2e2054819e778d7d", git = "https://github.com/liquidinvestigations/django-tus.git"}
 sentry-sdk = {extras = ["django"], version = "*"}
 opentelemetry-distro = "*"
 opentelemetry-exporter-otlp = "*"
