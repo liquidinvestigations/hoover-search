@@ -8,7 +8,7 @@ RUN set -e \
 
 RUN set -e \
  && apt-get update -y \
- && apt-get install -y pdftk poppler-utils ghostscript \
+ && apt-get install -y pdftk poppler-utils ghostscript nodejs npm \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 
