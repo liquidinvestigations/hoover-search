@@ -30,8 +30,6 @@ MIDDLEWARE = [
     'hoover.search.middleware.NoReferral',
     'hoover.search.middleware.NoCache',
     'whitenoise.middleware.WhiteNoiseMiddleware',
-    # 'hoover.search.middleware.PdfHeadersMiddleware',
-    'hoover.search.middleware.PdfToolsMiddleware',
 ]
 
 ROOT_URLCONF = 'hoover.site.urls'
