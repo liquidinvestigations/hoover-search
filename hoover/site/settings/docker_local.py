@@ -32,13 +32,6 @@ if bool_env(os.environ.get('HOOVER_AUTHPROXY')):
         'django.contrib.auth.backends.RemoteUserBackend',
     ]
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'search',
-    },
-}
-
 # heroku-style db config
 _db = os.environ['HOOVER_DB']
 dbm = re.match(

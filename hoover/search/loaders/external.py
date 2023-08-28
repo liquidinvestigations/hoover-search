@@ -72,10 +72,13 @@ class Document:
             raise Http404
 
         url_with_suffix = urljoin(url, suffix[1:])
+        headers = {}
+        if 'HTTP_RANGE' in request.META:
+            headers = {'Range': request.headers['Range']}
         data_resp = requests.get(
             url_with_suffix,
             params=request.GET,
-            headers=request.headers,
+            headers=headers,
             stream=True,
         )
         if 200 <= data_resp.status_code < 400:

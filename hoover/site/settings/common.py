@@ -93,6 +93,20 @@ LOGGING = {
 
 WSGI_APPLICATION = 'hoover.site.wsgi.application'
 
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'search',
+    },
+}
+
+# CACHES = {
+#     "default": {
+#         "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+#         "LOCATION": "cache_django_default",
+#     }
+# }
+
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
@@ -164,7 +178,8 @@ CELERY_BROKER_URL = os.getenv('SEARCH_AMQP_URL')
 
 SNOOP_FORWARD_HEADERS = [
     'Content-Disposition', 'Accept-Ranges', 'Content-Range', 'Content-Length', 'Content-Type',
-    'Cache-Control', 'Date', 'Last-Modified', 'Expires', 'Vary', "Etag"]
+    'Date', 'Last-Modified', 'Expires', 'Vary', "Etag"]
+# no Cache-Control -- upstream should have this one
 
 SNOOP_COLLECTION_DIR = Path(os.getenv('SNOOP_COLLECTION_DIR', '/opt/hoover/collections'))
 
