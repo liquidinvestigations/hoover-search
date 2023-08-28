@@ -114,6 +114,7 @@ BASIC_VIEW_CACHE_OPT = dict(
 )
 
 
+@cache_control(**BASIC_VIEW_CACHE_OPT)
 def ping(request):
     Collection.objects.count()
     return HttpResponse('ok\n')

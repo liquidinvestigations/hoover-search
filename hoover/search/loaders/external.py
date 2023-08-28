@@ -72,9 +72,11 @@ class Document:
             raise Http404
 
         url_with_suffix = urljoin(url, suffix[1:])
-        headers = {}
-        if 'HTTP_RANGE' in request.META:
-            headers = {'Range': request.headers['Range']}
+        headers = {
+            h: request.headers[h]
+            for h in settings.SNOOP_REQUEST_FORWARD_HEADERS
+            if h in request.headers
+        }
         data_resp = requests.get(
             url_with_suffix,
             params=request.GET,
@@ -87,7 +89,7 @@ class Document:
                 status=data_resp.status_code,
             )
             for k, v in data_resp.headers.items():
-                if k in settings.SNOOP_FORWARD_HEADERS:
+                if k in settings.SNOOP_RESPONSE_FORWARD_HEADERS:
                     resp[k] = v
             return resp
         elif data_resp.status_code == 404:

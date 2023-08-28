@@ -19,17 +19,25 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+
+    # "django.middleware.cache.UpdateCacheMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
+
+    'hoover.search.middleware.NoReferral',
+    'hoover.search.middleware.ConfigureCache',
+
+    # ConditionalGetMiddleware
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'hoover.search.middleware.AuthproxyUserMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django.middleware.security.SecurityMiddleware',
-    'hoover.search.middleware.NoReferral',
-    'hoover.search.middleware.NoCache',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+
+    # FetchFromCacheMiddleware
 ]
 
 ROOT_URLCONF = 'hoover.site.urls'
@@ -176,10 +184,19 @@ HOOVER_CELERY_BATCH_QUEUES = ['hoover.search.batch_search']
 SEARCH_WORKER_COUNT = 1
 CELERY_BROKER_URL = os.getenv('SEARCH_AMQP_URL')
 
-SNOOP_FORWARD_HEADERS = [
+SNOOP_RESPONSE_FORWARD_HEADERS = [
     'Content-Disposition', 'Accept-Ranges', 'Content-Range', 'Content-Length', 'Content-Type',
-    'Date', 'Last-Modified', 'Expires', 'Vary', "Etag"]
-# no Cache-Control -- upstream should have this one
+    'Date', 'Last-Modified', 'Expires', 'Vary', "Etag", "Cache-Control",
+]
+
+SNOOP_REQUEST_FORWARD_HEADERS = [
+    'Range',
+    'If-Match',
+    'If-None-Match',
+    'If-Modified-Since',
+    'If-Unmodified-Since',
+    'If-Range',
+]
 
 SNOOP_COLLECTION_DIR = Path(os.getenv('SNOOP_COLLECTION_DIR', '/opt/hoover/collections'))
 

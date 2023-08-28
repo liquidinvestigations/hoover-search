@@ -6,6 +6,7 @@ from django.utils.deprecation import MiddlewareMixin
 from django.conf import settings
 from django.contrib.auth.middleware import RemoteUserMiddleware
 from django.contrib.contenttypes.models import ContentType
+from django.utils.cache import patch_vary_headers
 
 from hoover.search.models import Profile, Collection
 
@@ -19,11 +20,12 @@ class NoReferral(MiddlewareMixin):
         return response
 
 
-class NoCache(MiddlewareMixin):
+class ConfigureCache(MiddlewareMixin):
 
     def process_response(self, request, response):
         if 'Cache-Control' not in response:
             add_never_cache_headers(response)
+        patch_vary_headers(response, ['Cookie', 'Range'])
         return response
 
 
