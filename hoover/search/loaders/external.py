@@ -9,7 +9,7 @@ import requests
 log = logging.getLogger(__name__)
 
 
-def get_json(url, retries=5, retry_delay_sec=.5):
+def get_json(url, retries=3, retry_delay_sec=.5):
     """Gets JSON content using requests.get. Tries a few times to get a 200 OK response."""
 
     for i in range(retries):
@@ -18,7 +18,9 @@ def get_json(url, retries=5, retry_delay_sec=.5):
             return resp.json()
         log.warning(f'HTTP {resp.status_code} for {url} (retrying {i+1}/{retries})')
         time.sleep(retry_delay_sec)
-    raise RuntimeError(f"Unexpected HTTP {resp.status_code} response from {url}! Content: {resp.content[:2000]}")
+    raise RuntimeError(f"""Unexpected HTTP {resp.status_code}
+            from JSON route {url}
+            -- Content = {resp.content[:500]}""")
 
 
 class Api:
@@ -54,17 +56,6 @@ class Document:
         self.doc_id = doc_id
 
     def view(self, request, suffix):
-        for retry in range(1, self.RETRY_COUNT + 1):
-            try:
-                return self._view(request, suffix)
-            except Exception as e:
-                log.warning('upstream view failed, retry %s/%s: %s', retry, self.RETRY_COUNT, str(type(e)))
-                if retry >= self.RETRY_COUNT:
-                    raise e
-                else:
-                    time.sleep(self.RETRY_INTERVAL_SEC * retry)
-
-    def _view(self, request, suffix):
         url = self.loader.api.data_url(self.doc_id)
         CHUNK_SIZE = 2**16  # 64k
 
@@ -82,21 +73,16 @@ class Document:
             params=request.GET,
             headers=headers,
             stream=True,
+            timeout=120,
         )
-        if 200 <= data_resp.status_code < 400:
-            resp = StreamingHttpResponse(
-                data_resp.iter_content(chunk_size=CHUNK_SIZE),
-                status=data_resp.status_code,
-            )
-            for k, v in data_resp.headers.items():
-                if k in settings.SNOOP_RESPONSE_FORWARD_HEADERS:
-                    resp[k] = v
-            return resp
-        elif data_resp.status_code == 404:
-            raise Http404
-        else:
-            raise RuntimeError(
-                "Unexpected response {!r} for {!r}".format(data_resp, url_with_suffix))
+        resp = StreamingHttpResponse(
+            data_resp.iter_content(chunk_size=CHUNK_SIZE),
+            status=data_resp.status_code,
+        )
+        for k, v in data_resp.headers.items():
+            if k in settings.SNOOP_RESPONSE_FORWARD_HEADERS:
+                resp[k] = v
+        return resp
 
 
 class Loader:

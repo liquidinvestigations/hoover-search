@@ -12,8 +12,9 @@ if [[ "$DEBUG" == "true" ]]; then
            --workers $GUNICORN_WORKERS \
            --threads $GUNICORN_THREADS \
            --max-requests $GUNICORN_MAX_REQUESTS \
-           --keep-alive 60 \
+           --keep-alive 120 \
            --timeout 600 \
+           --graceful-timeout 300 \
  	 -b 0.0.0.0:8000 \
  hoover.site.wsgi:application
 else
@@ -23,8 +24,9 @@ else
            --workers $GUNICORN_WORKERS \
            --threads $GUNICORN_THREADS \
            --max-requests $GUNICORN_MAX_REQUESTS \
-           --keep-alive 60 \
+           --keep-alive 120 \
            --timeout 600 \
+           --graceful-timeout 300 \
 	 -b 0.0.0.0:8000 \
  hoover.site.wsgi:application
 fi
