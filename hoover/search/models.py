@@ -386,3 +386,6 @@ class NextcloudCollection(models.Model):
     mount_path = models.CharField(max_length=256)
     username = models.CharField(max_length=256)
     password = models.CharField(max_length=256)
+
+    def __str__(self):
+        return self.name

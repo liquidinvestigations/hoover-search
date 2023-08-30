@@ -1,4 +1,5 @@
 import json
+import requests
 from django.core.management.base import BaseCommand
 from django.conf import settings
 from ... import models
@@ -30,7 +31,15 @@ class Command(BaseCommand):
         snoop_base_url = settings.SNOOP_BASE_URL
         assert snoop_base_url
 
-        snoop_collections = json.loads(snoop_collections_json)
+        url = snoop_base_url + '/collections/nextcloudcollections'
+        res = requests.get(url)
+        if res.status_code == 200:
+            nextcloudcollections = res.json().get('nextcloud_collections', [])
+        else:
+            nextcloudcollections = []
+        print(nextcloudcollections)
+
+        snoop_collections = json.loads(snoop_collections_json) + nextcloudcollections
         print('json string has', len(snoop_collections), 'collections')
 
         print('locking table...')

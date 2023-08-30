@@ -56,6 +56,26 @@ class CollectionAdmin(admin.ModelAdmin):
         return False
 
 
+class NextcloudCollectionForm(ModelForm):
+    class Meta:
+        model = models.NextcloudCollection
+        fields = [
+            'name',
+            'url',
+            'mount_path',
+            'username',
+            'password',
+        ]
+        help_texts = {'url': 'The relative webdav URL. Example: /remote.php/dav/files/user/collectionname'}
+        widgets = {
+            'password': forms.PasswordInput()
+        }
+
+
+class NextcloudCollectionAdmin(admin.ModelAdmin):
+    form = NextcloudCollectionForm
+
+
 class GroupAdminForm(ModelForm):
     class Meta:
         model = Group
@@ -198,6 +218,7 @@ class HooverUserAdmin(UserAdmin):
 
 admin_site = HooverAdminSite(name='hoover-admin')
 admin_site.register(models.Collection, CollectionAdmin)
+admin_site.register(models.NextcloudCollection, NextcloudCollectionAdmin)
 admin_site.register(Group, HooverGroupAdmin)
 admin_site.register(User, HooverUserAdmin)
 
