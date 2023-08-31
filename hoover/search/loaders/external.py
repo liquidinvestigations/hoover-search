@@ -80,7 +80,10 @@ class Document:
             status=data_resp.status_code,
         )
         for k, v in data_resp.headers.items():
-            if k in settings.SNOOP_RESPONSE_FORWARD_HEADERS:
+            if (
+                k in settings.SNOOP_RESPONSE_FORWARD_HEADERS
+                or k.startswith(settings.SNOOP_RESPONSE_FORWARD_HEADERS_PREFIX)
+            ):
                 resp[k] = v
         return resp
 

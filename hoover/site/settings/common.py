@@ -185,9 +185,19 @@ SEARCH_WORKER_COUNT = 1
 CELERY_BROKER_URL = os.getenv('SEARCH_AMQP_URL')
 
 SNOOP_RESPONSE_FORWARD_HEADERS = [
-    'Content-Disposition', 'Accept-Ranges', 'Content-Range', 'Content-Length', 'Content-Type',
-    'Date', 'Last-Modified', 'Expires', 'Vary', "Etag", "Cache-Control",
+    'Content-Disposition',
+    'Accept-Ranges',
+    'Content-Range',
+    'Content-Length',
+    'Content-Type',
+    'Date',
+    'Last-Modified',
+    'Expires',
+    'Vary',
+    "Etag",
+    "Cache-Control",
 ]
+SNOOP_RESPONSE_FORWARD_HEADERS_PREFIX = "X-Hoover-"
 
 SNOOP_REQUEST_FORWARD_HEADERS = [
     'Range',
