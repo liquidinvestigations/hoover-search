@@ -24,7 +24,7 @@ class OnDebugAllowAllOrigin(MiddlewareMixin):
 
     def process_response(self, request, response):
         if settings.DEBUG:
-            response['Access-Control-Allow-Origin'] = settings.HOSTNAME + ',localhost:3000'
+            response['Access-Control-Allow-Origin'] = settings.HOSTNAME + ',localhost:3000,localhost:8000'
             response['Access-Control-Allow-Methods'] = 'POST, PUT, DELETE, GET, OPTIONS'
             response['Access-Control-Request-Method'] = '*'
             response['Access-Control-Allow-Headers'] = 'Origin, X-Requested-With, Content-Type, Accept, Authorization'
