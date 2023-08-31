@@ -3,6 +3,9 @@ from pathlib import Path
 
 base_dir = Path(__file__).absolute().parent.parent.parent.parent
 
+ALLOWED_HOSTS = ['*']
+HOSTNAME = 'hoover.liquid.example.org'
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',

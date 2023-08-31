@@ -8,9 +8,7 @@ base_dir = Path(__file__).absolute().parent.parent.parent.parent
 
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
-_hostname = os.environ.get('HOOVER_HOSTNAME')
-if _hostname:
-    ALLOWED_HOSTS = [_hostname]
+HOSTNAME = os.environ.get('HOOVER_HOSTNAME', 'example.org')
 
 
 def bool_env(value):
