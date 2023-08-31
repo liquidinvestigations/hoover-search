@@ -5,6 +5,7 @@
 if [[ "$DEBUG" == "true" ]]; then
 	    # --max-requests 1 \  # poor man's autoreload
 	  exec gunicorn --reload \
+             --preload \
 	    --access-logfile '-' \
 	    --error-logfile '-' \
 	    --log-level 'info' \
