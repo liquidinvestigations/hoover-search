@@ -48,9 +48,6 @@ class Api:
 
 
 class Document:
-    RETRY_COUNT = 5
-    RETRY_INTERVAL_SEC = 1.0
-
     def __init__(self, loader, doc_id):
         self.loader = loader
         self.doc_id = doc_id
@@ -93,8 +90,11 @@ class Loader:
     label = "External"
 
     def __init__(self, **config):
-        self.api = Api(config['url'])
         self.config = config
+        self.api = Api(self.config['root_url'] + '/json')
+
+    def get_modified_at(self):
+        return get_json(self.config['root_url'] + '/modified_at')
 
     def feed_page(self, url):
         (documents, next_url) = self.api.feed(url)
@@ -106,6 +106,3 @@ class Loader:
 
     def get(self, doc_id):
         return Document(self, doc_id)
-
-    def get_metadata(self):
-        return {}

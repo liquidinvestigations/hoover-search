@@ -1,4 +1,5 @@
 from datetime import timedelta
+import datetime
 import logging
 import json
 import os
@@ -32,16 +33,22 @@ SEARCH_KEY = 'hoover.search.search'
 BATCH_KEY = 'hoover.search.batch_search'
 
 # keep results valid for this interval
-SEARCH_CACHE_AGE = timedelta(minutes=15)
+SEARCH_CACHE_AGE = timedelta(hours=8)
 BATCH_CACHE_AGE = timedelta(hours=12)
 
 # join refreshed/recent requests with
-SEARCH_CACHE_JOIN_RUNNING_MAX_AGE = timedelta(minutes=3)
+SEARCH_CACHE_JOIN_RUNNING_MAX_AGE = timedelta(minutes=4)
 BATCH_CACHE_JOIN_RUNNING_MAX_AGE = timedelta(minutes=15)
 
 # time to wait for celery task to finish
 SEARCH_SYNC_WAIT_FOR_RESULTS = timedelta(minutes=2)
-BATCH_SYNC_WAIT_FOR_RESULTS = timedelta(minutes=15)
+BATCH_SYNC_WAIT_FOR_RESULTS = timedelta(minutes=5)
+
+BASIC_VIEW_CACHE_OPT = dict(
+    private=True,
+    max_age=60,
+    stale_while_revalidate=60,
+)
 
 
 # ================================================================================
@@ -106,13 +113,6 @@ def rates(group, request):
 # these views don't have any user data and can be cached on the browser side for
 # a minute or two, to limit the request count and browsing lag because of these 5-6
 # new connections every tab
-
-BASIC_VIEW_CACHE_OPT = dict(
-    private=True,
-    max_age=30,
-    stale_while_revalidate=30,
-)
-
 
 @cache_control(**BASIC_VIEW_CACHE_OPT)
 def ping(request):
@@ -546,6 +546,15 @@ def async_batch_get(request, uuid):
 #                  ASYNC SEARCH HELPERS
 # ================================================================================
 
+
+def _get_modified_at(collections):
+    ts = max(c.get_modified_at()['modified_at'] for c in collections)
+    ts = datetime.datetime.fromtimestamp(ts)
+    if not timezone.is_aware(ts):
+        ts = timezone.make_aware(ts, datetime.timezone.utc)
+    return ts
+
+
 @tracer.wrap_function()
 def _cached_batch(collections, user, kwargs, wait=True):
     all_q = models.BatchResultCache.objects.filter(
@@ -553,6 +562,11 @@ def _cached_batch(collections, user, kwargs, wait=True):
         args=kwargs,
         date_created__gt=timezone.now() - BATCH_CACHE_AGE,
     )
+    # if we have existing hit, check for new collection data
+    if all_q.exists():
+        all_q = all_q.filter(
+            date_created__gt=_get_modified_at(collections),
+        )
     # find some existing entry and return it instantly
     found = all_q.filter(result__isnull=False).exists()
     if found:
@@ -600,6 +614,11 @@ def _cached_search(collections, user, kwargs, refresh=False, wait=True):
         user=user, args=kwargs,
         date_created__gt=timezone.now() - SEARCH_CACHE_AGE,
     )
+    # if we have existing hit, check for new collection data
+    if all_q.exists():
+        all_q = all_q.filter(
+            date_created__gt=_get_modified_at(collections),
+        )
     if not refresh:
         # find some existing entry and return it instantly
         found = all_q.filter(result__isnull=False).exists()

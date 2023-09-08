@@ -11,7 +11,7 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 
 from . import es
-from .loaders.external import Loader as ExternalLoader
+from .loaders.external import Loader
 
 
 log = logging.getLogger(__name__)
@@ -20,7 +20,7 @@ User = get_user_model()
 
 @cached(cache=TTLCache(maxsize=128, ttl=59))
 def _get_collection_loader(name):
-    return ExternalLoader(url=settings.SNOOP_BASE_URL + f'/collections/{name}/json')
+    return Loader(root_url=settings.SNOOP_BASE_URL + f'/collections/{name}')
 
 
 class Collection(models.Model):
@@ -55,6 +55,9 @@ class Collection(models.Model):
 
     def get_meta(self):
         return self.get_loader().api.meta
+
+    def get_modified_at(self):
+        return self.get_loader().get_modified_at()
 
     def label(self):
         return self.title or self.name
