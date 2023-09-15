@@ -531,7 +531,7 @@ def async_batch_get(request, uuid):
     wait = bool(request.GET.get('wait', None))
 
     if wait and not batch_result.date_finished:
-        async_result = _search.AsyncResult(task_id=batch_result.task_id)
+        async_result = _batch.AsyncResult(task_id=batch_result.task_id)
         # wait for the async result to be set
         async_result.get(timeout=SEARCH_SYNC_WAIT_FOR_RESULTS.total_seconds())
         # flush the object that was being modified in the async task
