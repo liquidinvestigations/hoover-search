@@ -138,12 +138,28 @@ def external(monkeypatch):
 def test_search_cache(api, mocker, celery_app, celery_session_worker):
     from hoover.search.es import _index_name, DOCTYPE
 
-    responses.add(responses.GET, 'http://example.com/collections/testcol/json',
-                  json={"name": "testdata", "title": "testdata",
-                        "description": "testdata", "feed": "feed",
-                        "data_urls": "{id}/json", "stats": {},
-                        "max_result_window": 100, "refresh_interval": "6s"},
-                  status=200)
+    responses.add(
+        responses.GET,
+        'http://example.com/collections/testcol/json',
+        json={
+            "name": "testdata", "title": "testdata",
+            "description": "testdata", "feed": "feed",
+            "data_urls": "{id}/json", "stats": {},
+            "max_result_window": 100, "refresh_interval": "6s",
+        },
+        status=200,
+    )
+    responses.add(
+        responses.GET,
+        'http://example.com/collections/testcol/modified_at',
+        json={
+            "modified_at": 1694173010,
+            "age": 601791,
+            "modified_data_at": 1692962263,
+            "modified_tags_at": 1694173010,
+        },
+        status=200,
+    )
 
     col = models.Collection.objects.create(
         name='testcol', index='hoover-testcol', public=True)

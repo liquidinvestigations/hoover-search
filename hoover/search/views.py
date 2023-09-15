@@ -13,6 +13,7 @@ from django.urls import reverse
 from django.urls.exceptions import NoReverseMatch
 from django.conf import settings
 from django.views.defaults import permission_denied
+from django.core.exceptions import PermissionDenied
 from django.utils import timezone
 from django.views.decorators.cache import cache_control, never_cache
 from . import es
@@ -60,9 +61,14 @@ def JsonErrorResponse(reason, status=400):
 
 
 def collections_acl(user, collections_arg):
-    available = list(Collection.objects_for_user(user))
     requested = set(collections_arg)
-    return set(col for col in available if col.name in requested)
+    assert len(requested) > 0, 'no collections selected'
+    available = list(Collection.objects_for_user(user))
+    approved = set(col for col in available if col.name in requested)
+    if not approved:
+        msg = 'collections not found or access denied: ' + str(collections_arg)
+        raise PermissionDenied(msg)
+    return approved
 
 
 def _sanitize_utf8_values(value):
@@ -435,6 +441,7 @@ def batch(request):
     t0 = time()
     body = json.loads(request.body.decode('utf-8'))
     collections = collections_acl(request.user, body['collections'])
+
     query_strings = body.get('query_strings')
     aggs = body.get('aggs')
     if not collections:
@@ -548,6 +555,7 @@ def async_batch_get(request, uuid):
 
 
 def _get_modified_at(collections):
+    assert collections
     ts = max(c.get_modified_at()['modified_at'] for c in collections)
     ts = datetime.datetime.fromtimestamp(ts)
     if not timezone.is_aware(ts):
@@ -557,6 +565,7 @@ def _get_modified_at(collections):
 
 @tracer.wrap_function()
 def _cached_batch(collections, user, kwargs, wait=True):
+    assert collections
     all_q = models.BatchResultCache.objects.filter(
         user=user,
         args=kwargs,
@@ -609,6 +618,7 @@ def _cached_batch(collections, user, kwargs, wait=True):
 
 @tracer.wrap_function()
 def _cached_search(collections, user, kwargs, refresh=False, wait=True):
+    assert collections
     # queryset with all valid cache objects for this search
     all_q = models.SearchResultCache.objects.filter(
         user=user, args=kwargs,
