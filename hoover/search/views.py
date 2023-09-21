@@ -60,7 +60,9 @@ def JsonErrorResponse(reason, status=400):
     return JsonResponse({'status': 'error', 'reason': reason}, status=status)
 
 
-def collections_acl(user, collections_arg):
+def collections_acl(user, collections_arg, empty_ok=False):
+    if empty_ok and not collections_arg:
+        return set()
     requested = set(collections_arg)
     assert len(requested) > 0, 'no collections selected'
     available = list(Collection.objects_for_user(user))
@@ -257,6 +259,7 @@ def search(request):
     t0 = time()
     body = json.loads(request.body.decode('utf-8'))
     collections = collections_acl(request.user, body['collections'])
+    dedup_collections = collections_acl(request.user, body.get('dedup_collections', []), empty_ok=True)
     source_fields = body.get('_source', [])
     query_fields = body['query'].get('fields', [])
     _check_fields(source_fields + query_fields,
@@ -275,6 +278,7 @@ def search(request):
             aggs=body.get('aggs', {}),
             highlight=body.get('highlight'),
             collections=[c.name for c in collections],
+            dedup_collections=[c.name for c in dedup_collections],
             search_after=body.get('search_after'),
         )
         cache_entry = _cached_search(collections, request.user, args,
@@ -307,6 +311,7 @@ def async_search(request):
     t0 = time()
     body = json.loads(request.body.decode('utf-8'))
     collections = collections_acl(request.user, body['collections'])
+    dedup_collections = collections_acl(request.user, body.get('dedup_collections', []), empty_ok=True)
     source_fields = body.get('_source', [])
     query_fields = body['query'].get('fields', [])
     _check_fields(source_fields + query_fields,
@@ -325,6 +330,7 @@ def async_search(request):
             aggs=body.get('aggs', {}),
             highlight=body.get('highlight'),
             collections=[c.name for c in collections],
+            dedup_collections=[c.name for c in dedup_collections],
             search_after=body.get('search_after'),
         )
         cache_entry = _cached_search(collections, request.user, args,
@@ -707,6 +713,15 @@ def _search(self, *args, **kwargs):
 
     The result is stored in the `SearchResultCache` table as it becomes available.
     """
+    from .es import _index_id
+
+    def col_name(id):
+        return Collection.objects.get(id=id).name
+
+    if 'dedup_collections' in kwargs:
+        dedup_collections = kwargs.pop('dedup_collections')
+    else:
+        dedup_collections = []
     try:
         cache = models.SearchResultCache.objects.get(task_id=self.request.id)
         cache.date_started = timezone.now()
@@ -718,21 +733,37 @@ def _search(self, *args, **kwargs):
         except es.SearchError as e:
             return JsonErrorResponse(e.reason)
 
-        else:
-            from .es import _index_id
-
-            def col_name(id):
-                return Collection.objects.get(id=id).name
-
+        dedup_hits = {}
+        if dedup_collections:
+            dedup_ids = []
             for item in res['hits']['hits']:
                 name = col_name(_index_id(item['_index']))
-                url = 'doc/{}/{}'.format(name, item['_id'])
-                item['_collection'] = name
-                item['_url_rel'] = url
-            res['count_by_index'] = {
-                col_name(i): counts[i]
-                for i in counts
+                doc_hash = item['_id']
+                dedup_ids.append(doc_hash)
+            hits_url = settings.SNOOP_BASE_URL + '/common/collection-hits'
+            hits_req = {
+                'collection_list': dedup_collections,
+                'doc_sha3_list': dedup_ids,
             }
+            try:
+                dedup_hits = requests.get(hits_url, json=hits_req).json()['hits']
+            except Exception as e:
+                log.exception(e)
+                log.warning('error: could not get hits: %s (see above)', str(e))
+
+        for item in res['hits']['hits']:
+            name = col_name(_index_id(item['_index']))
+            doc_hash = item['_id']
+            url = 'doc/{}/{}'.format(name, doc_hash)
+            item['_collection'] = name
+            item['_url_rel'] = url
+            _doc_hits = dedup_hits.get(doc_hash)
+            item['_dedup_hits'] = _doc_hits
+            item['_dedup_hide_result'] = (_doc_hits and (name != _doc_hits[0]))
+        res['count_by_index'] = {
+            col_name(i): counts[i]
+            for i in counts
+        }
         res = _sanitize_utf8_values(res)
         cache.result = res
         cache.date_finished = timezone.now()
