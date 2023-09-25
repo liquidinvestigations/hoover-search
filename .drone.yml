@@ -1,3 +1,6 @@
+# #########################################################
+#                       LINT TEST
+# #########################################################
 kind: pipeline
 name: static-tests
 
@@ -8,12 +11,18 @@ steps:
   - flake8
 
 ---
-
+# #########################################################
+#                       build arm64
+# #########################################################
 kind: pipeline
-name: build
+name: build arm64
 
 depends_on:
 - static-tests
+
+platform:
+  os: linux
+  arch: arm64
 
 clone:
   depth: 5000
@@ -23,33 +32,6 @@ steps:
   image: alpine/git
   commands:
   - git fetch --tags
-
-# - name: GH CR docker push branch
-#   image: plugins/docker
-#   settings:
-#     repo: ghcr.io/liquidinvestigations/hoover-search
-#     registry: ghcr.io
-#     tags: ${DRONE_COMMIT_BRANCH}
-#     username:
-#       from_secret: ghcr_docker_username
-#     password:
-#       from_secret: ghcr_docker_password
-#   when:
-#     event:
-#     - push
-# 
-# - name: GH CR docker push autotag + latest
-#   image: plugins/docker
-#   settings:
-#     repo: ghcr.io/liquidinvestigations/hoover-search
-#     registry: ghcr.io
-#     auto_tag: true
-#     username:
-#       from_secret: ghcr_docker_username
-#     password:
-#       from_secret: ghcr_docker_password
-#   depends_on:
-#   - GH CR docker push branch
 
 - name: docker push branch
   image: plugins/docker
@@ -79,11 +61,62 @@ steps:
   - docker push branch
 
 ---
+# #########################################################
+#                       build x86
+# #########################################################
+
+kind: pipeline
+name: build x86
+
+depends_on:
+- static-tests
+
+clone:
+  depth: 5000
+
+steps:
+- name: fetch
+  image: alpine/git
+  commands:
+  - git fetch --tags
+
+- name: docker push branch
+  image: plugins/docker
+  settings:
+    repo: liquidinvestigations/hoover-search
+    tags: ${DRONE_COMMIT_BRANCH}
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
+  when:
+    event:
+    - push
+  depends_on:
+  - fetch
+
+- name: docker push autotag + latest
+  image: plugins/docker
+  settings:
+    repo: liquidinvestigations/hoover-search
+    auto_tag: true
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
+  depends_on:
+  - docker push branch
+
+---
+# #########################################################
+#                       Tests
+# #########################################################
 kind: pipeline
 name: test
 
 depends_on:
-- build
+- build x86
+- build arm64
 
 services:
 - name: search-rabbitmq
@@ -153,6 +186,9 @@ volumes:
   temp: {}
 
 ---
+# #########################################################
+#                       Secrets
+# #########################################################
 kind: secret
 name: docker_username
 get:
