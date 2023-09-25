@@ -37,7 +37,7 @@ steps:
   image: plugins/docker
   settings:
     repo: liquidinvestigations/hoover-search
-    tags: ${DRONE_COMMIT_BRANCH}
+    tags: ${DRONE_COMMIT_BRANCH}-arm64
     username:
       from_secret: docker_username
     password:
@@ -53,6 +53,7 @@ steps:
   settings:
     repo: liquidinvestigations/hoover-search
     auto_tag: true
+    auto_tag_suffix: arm64
     username:
       from_secret: docker_username
     password:
