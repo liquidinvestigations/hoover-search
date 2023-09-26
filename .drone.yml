@@ -146,7 +146,7 @@ steps:
   image: docker
   pull: if-not-exists
   environment:
-    IMG: "liquidinvestigations/hoover-search:${DRONE_TAG}"
+    IMG: "liquidinvestigations/hoover-search:${DRONE_TAG:1}"
     DOCKER_USERNAME:
       from_secret: docker_username
     DOCKER_PASSWORD:
