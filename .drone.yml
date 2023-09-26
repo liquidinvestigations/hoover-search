@@ -107,8 +107,58 @@ steps:
       from_secret: docker_password
   depends_on:
   - docker push branch
-
 ---
+
+# #########################################################
+#                   build multiplatform
+# #########################################################
+
+kind: pipeline
+name: build multiplatform
+
+depends_on:
+- build x86
+- build arm64
+
+clone:
+  disable: true
+
+
+steps:
+- name: docker multiplatform branch
+  image: docker
+  pull: if-not-exists
+  environment:
+    IMG: "liquidinvestigations/hoover-search:${DRONE_COMMIT_BRANCH}"
+    DOCKER_USERNAME:
+      from_secret: docker_username
+    DOCKER_PASSWORD:
+      from_secret: docker_password
+  commands:
+  - "docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD"
+  - "docker buildx imagetools  create --append $IMG --append $IMG-arm64 --tag  $IMG"
+  when:
+    event:
+    - push
+    - cron
+
+- name: docker multiplatform tag
+  image: docker
+  pull: if-not-exists
+  environment:
+    IMG: "liquidinvestigations/hoover-search:${DRONE_TAG}"
+    DOCKER_USERNAME:
+      from_secret: docker_username
+    DOCKER_PASSWORD:
+      from_secret: docker_password
+  commands:
+  - "docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD"
+  - "docker buildx imagetools  create --append $IMG --append $IMG-arm64 --tag  $IMG"
+  when:
+    event:
+    - tag
+---
+
 # #########################################################
 #                       Tests
 # #########################################################
@@ -116,8 +166,8 @@ kind: pipeline
 name: test
 
 depends_on:
-- build x86
-- build arm64
+- build multiplatform
+
 
 services:
 - name: search-rabbitmq
