@@ -73,82 +73,36 @@ def collections_acl(user, collections_arg, empty_ok=False):
     return approved
 
 
-def ping(request):
-    Collection.objects.count()
-    return HttpResponse('ok\n')
-
-
-def home(request):
-    return render(request, 'home.html')
-
-
-def collections(request):
-    return JsonResponse([
-        {'name': col.name, 'title': col.title, 'stats': col.get_meta()['stats']}
-        for col in Collection.objects_for_user(request.user)
-    ], safe=False)
-
-
 def nextcloud_collections(request):
-    return JsonResponse([{
-        'name': col.name,
-        'url': col.url,
-        'mount_path': col.mount_path,
-        'username': col.username,
-        'password': col.password,
-    } for col in NextcloudCollection.objects.all()], safe=False)
-
-
-def search_fields(request):
-    assert request.user
-    assert request.user.username
-    return JsonResponse({
-        'fields': es.get_fields(request.user.profile.uuid),
-    }, safe=False)
-
-
-@cel.app.task(bind=True, serializer='json', name=SEARCH_KEY, routing_key=SEARCH_KEY)
-@tracer.wrap_function()
-def _search(self, *args, **kwargs):
-    """Background task that actually runs the search through elasticsearch and annotates results.
-
-    The result is stored in the `SearchResultCache` table as it becomes available.
-    """
-    try:
-        cache = models.SearchResultCache.objects.get(task_id=self.request.id)
-        cache.date_started = timezone.now()
-        cache.save()
-
-        try:
-            res, counts = es.search(**kwargs)
-            res['status'] = 'ok'
-        except es.SearchError as e:
-            return JsonErrorResponse(e.reason)
-
-        else:
-            from .es import _index_id
-
-            def col_name(id):
-                return Collection.objects.get(id=id).name
-
-            for item in res['hits']['hits']:
-                name = col_name(_index_id(item['_index']))
-                url = 'doc/{}/{}'.format(name, item['_id'])
-                item['_collection'] = name
-                item['_url_rel'] = url
-            res['count_by_index'] = {
-                col_name(i): counts[i]
-                for i in counts
-            }
-        res = _sanitize_utf8_values(res)
-        cache.result = res
-        cache.date_finished = timezone.now()
-        cache.save()
-        return True
-    except Exception as e:
-        log.error('_search celery task execution failed!')
-        log.exception(e)
-        raise
+    return JsonResponse([
+        {
+            'webdav_url': col.url,
+            'webdav_username': col.username,
+            'webdav_password': col.password,
+            'name': col.name,
+            'process': True,
+            'sync': False,
+            'ocr_languages': '',
+            'max_result_window': 100000,
+            'refresh_interval': '1s',
+            'pdf_preview_enabled': False,
+            'thumbnail_generator_enabled': False,
+            'image_classification_object_detection_enabled': False,
+            'image_classification_classify_images_enabled': False,
+            'nlp_language_detection_enabled': False,
+            'nlp_fallback_language': 'en',
+            'nlp_entity_extraction_enabled': False,
+            'translation_enabled': False,
+            'translation_target_languages': 'en',
+            'translation_text_length_limit': 400,
+            'default_table_header': '',
+            'explode_table_rows': False,
+            's3_blobs_address': '',
+            's3_blobs_access_key': '',
+            's3_blobs_secret_key': '',
+        }
+        for col in NextcloudCollection.objects.all()
+    ], safe=False)
 
 
 def _sanitize_utf8_values(value):
