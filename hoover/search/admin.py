@@ -16,6 +16,7 @@ class CollectionAdmin(admin.ModelAdmin):
                     'group_access_list', 'public', 'writeable', 'avg_search_time', 'avg_batch_time']
     fields = ['title', 'name', 'index', 'public', 'writeable', 'users', 'groups', 'uploader_users', 'uploader_groups']
     filter_horizontal = ['users', 'groups', 'uploader_users', 'uploader_groups']
+    readonly_fields = ['index', 'name']
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
