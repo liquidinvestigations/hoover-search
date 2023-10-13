@@ -10,6 +10,12 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 
 HOSTNAME = os.environ.get('HOOVER_HOSTNAME', 'example.org')
 
+SNOOP_HOST = os.environ.get('SNOOP_HOST')
+
+ALLOWED_HOSTS = [
+    SNOOP_HOST,
+]
+
 
 def bool_env(value):
     return (value or '').lower() in ['on', 'true']
