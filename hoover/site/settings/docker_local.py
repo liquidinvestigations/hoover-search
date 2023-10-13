@@ -14,6 +14,7 @@ SNOOP_HOST = os.environ.get('SNOOP_HOST')
 
 ALLOWED_HOSTS = [
     SNOOP_HOST,
+    HOSTNAME,
 ]
 
 
