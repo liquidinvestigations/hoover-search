@@ -31,7 +31,7 @@ class Command(BaseCommand):
         snoop_base_url = settings.SNOOP_BASE_URL
         assert snoop_base_url
 
-        url = snoop_base_url + '/collections/nextcloudcollections'
+        url = snoop_base_url + '/common/nextcloudcollections'
         res = requests.get(url)
         if res.status_code == 200:
             nextcloudcollections = res.json().get('nextcloud_collections', [])
