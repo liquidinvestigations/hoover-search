@@ -12,7 +12,16 @@ rate_limit_exceeded = Signal(['username'])
 
 
 @receiver(post_save, sender=NextcloudCollection)
-def sync_nextcloud_collections(**kwargs):
+def sync_nextcloud_collections_signal(**kwargs):
+    """Signal that calls a snoop endpoint to sync nextcloud collections.
+
+    Whenever a NextcloudCollection object is saved this signal will
+    make the call and sync the collections.
+    """
+    sync_nextcloud_collections()
+
+
+def sync_nextcloud_collections():
     """Calls a snoop endpoint to sync nextcloud collections.
     """
     nc_collections = [
