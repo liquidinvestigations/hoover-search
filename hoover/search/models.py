@@ -396,3 +396,8 @@ class NextcloudDirectory(models.Model):
     path = models.CharField(max_length=512, unique=True)
     modified = models.DateTimeField()
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+
+class WebDAVPassword(models.Model):
+    password = models.Charfield(max_length=256)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)

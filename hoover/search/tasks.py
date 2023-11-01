@@ -1,21 +1,22 @@
 from . import celery as cel
 # from datetime import datetime
-# from django.conf import settings
-# import logging
+from django.conf import settings
+import logging
 from webdav3.client import Client
 from django.contrib.auth import get_user_model
 # from . import models
 
+log = logging.getLogger(__name__)
 
 SYNC_KEY = 'hoover.search.nexctloudsync'
 
-# TODO
-WEBDAV_ROOT = 'path'
+WEBDAV_ROOT = settings.HOOVER_NEXTCLOUD_URL + '/remote.php/dav/files'
 
 
 @cel.app.task(bind=True, queue=SYNC_KEY, name=SYNC_KEY, max_retries=None)
 def sync_nextcloud_directories():
     users = get_user_model().objects.all()
+    # TODO Check if user has nextcloud pw set
     for user in users:
         options = {
             'webdav_hostname': WEBDAV_ROOT + '/user',
