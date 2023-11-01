@@ -1,10 +1,10 @@
 from . import celery as cel
-from datetime import datetime
-from django.conf import settings
-import logging
+# from datetime import datetime
+# from django.conf import settings
+# import logging
 from webdav3.client import Client
 from django.contrib.auth import get_user_model
-from . import models
+# from . import models
 
 
 SYNC_KEY = 'hoover.search.nexctloudsync'
