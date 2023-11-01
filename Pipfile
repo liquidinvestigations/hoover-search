@@ -36,6 +36,7 @@ sentry-sdk = {extras = ["django"], version = "*"}
 opentelemetry-distro = "*"
 opentelemetry-exporter-otlp = "*"
 django = "==3.*"
+webdavclient3 = "*"
 
 [requires]
 python_version = "3.10"
