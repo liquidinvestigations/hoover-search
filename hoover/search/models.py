@@ -399,5 +399,5 @@ class NextcloudDirectory(models.Model):
 
 
 class WebDAVPassword(models.Model):
-    password = models.Charfield(max_length=256)
+    password = models.CharField(max_length=256)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
