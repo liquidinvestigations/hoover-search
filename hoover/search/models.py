@@ -392,7 +392,7 @@ class NextcloudCollection(models.Model):
 
 
 class NextcloudDirectory(models.Model):
-    name = models.CharField(max_lenght=256)
+    name = models.CharField(max_length=256)
     path = models.CharField(max_length=512, unique=True)
     modified = models.DateTimeField()
     user = models.Foreignkey(User, on_delete=models.CASCADE)
