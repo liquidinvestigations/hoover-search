@@ -82,6 +82,7 @@ def recurse_nextcloud_directories(path, max_depth, client, username, max_size=20
             new_content = recurse_nextcloud_directories(relative_path(directory['path'], username),
                                                         max_depth,
                                                         client,
+                                                        username,
                                                         depth=depth + 1)
             if new_content:
                 new_directories = [x for x in new_content if x['isdir']]
