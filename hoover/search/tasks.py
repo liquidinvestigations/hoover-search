@@ -27,7 +27,7 @@ def sync_nextcloud_directories():
             options = {
                 'webdav_hostname': WEBDAV_ROOT + f'/{user.get_username()}',
                 'webdav_login': user.get_username(),
-                'webdav_password': models.WebDAVPassword.objects.get(user=user),
+                'webdav_password': models.WebDAVPassword.objects.get(user=user).password,
             }
             log.info(f'{options}')
             client = Client(options)
