@@ -36,7 +36,7 @@ def sync_nextcloud_directories():
             log.info(f'Found directories: {directories}')
             for directory in directories:
                 log.info(f'Creating directory: {directory}')
-                models.NextcloudDirectory.objects.get_or_create(
+                models.NextcloudDirectory.objects.update_or_create(
                     name=get_name(directory['path']),
                     path=directory['path'],
                     modified=datetime.strptime(directory['modified'],
@@ -78,20 +78,22 @@ def recurse_nextcloud_directories(path, max_depth, client, username, max_size=20
         # and if it was currently modified
         # if it wasn't modified we don't recurse it
         if models.NextcloudDirectory.objects.filter(path=directory['path']).exists():
+            log.info('NextcloudDirectory exists in database!')
             modified = datetime.strptime(directory['modified'], '%a, %d %b %Y %H:%M:%S %Z')
             directory_in_db = models.NextcloudDirectory.objects.get(path=directory['path'])
             if modified == directory_in_db.modified:
+                log.info('Directory has not been modified. Skipping.')
                 continue
-        else:
-            new_content = recurse_nextcloud_directories(relative_path(directory['path'], username),
-                                                        max_depth,
-                                                        client,
-                                                        username,
-                                                        depth=depth + 1)
-            if new_content:
-                new_directories = [x for x in new_content if x['isdir']]
-                if len(new_directories) + len(dir_list) > max_size:
-                    remaining = max_size - len(dir_list)
-                    new_directories = new_directories[:remaining]
-                    dir_list += new_directories
+
+        new_content = recurse_nextcloud_directories(relative_path(directory['path'], username),
+                                                    max_depth,
+                                                    client,
+                                                    username,
+                                                    depth=depth + 1)
+        if new_content:
+            new_directories = [x for x in new_content if x['isdir']]
+            if len(new_directories) + len(dir_list) > max_size:
+                remaining = max_size - len(dir_list)
+                new_directories = new_directories[:remaining]
+                dir_list += new_directories
     return dir_list
