@@ -32,7 +32,7 @@ def sync_nextcloud_directories():
             log.info(f'{options}')
             client = Client(options)
             log.info('Created webdav client!')
-            directories = recurse_nextcloud_directories('/', 4, client)
+            directories = recurse_nextcloud_directories('/', 4, client, user.get_username())
             log.info(f'Found directories: {directories}')
             for directory in directories:
                 log.info(f'Creating directory: {directory}')
@@ -45,7 +45,15 @@ def sync_nextcloud_directories():
                 )
 
 
-def recurse_nextcloud_directories(path, max_depth, client, max_size=20, depth=0):
+def relative_path(path, username):
+    return path.removeprefix(f'/remote.php/dav/files/{username}')
+
+
+def full_path(path, username):
+    return f'/remote.php/dav/files/{username}' + path
+
+
+def recurse_nextcloud_directories(path, max_depth, client, username, max_size=20, depth=0):
     content = client.list(path, get_info=True)
     log.info(f'Found root content: {content}')
     directories = [x for x in content if x['isdir']]
@@ -55,10 +63,13 @@ def recurse_nextcloud_directories(path, max_depth, client, max_size=20, depth=0)
     if depth == max_depth:
         return []
     if len(dir_list) > max_size:
-        dir_list = dir_list[:10]
+        dir_list = dir_list[:max_size]
         return dir_list
 
     for directory in directories:
+        # skip if directory is itself
+        if directory['path'] == full_path(path, username):
+            continue
         # check if a directory with this path exists in the database
         # and if it was currently modified
         # if it wasn't modified we don't recurse it
@@ -68,7 +79,7 @@ def recurse_nextcloud_directories(path, max_depth, client, max_size=20, depth=0)
             if modified == directory_in_db.modified:
                 continue
         else:
-            new_content = recurse_nextcloud_directories(directory['path'],
+            new_content = recurse_nextcloud_directories(relative_path(directory['path'], username),
                                                         max_depth,
                                                         client,
                                                         depth=depth + 1)
