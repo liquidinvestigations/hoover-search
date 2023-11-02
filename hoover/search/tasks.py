@@ -36,7 +36,7 @@ def sync_nextcloud_directories():
             log.info(f'Found directories: {directories}')
             for directory in directories:
                 log.info(f'Creating directory: {directory}')
-                models.NextcloudDirectory.create(
+                models.NextcloudDirectory.objects.create(
                     name=directory['name'],
                     path=directory['path'],
                     modified=datetime.strptime(directory['modified'],
