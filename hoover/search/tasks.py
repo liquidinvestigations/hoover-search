@@ -37,7 +37,7 @@ def sync_nextcloud_directories():
             for directory in directories:
                 log.info(f'Creating directory: {directory}')
                 models.NextcloudDirectory.objects.create(
-                    name=directory['name'],
+                    name=get_name(directory['path']),
                     path=directory['path'],
                     modified=datetime.strptime(directory['modified'],
                                                '%a, %d %b %Y %H:%M:%S %Z'),
@@ -51,6 +51,10 @@ def relative_path(path, username):
 
 def full_path(path, username):
     return f'/remote.php/dav/files/{username}' + path
+
+
+def get_name(path):
+    return path.split('/')[-2]
 
 
 def recurse_nextcloud_directories(path, max_depth, client, username, max_size=20, depth=0):
