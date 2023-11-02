@@ -14,6 +14,11 @@ WEBDAV_ROOT = settings.HOOVER_NEXTCLOUD_URL + '/remote.php/dav/files'
 
 
 @cel.app.task(bind=True, queue=SYNC_KEY, name=SYNC_KEY, max_retries=None)
+def sync_nextcloud_directories_task():
+    log.warning('Running periodic task to sync nextcloud directories!')
+    sync_nextcloud_directories()
+
+
 def sync_nextcloud_directories():
     users = get_user_model().objects.all()
     for user in users:
