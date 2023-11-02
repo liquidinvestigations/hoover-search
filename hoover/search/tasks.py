@@ -29,7 +29,9 @@ def sync_nextcloud_directories():
                 'webdav_login': user.get_username(),
                 'webdav_password': models.WebDAVPassword.objects.get(user=user),
             }
+            log.info(f'{options}')
             client = Client(options)
+            log.info('Created webdav client!')
             directories = recurse_nextcloud_directories('/', 4, client)
             log.info(f'Found directories: {directories}')
             for directory in directories:
