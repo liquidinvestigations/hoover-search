@@ -116,8 +116,14 @@ class ProfileInline(admin.StackedInline):
     list_display = ('user', 'uuid', 'preferences')
 
 
+class WebDAVPasswordInline(admin.StackedInline):  # You can use TabularInline as an alternative
+    model = models.WebDAVPassword
+    can_delete = False
+
+
 class HooverUserAdmin(UserAdmin):
-    inlines = (ProfileInline,)
+    inlines = (ProfileInline,
+               WebDAVPasswordInline,)
     actions = []
     fieldsets = (
         ('Personal info', {'fields': ('username', 'first_name', 'last_name', 'email')}),
