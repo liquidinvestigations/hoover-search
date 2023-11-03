@@ -8,18 +8,11 @@ from . import models
 
 log = logging.getLogger(__name__)
 
-SYNC_KEY = 'hoover.search.nexctloudsync'
 
 WEBDAV_ROOT = settings.HOOVER_NEXTCLOUD_URL + '/remote.php/dav/files'
 
 
-@cel.app.task(bind=True, queue=SYNC_KEY, name=SYNC_KEY, max_retries=None)
-def sync_nextcloud_directories_task():
-    log.warning('Running periodic task to sync nextcloud directories!')
-    sync_nextcloud_directories()
-
-
-def sync_nextcloud_directories():
+def sync_nextcloud_directories(max_depth, max_size):
     users = get_user_model().objects.all()
     for user in users:
         if models.WebDAVPassword.objects.filter(user=user).exists():
@@ -32,7 +25,11 @@ def sync_nextcloud_directories():
             log.info(f'{options}')
             client = Client(options)
             log.info('Created webdav client!')
-            directories = recurse_nextcloud_directories('/', 4, client, user.get_username())
+            directories = recurse_nextcloud_directories('/',
+                                                        max_depth,
+                                                        client,
+                                                        user.get_username(),
+                                                        max_size=max_size)
             log.info(f'Found directories: {directories}')
             for directory in directories:
                 log.info(f'Creating directory: {directory}')

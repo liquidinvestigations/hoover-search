@@ -2,6 +2,15 @@
 
 /wait
 
+if [[ $NOMAD_ALLOC_INDEX  == "0" ]]; then
+    (
+        set +e
+        while true; do
+            sleep 60
+            ./manage.py syncnextclouddirs
+        done
+    ) &
+
 if [[ "$DEBUG" == "true" ]]; then
 	    # --max-requests 1 \  # poor man's autoreload
 	  exec gunicorn --reload \

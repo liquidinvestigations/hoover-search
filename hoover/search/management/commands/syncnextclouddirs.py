@@ -6,4 +6,4 @@ class Command(BaseCommand):
     help = "Sync nextcloud directories."
 
     def handle(self, *args, **options):
-        sync_nextcloud_directories()
+        sync_nextcloud_directories(4, 50)
