@@ -60,25 +60,17 @@ class NextcloudDirectoryAdmin(admin.ModelAdmin):
     search_fields = ['name']
 
 
-# class NextcloudCollectionForm(ModelForm):
-#     class Meta:
-#         model = models.NextcloudCollection
-#         fields = [
-#             'name',
-#             'url',
-#             'mount_path',
-#             'username',
-#             'password',
-#         ]
-#         help_texts = {'url': 'The relative webdav URL. Example: /remote.php/dav/files/user/collectionname'}
-#         widgets = {
-#             'password': forms.PasswordInput()
-#         }
+class NextcloudCollectionForm(ModelForm):
+    class Meta:
+        model = models.NextcloudCollection
+        fields = [
+            'directory',
+        ]
 
 
-# class NextcloudCollectionAdmin(admin.ModelAdmin):
-#     form = NextcloudCollectionForm
-#     # autocomplete_fields = ['']
+class NextcloudCollectionAdmin(admin.ModelAdmin):
+    form = NextcloudCollectionForm
+    autocomplete_fields = ['directory']
 
 
 class GroupAdminForm(ModelForm):
@@ -229,7 +221,7 @@ class HooverUserAdmin(UserAdmin):
 
 admin_site = HooverAdminSite(name='hoover-admin')
 admin_site.register(models.Collection, CollectionAdmin)
-# admin_site.register(models.NextcloudCollection, NextcloudCollectionAdmin)
+admin_site.register(models.NextcloudCollection, NextcloudCollectionAdmin)
 admin_site.register(Group, HooverGroupAdmin)
 admin_site.register(User, HooverUserAdmin)
 
