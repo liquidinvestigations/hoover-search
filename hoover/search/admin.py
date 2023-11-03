@@ -65,6 +65,14 @@ class NextcloudCollectionForm(ModelForm):
         model = models.NextcloudCollection
         fields = [
             'directory',
+            'name',
+            'username',
+            'password'
+        ]
+        readonly_fields = [
+            'name',
+            'username',
+            'password'
         ]
 
 
