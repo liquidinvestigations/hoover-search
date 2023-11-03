@@ -56,6 +56,10 @@ class CollectionAdmin(admin.ModelAdmin):
         return False
 
 
+class NextcloudDirectoryAdmin(admin.ModelAdmin):
+    search_fields = ['name']
+
+
 class NextcloudCollectionForm(ModelForm):
     class Meta:
         model = models.NextcloudCollection
@@ -74,6 +78,7 @@ class NextcloudCollectionForm(ModelForm):
 
 class NextcloudCollectionAdmin(admin.ModelAdmin):
     form = NextcloudCollectionForm
+    # autocomplete_fields = ['']
 
 
 class GroupAdminForm(ModelForm):

@@ -380,24 +380,40 @@ class Upload(models.Model):
     """The task id for the task that checks to processing status of the uploaded file."""
 
 
-class NextcloudCollection(models.Model):
-    name = models.CharField(max_length=256, unique=True)
-    url = models.CharField(max_length=256)
-    mount_path = models.CharField(max_length=256)
-    username = models.CharField(max_length=256)
-    password = models.CharField(max_length=256)
-
-    def __str__(self):
-        return self.name
-
-
 class NextcloudDirectory(models.Model):
     name = models.CharField(max_length=256)
     path = models.CharField(max_length=512, unique=True)
     modified = models.DateTimeField()
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
+    def __str__(self):
+        return self.path
+
 
 class WebDAVPassword(models.Model):
     password = models.CharField(max_length=256)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+
+
+class NextcloudCollection(models.Model):
+    directory = models.OneToOneField(NextcloudDirectory, on_delete=models.CASCADE)
+
+    @property
+    def url(self):
+        return self.directory.path
+
+    @property
+    def username(self):
+        return self.directory.user.get_username()
+
+    @property
+    def name(self):
+        return self.directory.name
+
+    @property
+    def password(self):
+        pw = WebDAVPassword.objects.get(user=self.directory.user)
+        return pw.password
+
+    def __str__(self):
+        return self.name
