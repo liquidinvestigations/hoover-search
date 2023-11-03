@@ -65,15 +65,21 @@ class NextcloudCollectionForm(ModelForm):
         model = models.NextcloudCollection
         fields = [
             'directory',
-            'name',
-            'username',
-            'password'
         ]
-        readonly_fields = [
+        list_display = [
             'name',
+            'password',
             'username',
-            'password'
         ]
+
+        def username(self, obj):
+            return obj.username
+
+        def name(self, obj):
+            return obj.name
+
+        def password(self, obj):
+            return obj.password
 
 
 class NextcloudCollectionAdmin(admin.ModelAdmin):
