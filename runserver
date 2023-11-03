@@ -10,6 +10,7 @@ if [[ $NOMAD_ALLOC_INDEX  == "0" ]]; then
             ./manage.py syncnextclouddirs
         done
     ) &
+fi
 
 if [[ "$DEBUG" == "true" ]]; then
 	    # --max-requests 1 \  # poor man's autoreload
