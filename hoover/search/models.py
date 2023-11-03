@@ -399,7 +399,7 @@ class NextcloudCollection(models.Model):
     directory = models.OneToOneField(NextcloudDirectory,
                                      on_delete=models.CASCADE,
                                      unique=True,
-                                     null=True)
+                                     )
 
     @property
     def url(self):
