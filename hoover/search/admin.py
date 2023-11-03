@@ -66,25 +66,25 @@ class NextcloudCollectionForm(ModelForm):
         fields = [
             'directory',
         ]
-        list_display = [
-            'name',
-            'password',
-            'username',
-        ]
-
-        def username(self, obj):
-            return obj.username
-
-        def name(self, obj):
-            return obj.name
-
-        def password(self, obj):
-            return obj.password
 
 
 class NextcloudCollectionAdmin(admin.ModelAdmin):
     form = NextcloudCollectionForm
     autocomplete_fields = ['directory']
+    list_display = [
+        'name',
+        'password',
+        'username',
+    ]
+
+    def username(self, obj):
+        return obj.username
+
+    def name(self, obj):
+        return obj.name
+
+    def password(self, obj):
+        return obj.password
 
 
 class GroupAdminForm(ModelForm):
