@@ -1,4 +1,3 @@
-from . import celery as cel
 from datetime import datetime
 from django.conf import settings
 import logging
