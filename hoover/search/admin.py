@@ -222,6 +222,7 @@ class HooverUserAdmin(UserAdmin):
 admin_site = HooverAdminSite(name='hoover-admin')
 admin_site.register(models.Collection, CollectionAdmin)
 admin_site.register(models.NextcloudCollection, NextcloudCollectionAdmin)
+admin_site.register(models.NextcloudDirectory, NextcloudDirectoryAdmin)
 admin_site.register(Group, HooverGroupAdmin)
 admin_site.register(User, HooverUserAdmin)
 
