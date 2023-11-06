@@ -45,16 +45,13 @@ def relative_path(path, username):
     return path.removeprefix(f'/remote.php/dav/files/{username}')
 
 
-def full_path(path, username):
-    return f'/remote.php/dav/files/{username}' + path
-
-
 def get_name(path):
     return path.split('/')[-2]
 
 
 def recurse_nextcloud_directories(path, max_depth, client, username, max_size=20, depth=0):
-    content = client.list(path, get_info=True)
+    # first element is the current directory itself
+    content = client.list(path, get_info=True)[1:]
     log.info(f'Found root content: {content}')
     directories = [x for x in content if x['isdir']]
     dir_list = []
@@ -67,9 +64,6 @@ def recurse_nextcloud_directories(path, max_depth, client, username, max_size=20
         return dir_list
 
     for directory in directories:
-        # skip if directory is itself
-        if directory['path'] == full_path(path, username):
-            continue
         # check if a directory with this path exists in the database
         # and if it was currently modified
         # if it wasn't modified we don't recurse it
