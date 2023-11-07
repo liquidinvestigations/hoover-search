@@ -35,12 +35,14 @@ def sync_nextcloud_directories(max_depth, max_size):
                     db_directory.delete()
             for directory in directories:
                 log.info(f'Creating directory: {directory}')
+                modified = datetime.strptime(directory['modified'],
+                                             '%a, %d %b %Y %H:%M:%S %Z')
+                modified = make_aware(modified)
                 models.NextcloudDirectory.objects.update_or_create(
                     path=directory['path'],
                     defaults={
                         'name': get_name(directory['path']),
-                        'modified': datetime.strptime(directory['modified'],
-                                                      '%a, %d %b %Y %H:%M:%S %Z'),
+                        'modified': modified,
                         'user': user,
                     }
                 )
