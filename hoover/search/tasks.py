@@ -27,6 +27,11 @@ def sync_nextcloud_directories(max_depth, max_size):
                                                         user.get_username(),
                                                         max_size=max_size)
             log.info(f'Found directories: {directories}')
+            all_db_directories = models.NextcloudDirectory.objects.get_all()
+            found_directories_paths = [x['path'] for x in directories]
+            for db_directory in all_db_directories:
+                if db_directory.path not in found_directories_paths:
+                    db_directory.delete()
             for directory in directories:
                 log.info(f'Creating directory: {directory}')
                 models.NextcloudDirectory.objects.update_or_create(
@@ -68,7 +73,9 @@ def recurse_nextcloud_directories(path, max_depth, client, username, max_size=20
         if models.NextcloudDirectory.objects.filter(path=directory['path']).exists():
             log.info('NextcloudDirectory exists in database!')
             modified = datetime.strptime(directory['modified'], '%a, %d %b %Y %H:%M:%S %Z')
+            log.info('modified: ', modified)
             directory_in_db = models.NextcloudDirectory.objects.get(path=directory['path'])
+            log.info('db_modified: ', directory_in_db.modified)
             if modified == directory_in_db.modified:
                 log.info('Directory has not been modified. Skipping.')
                 continue
