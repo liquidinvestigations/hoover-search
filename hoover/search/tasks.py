@@ -1,5 +1,6 @@
-from datetime import datetime, timezone
+from datetime import datetime
 from django.conf import settings
+from django.utils.timezone import make_aware
 import logging
 from webdav3.client import Client
 from django.contrib.auth import get_user_model
@@ -73,8 +74,9 @@ def recurse_nextcloud_directories(path, max_depth, client, username, max_size=20
         if models.NextcloudDirectory.objects.filter(path=directory['path']).exists():
             log.info('NextcloudDirectory exists in database!')
             modified = datetime.strptime(directory['modified'], '%a, %d %b %Y %H:%M:%S %Z')
-            # set correct timezone (nextcloud returns date with GMT)
-            modified.replace(tzinfo=timezone.utc)
+            # make timezone aware
+            # nextcloud returns time in GMT timezone
+            modified = make_aware(modified)
             log.info(f'modified: {modified}')
             directory_in_db = models.NextcloudDirectory.objects.get(path=directory['path'])
             log.info(f'db_modified: {directory_in_db.modified}')
