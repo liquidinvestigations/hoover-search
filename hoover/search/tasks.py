@@ -28,11 +28,20 @@ def sync_nextcloud_directories(max_depth, max_size):
                                                         user.get_username(),
                                                         max_size=max_size)
             log.info(f'Found directories: {directories}')
-            all_db_directories = models.NextcloudDirectory.objects.all()
-            found_directories_paths = [x['path'] for x in directories]
-            for db_directory in all_db_directories:
-                if db_directory.path not in found_directories_paths:
-                    db_directory.delete()
+
+            # deleting folders like this won't work
+            # because some folders might get skipped if they haven't
+            # been modified and are not fetched every time
+            # maybe there should be another task that always fetches
+            # all directories but runs in larger intervals to delete the ones
+            # deleted in nextcloud
+
+            # all_db_directories = models.NextcloudDirectory.objects.all()
+            # found_directories_paths = [x['path'] for x in directories]
+            # for db_directory in all_db_directories:
+            #     if db_directory.path not in found_directories_paths:
+            #         db_directory.delete()
+
             for directory in directories:
                 log.info(f'Creating directory: {directory}')
                 modified = datetime.strptime(directory['modified'],
