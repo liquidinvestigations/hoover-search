@@ -88,9 +88,7 @@ def recurse_nextcloud_directories(path, max_depth, client, username, max_size=20
             # make timezone aware
             # nextcloud returns time in GMT timezone
             modified = make_aware(modified)
-            log.info(f'modified: {modified}')
             directory_in_db = models.NextcloudDirectory.objects.get(path=directory['path'])
-            log.info(f'db_modified: {directory_in_db.modified}')
             if modified == directory_in_db.modified:
                 log.info('Directory has not been modified. Skipping.')
                 continue
