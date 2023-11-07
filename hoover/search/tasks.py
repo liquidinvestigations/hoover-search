@@ -52,7 +52,7 @@ def get_name(path):
 def recurse_nextcloud_directories(path, max_depth, client, username, max_size=20, depth=0):
     # first element is the current directory itself
     content = client.list(path, get_info=True)[1:]
-    log.info(f'Found root content: {x.get("path") for x in content}')
+    log.info(f'Found root content: {[x.get("path") for x in content]}')
     directories = [x for x in content if x['isdir']]
     dir_list = []
     dir_list.extend(directories)
@@ -82,11 +82,12 @@ def recurse_nextcloud_directories(path, max_depth, client, username, max_size=20
                                                     client,
                                                     username,
                                                     depth=depth + 1)
-        print(f'new content: {x.get("path") for x in new_content}')
+        print(f'new content: {[x.get("path") for x in new_content]}')
         if new_content:
             new_directories = [x for x in new_content if x['isdir']]
             if len(new_directories) + len(dir_list) > max_size:
                 remaining = max_size - len(dir_list)
                 new_directories = new_directories[:remaining]
                 dir_list += new_directories
+    print('dir_list:', [x["path"] for x in dir_list])
     return dir_list
