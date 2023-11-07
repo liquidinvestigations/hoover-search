@@ -30,9 +30,9 @@ def sync_nextcloud_directories(max_depth, max_size):
             for directory in directories:
                 log.info(f'Creating directory: {directory}')
                 models.NextcloudDirectory.objects.update_or_create(
-                    name=get_name(directory['path']),
+                    path=directory['path'],
                     defaults={
-                        'path': directory['path'],
+                        'name': get_name(directory['path']),
                         'modified': datetime.strptime(directory['modified'],
                                                       '%a, %d %b %Y %H:%M:%S %Z'),
                         'user': user,
