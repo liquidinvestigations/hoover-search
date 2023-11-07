@@ -89,6 +89,6 @@ def recurse_nextcloud_directories(path, max_depth, client, username, max_size=20
                 remaining = max_size - len(dir_list)
                 new_directories = new_directories[:remaining]
                 dir_list += new_directories
-                print(f'added to dir_list: ', new_directories)
+                print(f'added to dir_list: {new_directories}')
     print('dir_list:', [x["path"] for x in dir_list])
     return dir_list
