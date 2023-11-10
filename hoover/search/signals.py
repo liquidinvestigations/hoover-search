@@ -1,7 +1,7 @@
 import requests
 from django.dispatch import Signal
 from django.db.models.signals import post_save
-from .models import NextcloudCollection
+from .models import NextcloudCollection, Collection
 from django.conf import settings
 from django.dispatch import receiver
 
@@ -12,13 +12,20 @@ rate_limit_exceeded = Signal(['username'])
 
 
 @receiver(post_save, sender=NextcloudCollection)
-def sync_nextcloud_collections_signal(**kwargs):
+def sync_nextcloud_collections_signal(sender, instance, **kwargs):
     """Signal that calls a snoop endpoint to sync nextcloud collections.
 
     Whenever a NextcloudCollection object is saved this signal will
-    make the call and sync the collections.
+    make the call and sync the collections. Also creates a new Collection with the
+    same name.
     """
     sync_nextcloud_collections()
+    Collection.objects.update_or_create(
+        name=instance.name,
+        defaults=dict(
+            index=instance.name,
+        )
+    )
 
 
 def sync_nextcloud_collections():
