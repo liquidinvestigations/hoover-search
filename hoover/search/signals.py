@@ -21,9 +21,9 @@ def sync_nextcloud_collections_signal(sender, instance, **kwargs):
     """
     sync_nextcloud_collections()
     Collection.objects.update_or_create(
-        name=instance.name,
+        name=instance.name.lower(),
         defaults=dict(
-            index=instance.name,
+            index=instance.name.lower(),
         )
     )
 
@@ -36,7 +36,7 @@ def sync_nextcloud_collections():
             'webdav_url': col.url,
             'webdav_username': col.username,
             'webdav_password': col.password,
-            'name': col.name,
+            'name': col.name.lower(),
             'process': True,
             'sync': False,
             'ocr_languages': '',
