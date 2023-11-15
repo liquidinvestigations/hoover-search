@@ -27,6 +27,8 @@ def sync_nextcloud_collections_signal(sender, instance, **kwargs):
         )
     )
 
+    # TODO replace illegal characters
+
 
 def sync_nextcloud_collections():
     """Calls a snoop endpoint to sync nextcloud collections.
