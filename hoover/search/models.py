@@ -403,7 +403,7 @@ class NextcloudCollection(models.Model):
 
     process = models.BooleanField(default=True)
     sync = models.BooleanField(default=True)
-    ocr_languages = models.CharField(max_length=256, default='')
+    ocr_languages = models.CharField(max_length=256, default='', blank=True)
     max_result_window = models.IntegerField(default=100000)
     pdf_preview_enabled = models.BooleanField(default=False)
     thumbnail_generator_enabled = models.BooleanField(default=False)
@@ -415,11 +415,11 @@ class NextcloudCollection(models.Model):
     translation_enabled = models.BooleanField(default=False)
     translation_target_languages = models.CharField(default='en', max_length=256)
     translation_text_length_limit = models.IntegerField(default=400)
-    default_table_header = models.CharField(default='', max_length=512)
+    default_table_header = models.CharField(default='', max_length=512, blank=True)
     explode_table_rows = models.BooleanField(default=False)
-    s3_blobs_address = models.CharField(default='', max_length=512)
-    s3_blobs_access_key = models.CharField(default='', max_length=512)
-    s3_blobs_secret_key = models.CharField(default='', max_length=512)
+    s3_blobs_address = models.CharField(default='', max_length=512, blank=True)
+    s3_blobs_access_key = models.CharField(default='', max_length=512, blank=True)
+    s3_blobs_secret_key = models.CharField(default='', max_length=512, blank=True)
 
     @property
     def url(self):
