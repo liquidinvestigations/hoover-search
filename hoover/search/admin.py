@@ -65,6 +65,25 @@ class NextcloudCollectionForm(ModelForm):
         model = models.NextcloudCollection
         fields = [
             'directory',
+            'process',
+            'sync',
+            'ocr_languages',
+            'max_result_window',
+            'pdf_preview_enabled',
+            'thumbnail_generator_enabled',
+            'image_classification_object_detection_enabled',
+            'image_classification_classify_images_enabled',
+            'nlp_language_detection_enabled',
+            'nlp_fallback_language',
+            'nlp_entity_extraction_enabled',
+            'translation_enabled',
+            'translation_target_languages',
+            'translation_text_length_limit',
+            'default_table_header',
+            'explode_table_rows',
+            's3_blobs_address',
+            's3_blobs_access_key',
+            's3_blobs_secret_key',
         ]
 
 
