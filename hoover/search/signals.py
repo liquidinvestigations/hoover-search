@@ -21,13 +21,11 @@ def sync_nextcloud_collections_signal(sender, instance, **kwargs):
     """
     sync_nextcloud_collections()
     Collection.objects.update_or_create(
-        name=instance.name.lower(),
+        name=instance.name.lower().replace(' ', '-'),
         defaults=dict(
-            index=instance.name.lower(),
+            index=instance.name.lower().replace(' ', '-'),
         )
     )
-
-    # TODO replace illegal characters
 
 
 def sync_nextcloud_collections():
@@ -38,7 +36,7 @@ def sync_nextcloud_collections():
             'webdav_url': col.url,
             'webdav_username': col.username,
             'webdav_password': col.password,
-            'name': col.name.lower(),
+            'name': col.name.lower().replace(' ', '-'),
             'process': col.process,
             'sync': col.sync,
             'ocr_languages': col.ocr_languages,
