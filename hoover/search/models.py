@@ -1,3 +1,4 @@
+import time
 import uuid
 from datetime import timedelta
 import logging
@@ -46,6 +47,7 @@ class Collection(models.Model):
     avg_search_time = models.FloatField(default=0)
     avg_batch_time = models.FloatField(default=0)
     last_update = models.DateTimeField(auto_now=True)
+    stats = models.JSONField(default=dict)
 
     def __str__(self):
         return self.name
@@ -156,6 +158,7 @@ class Collection(models.Model):
 
     def update(self):
         # early exit if already updated
+        t0 = time.time()
         if (timezone.now() - self.last_update).total_seconds() <= self.UPDATE_INTERVAL_SEC:
             return
 
@@ -174,8 +177,11 @@ class Collection(models.Model):
             self.avg_batch_time = new_time
 
         # update timestamp and save
+        self.stats = self.get_meta()['stats']
         self.last_update = timezone.now()
         self.save()
+        dt = time.time() - t0
+        log.warning('Collection %s updated (%s sec)', self.name, round(dt, 2))
 
     def user_access_list(self):
         return ', '.join(u.username for u in self.users.all())
