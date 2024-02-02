@@ -3,6 +3,8 @@ from django.contrib import admin
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.contrib.auth.admin import User, Group, UserAdmin, GroupAdmin
 from django.forms import ModelForm
+from django.urls import reverse
+from django.utils.html import format_html
 from . import models
 
 
@@ -57,7 +59,29 @@ class CollectionAdmin(admin.ModelAdmin):
 
 
 class NextcloudDirectoryAdmin(admin.ModelAdmin):
-    search_fields = ['name']
+    list_display = ['name', 'path', 'user', 'exists_in_nextcloud', 'deleted_from_nextcloud', 'link_to_collection']
+    search_fields = ['path']
+    readonly_fields = ['name', 'path', 'modified', 'user', 'deleted_from_nextcloud']
+
+    def link_to_collection(self, obj):
+        link = reverse("admin:search_nextcloudcollection_change", args=[obj.nextcloudcollection.id])
+        return format_html(f'<a href="{link}"><b>{obj.nextcloudcollection}</b></a>')
+
+    link_to_collection.short_description = 'Nextcloud Collection'
+
+    def exists_in_nextcloud(self, obj):
+        return False if obj.deleted_from_nextcloud else True
+
+    exists_in_nextcloud.boolean = True
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 class NextcloudCollectionForm(ModelForm):
@@ -92,7 +116,6 @@ class NextcloudCollectionAdmin(admin.ModelAdmin):
     autocomplete_fields = ['directory']
     list_display = [
         'name',
-        'password',
         'username',
     ]
 
@@ -146,9 +169,19 @@ class ProfileInline(admin.StackedInline):
     list_display = ('user', 'uuid', 'preferences')
 
 
+class WebDAVPasswordInlineForm(ModelForm):
+    class Meta:
+        model = models.WebDAVPassword
+        exclude = ['user']
+        widgets = {
+            'password': forms.PasswordInput(),
+        }
+
+
 class WebDAVPasswordInline(admin.StackedInline):  # You can use TabularInline as an alternative
     model = models.WebDAVPassword
     can_delete = False
+    form = WebDAVPasswordInlineForm
 
 
 class HooverUserAdmin(UserAdmin):

@@ -10,6 +10,13 @@ if [[ $NOMAD_ALLOC_INDEX  == "0" ]]; then
             ./manage.py syncnextclouddirs
         done
     ) &
+    (
+        set +e
+        while true; do
+            sleep 3600
+            ./manage.py purgenextclouddirs.py
+        done
+    ) &
 fi
 
 if [[ "$DEBUG" == "true" ]]; then

@@ -20,10 +20,3 @@ def init_celery_tracing(*args, **kwargs):
 app = Celery('search')
 app.config_from_object('django.conf:settings', namespace='CELERY')
 app.autodiscover_tasks()
-
-app.conf.beat_schedule = {
-    'sync_nextcloud_directories': {
-        'task': 'tasks.sync_nextcloud_files',
-        'schedule': timedelta(minutes=5)
-    }
-}

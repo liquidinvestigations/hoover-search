@@ -385,9 +385,14 @@ class NextcloudDirectory(models.Model):
     path = models.CharField(max_length=512, unique=True)
     modified = models.DateTimeField()
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    deleted_from_nextcloud = models.DateTimeField(null=True)
 
     def __str__(self):
-        return self.path
+        prefix = '/remote.php/dav/files/'
+        return self.path.removeprefix(prefix)
+
+    class Meta:
+        verbose_name_plural = 'Nextcloud directories'
 
 
 class WebDAVPassword(models.Model):

@@ -1,6 +1,6 @@
 from datetime import datetime
 from django.conf import settings
-from django.utils.timezone import make_aware
+from django.utils.timezone import make_aware, now
 import logging
 from webdav3.client import Client
 from django.contrib.auth import get_user_model
@@ -12,7 +12,7 @@ log = logging.getLogger(__name__)
 WEBDAV_ROOT = settings.HOOVER_NEXTCLOUD_URL + '/remote.php/dav/files'
 
 
-def sync_nextcloud_directories(max_depth, max_size):
+def sync_nextcloud_directories(max_depth, max_size, purge=False):
     users = get_user_model().objects.all()
     for user in users:
         if models.WebDAVPassword.objects.filter(user=user).exists():
@@ -26,21 +26,18 @@ def sync_nextcloud_directories(max_depth, max_size):
                                                         max_depth,
                                                         client,
                                                         user.get_username(),
-                                                        max_size=max_size)
+                                                        max_size=max_size,
+                                                        get_all=purge)
             log.info(f'Found directories: {directories}')
 
-            # deleting folders like this won't work
-            # because some folders might get skipped if they haven't
-            # been modified and are not fetched every time
-            # maybe there should be another task that always fetches
-            # all directories but runs in larger intervals to delete the ones
-            # deleted in nextcloud
-
-            # all_db_directories = models.NextcloudDirectory.objects.all()
-            # found_directories_paths = [x['path'] for x in directories]
-            # for db_directory in all_db_directories:
-            #     if db_directory.path not in found_directories_paths:
-            #         db_directory.delete()
+            if purge:
+                all_db_directories = models.NextcloudDirectory.objects.all()
+                found_directories_paths = [x['path'] for x in directories]
+                for db_directory in all_db_directories:
+                    if db_directory.path not in found_directories_paths:
+                        log.info(f'"{db_directory}" was deleted from Nextcloud. Marking it as deleted.')
+                        db_directory.deleted_from_nextcloud = now()
+                        db_directory.save()
 
             for directory in directories:
                 log.info(f'Creating directory: {directory}')
@@ -65,7 +62,7 @@ def get_name(path):
     return path.split('/')[-2]
 
 
-def recurse_nextcloud_directories(path, max_depth, client, username, max_size=20, depth=0):
+def recurse_nextcloud_directories(path, max_depth, client, username, max_size=20, depth=0, get_all=False):
     # first element is the current directory itself
     content = client.list(path, get_info=True)[1:]
     directories = [x for x in content if x['isdir']]
@@ -89,7 +86,8 @@ def recurse_nextcloud_directories(path, max_depth, client, username, max_size=20
             # nextcloud returns time in GMT timezone
             modified = make_aware(modified)
             directory_in_db = models.NextcloudDirectory.objects.get(path=directory['path'])
-            if modified == directory_in_db.modified:
+            # skip directories that have not been modified if get_all is not set
+            if get_all is not True and modified == directory_in_db.modified:
                 log.info('Directory has not been modified. Skipping.')
                 continue
 
