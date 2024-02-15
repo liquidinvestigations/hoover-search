@@ -13,6 +13,7 @@ from django.utils import timezone
 
 from . import es
 from .loaders.external import Loader
+from .validators import validate_collection_name, validate_directory_path
 
 
 log = logging.getLogger(__name__)
@@ -401,10 +402,13 @@ class WebDAVPassword(models.Model):
 
 
 class NextcloudCollection(models.Model):
+    name = models.CharField(max_length=256, unique=True, validators=[validate_collection_name])
     directory = models.OneToOneField(NextcloudDirectory,
                                      on_delete=models.CASCADE,
                                      unique=True,
+                                     validators=[validate_directory_path]
                                      )
+    collection = models.ForeignKey(Collection, on_delete=models.CASCADE)
 
     process = models.BooleanField(default=True)
     sync = models.BooleanField(default=True)
@@ -433,10 +437,6 @@ class NextcloudCollection(models.Model):
     @property
     def username(self):
         return self.directory.user.get_username()
-
-    @property
-    def name(self):
-        return self.directory.name
 
     @property
     def password(self):

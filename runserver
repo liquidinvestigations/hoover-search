@@ -14,7 +14,7 @@ if [[ $NOMAD_ALLOC_INDEX  == "0" ]]; then
         set +e
         while true; do
             sleep 3600
-            ./manage.py purgenextclouddirs.py
+            ./manage.py purgenextclouddirs
         done
     ) &
 fi

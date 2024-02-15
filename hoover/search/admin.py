@@ -1,4 +1,5 @@
 from django import forms
+from django.db import transaction
 from django.contrib import admin
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.contrib.auth.admin import User, Group, UserAdmin, GroupAdmin
@@ -15,10 +16,21 @@ class HooverAdminSite(admin.AdminSite):
 class CollectionAdmin(admin.ModelAdmin):
     list_display = ['__str__', 'count', 'user_access_list', 'group_access_list',
                     'uploaders_access_list', 'group_upload_access_list',
-                    'group_access_list', 'public', 'writeable', 'avg_search_time', 'avg_batch_time']
+                    'group_access_list', 'public', 'writeable', 'avg_search_time', 'avg_batch_time',
+                    'link_to_nccollection']
     fields = ['title', 'name', 'index', 'public', 'writeable', 'users', 'groups', 'uploader_users', 'uploader_groups']
     filter_horizontal = ['users', 'groups', 'uploader_users', 'uploader_groups']
     readonly_fields = ['index', 'name']
+
+    def link_to_nccollection(self, obj):
+        nc_collection = obj.nextcloudcollection_set.first()
+        if nc_collection:
+            link = reverse("admin:search_nextcloudcollection_change", args=[nc_collection.id])
+            return format_html(f'<a href="{link}"><b>{nc_collection}</b></a>')
+        else:
+            return None
+
+    link_to_nccollection.short_description = 'Nextcloud Collection'
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -59,20 +71,33 @@ class CollectionAdmin(admin.ModelAdmin):
 
 
 class NextcloudDirectoryAdmin(admin.ModelAdmin):
-    list_display = ['name', 'path', 'user', 'exists_in_nextcloud', 'deleted_from_nextcloud', 'link_to_collection']
+    list_display = ['name', 'path', 'user', 'exists_in_nextcloud', 'deleted_from_nextcloud', 'link_to_nccollection']
     search_fields = ['path']
     readonly_fields = ['name', 'path', 'modified', 'user', 'deleted_from_nextcloud']
 
-    def link_to_collection(self, obj):
+    def link_to_nccollection(self, obj):
         link = reverse("admin:search_nextcloudcollection_change", args=[obj.nextcloudcollection.id])
         return format_html(f'<a href="{link}"><b>{obj.nextcloudcollection}</b></a>')
 
-    link_to_collection.short_description = 'Nextcloud Collection'
+    link_to_nccollection.short_description = 'Nextcloud Collection'
 
     def exists_in_nextcloud(self, obj):
         return False if obj.deleted_from_nextcloud else True
 
     exists_in_nextcloud.boolean = True
+
+    def get_search_results(self, request, queryset, search_term):
+        queryset, may_have_duplicates = super().get_search_results(
+            request, queryset, search_term,
+        )
+        # only filter the deleted directories in the autocomplete dialougue
+        # but not in the list display
+        if 'autocomplete' in request.get_full_path():
+            queryset = queryset.filter(deleted_from_nextcloud__isnull=True)
+        return queryset, may_have_duplicates
+
+    def path(self, obj):
+        return str(obj)
 
     def has_add_permission(self, request):
         return False
@@ -88,6 +113,7 @@ class NextcloudCollectionForm(ModelForm):
     class Meta:
         model = models.NextcloudCollection
         fields = [
+            'name',
             'directory',
             'process',
             'sync',
@@ -117,7 +143,20 @@ class NextcloudCollectionAdmin(admin.ModelAdmin):
     list_display = [
         'name',
         'username',
+        'link_to_collection'
     ]
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj:
+            return ['name', 'directory']
+        else:
+            return []
+
+    def link_to_collection(self, obj):
+        link = reverse("admin:search_collection_change", args=[obj.collection.id])
+        return format_html(f'<a href="{link}"><b>{obj.collection}</b></a>')
+
+    link_to_collection.short_description = 'Collection'
 
     def username(self, obj):
         return obj.username
@@ -127,6 +166,12 @@ class NextcloudCollectionAdmin(admin.ModelAdmin):
 
     def password(self, obj):
         return obj.password
+
+    def save_model(self, request, obj, form, change):
+        with transaction.atomic():
+            collection, _ = models.Collection.objects.get_or_create(name=obj.name, index=obj.name)
+            obj.collection = collection
+            super().save_model(request, obj, form, change)
 
 
 class GroupAdminForm(ModelForm):
