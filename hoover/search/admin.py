@@ -1,3 +1,4 @@
+import os
 from django import forms
 from django.db import transaction
 from django.contrib import admin
@@ -136,6 +137,29 @@ class NextcloudCollectionForm(ModelForm):
             's3_blobs_secret_key',
         ]
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # disable fields when features are not enabled
+        fields = []
+        if not os.getenv('PDF_PREVIEW_ENABLED'):
+            fields.append('pdf_preview_enabled')
+        if not os.getenv('THUMBNAIL_GENERATOR'):
+            fields.append('thumbnail_generator_enabled')
+        if not os.getenv('OBJECT_DETECTION_ENABLED'):
+            fields.append('image_classification_object_detection_enabled')
+        if not os.getenv('IMAGE_CLASSIFICATION_ENABLED'):
+            fields.append('image_classification_classify_images_enabled')
+        if not os.getenv('NLP_LANGUAGE_DETECTION_ENABLED'):
+            fields += ['nlp_language_detection_enabled', 'nlp_fallback_language']
+        if not os.getenv('NLP_ENTITY_EXTRACTION_ENABLED'):
+            fields.append('nlp_entity_extraction_enabled')
+        if not os.getenv('TRANSLATION_ENABLED'):
+            fields += ['translation_enabled',
+                       'translation_target_languages',
+                       'translation_text_length_limit']
+        for field in fields:
+            self.fields[field].disabled = True
+
 
 class NextcloudCollectionAdmin(admin.ModelAdmin):
     form = NextcloudCollectionForm
@@ -147,10 +171,10 @@ class NextcloudCollectionAdmin(admin.ModelAdmin):
     ]
 
     def get_readonly_fields(self, request, obj=None):
+        fields = []
         if obj:
-            return ['name', 'directory']
-        else:
-            return []
+            fields += ['name', 'directory']
+        return fields
 
     def link_to_collection(self, obj):
         link = reverse("admin:search_collection_change", args=[obj.collection.id])
