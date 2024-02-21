@@ -18,7 +18,7 @@ from django.utils import timezone
 from django.views.decorators.cache import cache_control, never_cache
 from . import es
 from . import models
-from .models import Collection
+from .models import Collection, NextcloudCollection
 from . import signals
 from . import celery as cel
 import requests
@@ -71,6 +71,38 @@ def collections_acl(user, collections_arg, empty_ok=False):
         msg = 'collections not found or access denied: ' + str(collections_arg)
         raise PermissionDenied(msg)
     return approved
+
+
+def nextcloud_collections(request):
+    return JsonResponse([
+        {
+            'webdav_url': col.url,
+            'webdav_username': col.username,
+            'webdav_password': col.password,
+            'name': col.name,
+            'process': True,
+            'sync': False,
+            'ocr_languages': '',
+            'max_result_window': 100000,
+            'refresh_interval': '1s',
+            'pdf_preview_enabled': False,
+            'thumbnail_generator_enabled': False,
+            'image_classification_object_detection_enabled': False,
+            'image_classification_classify_images_enabled': False,
+            'nlp_language_detection_enabled': False,
+            'nlp_fallback_language': 'en',
+            'nlp_entity_extraction_enabled': False,
+            'translation_enabled': False,
+            'translation_target_languages': 'en',
+            'translation_text_length_limit': 400,
+            'default_table_header': '',
+            'explode_table_rows': False,
+            's3_blobs_address': '',
+            's3_blobs_access_key': '',
+            's3_blobs_secret_key': '',
+        }
+        for col in NextcloudCollection.objects.all()
+    ], safe=False)
 
 
 def _sanitize_utf8_values(value):
