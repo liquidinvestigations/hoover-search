@@ -1,5 +1,4 @@
 # from https://docs.celeryproject.org/en/stable/django/first-steps-with-django.html
-from datetime import timedelta
 import os
 
 # from opentelemetry.instrumentation.celery import CeleryInstrumentor
