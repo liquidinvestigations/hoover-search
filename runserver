@@ -8,6 +8,11 @@ if [[ $NOMAD_ALLOC_INDEX  == "0" ]]; then
         while true; do
             sleep 60
             ./manage.py syncnextclouddirs
+            exit_code=$?
+            if [ $exit_code -ne 0 ]; then
+                echo "Syncing nextcloud directories wasn't successful. Sleeping for 30 minutes..."
+                sleep 1800
+            fi
         done
     ) &
     (

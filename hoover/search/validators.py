@@ -9,7 +9,7 @@ from django.apps import apps
 def validate_collection_name(name):
     if not complies_with_naming_rules(name):
         raise ValidationError(
-            f'"{name}" is not lowercase alphanumeric.')
+            f'"{name}" is not a valid name. Collection names need to be lowercase alphanumeric and at least 3 letters.')
     if not no_existing_collection_in_db(name):
         raise ValidationError(
             f'"{name}" already exists in the Collection or NextcloudCollection database.'
@@ -72,3 +72,4 @@ def parent_not_in_collection(path):
         if NextcloudCollection.objects.filter(directory__path=full_path).exists():
             return False
         unique_path = os.path.dirname(unique_path)
+    return True
