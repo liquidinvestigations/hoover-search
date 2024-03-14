@@ -50,6 +50,7 @@ def sync_nextcloud_directories(max_depth, max_size, purge=False):
                         'name': get_name(directory['path']),
                         'modified': modified,
                         'user': user,
+                        'deleted_from_nextcloud': None,
                     }
                 )
 
@@ -95,7 +96,9 @@ def recurse_nextcloud_directories(path, max_depth, client, username, max_size=20
                                                     max_depth,
                                                     client,
                                                     username,
-                                                    depth=depth + 1)
+                                                    max_size=max_size,
+                                                    depth=depth + 1,
+                                                    get_all=get_all)
         if new_content:
             new_directories = [x for x in new_content if x['isdir']]
             if len(new_directories) + len(dir_list) > max_size:
