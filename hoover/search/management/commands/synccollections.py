@@ -1,5 +1,4 @@
 import json
-import requests
 from django.core.management.base import BaseCommand
 from django.conf import settings
 from ... import models
@@ -31,20 +30,17 @@ class Command(BaseCommand):
         snoop_base_url = settings.SNOOP_BASE_URL
         assert snoop_base_url
 
-        url = snoop_base_url + '/common/nextcloudcollections'
-        res = requests.get(url)
-        if res.status_code == 200:
-            nextcloudcollections = res.json().get('nextcloud_collections', [])
-        else:
-            nextcloudcollections = []
-        print(nextcloudcollections)
-
-        snoop_collections = json.loads(snoop_collections_json) + nextcloudcollections
+        snoop_collections = json.loads(snoop_collections_json)
         print('json string has', len(snoop_collections), 'collections')
 
         print('locking table...')
         with lock_table(models.Collection):
-            to_delete = models.Collection.objects.exclude(name__in=[c['name'] for c in snoop_collections])
+            # exclude collections with an associated nextcloudcollection
+            to_delete = models.Collection.objects.exclude(
+                name__in=[c['name'] for c in snoop_collections]
+            ).exclude(
+                nextcloudcollection__collection__isnull=False
+            )
             print('Deleting', to_delete.count(), 'collections')
             to_delete.delete()
 
