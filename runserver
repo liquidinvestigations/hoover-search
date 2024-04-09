@@ -2,6 +2,28 @@
 
 /wait
 
+if [[ $NOMAD_ALLOC_INDEX  == "0" ]]; then
+    (
+        set +e
+        while true; do
+            sleep 60
+            ./manage.py syncnextclouddirs
+            exit_code=$?
+            if [ $exit_code -ne 0 ]; then
+                echo "Syncing nextcloud directories wasn't successful. Sleeping for 30 minutes..."
+                sleep 1800
+            fi
+        done
+    ) &
+    (
+        set +e
+        while true; do
+            sleep 3600
+            ./manage.py purgenextclouddirs
+        done
+    ) &
+fi
+
 if [[ "$DEBUG" == "true" ]]; then
 	    # --max-requests 1 \  # poor man's autoreload
 	  exec gunicorn --reload \

@@ -35,7 +35,12 @@ class Command(BaseCommand):
 
         print('locking table...')
         with lock_table(models.Collection):
-            to_delete = models.Collection.objects.exclude(name__in=[c['name'] for c in snoop_collections])
+            # exclude collections with an associated nextcloudcollection
+            to_delete = models.Collection.objects.exclude(
+                name__in=[c['name'] for c in snoop_collections]
+            ).exclude(
+                nextcloudcollection__collection__isnull=False
+            )
             print('Deleting', to_delete.count(), 'collections')
             to_delete.delete()
 
