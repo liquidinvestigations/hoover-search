@@ -9,7 +9,8 @@ from . import models
 log = logging.getLogger(__name__)
 
 
-WEBDAV_ROOT = settings.HOOVER_NEXTCLOUD_URL + '/remote.php/dav/files'
+WEBDAV_LOCATION_SUFFIX = '/remote.php/dav/groupfolders'
+WEBDAV_ROOT = settings.HOOVER_NEXTCLOUD_URL + WEBDAV_LOCATION_SUFFIX
 
 
 def sync_nextcloud_directories(max_depth, max_size, purge=False):
@@ -56,7 +57,7 @@ def sync_nextcloud_directories(max_depth, max_size, purge=False):
 
 
 def relative_path(path, username):
-    return path.removeprefix(f'/remote.php/dav/files/{username}')
+    return path.removeprefix(f'{WEBDAV_LOCATION_SUFFIX}/{username}')
 
 
 def get_name(path):
