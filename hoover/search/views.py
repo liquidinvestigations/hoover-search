@@ -738,6 +738,15 @@ def _batch(self, *args, **kwargs):
         raise
 
 
+def _fix_field_type_for_legacy_items(source):
+    """Fix for EIC-1201. Index entries created by legacy versions
+    have "path" and "filename" as string instead of list of
+    strings. This causes grief in the front-end."""
+    for key in ["path", "filename"]:
+        if isinstance(source.get(key), str):
+            source[key] = [source[key]]
+
+
 @cel.app.task(bind=True, serializer='json', name=SEARCH_KEY, routing_key=SEARCH_KEY)
 @tracer.wrap_function()
 def _search(self, *args, **kwargs):
@@ -792,6 +801,12 @@ def _search(self, *args, **kwargs):
             _doc_hits = dedup_hits.get(doc_hash)
             item['_dedup_hits'] = _doc_hits
             item['_dedup_hide_result'] = (_doc_hits and (name != _doc_hits[0]))
+
+            # EIC-1201 --> fix legacy format where "path" and "filename" were
+            # strings and not lists of strings.
+            if item.get('_source'):
+                _fix_field_type_for_legacy_items(item['_source'])
+
         res['count_by_index'] = {
             col_name(i): counts[i]
             for i in counts
