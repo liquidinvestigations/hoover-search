@@ -1,7 +1,7 @@
 import requests
 from django.dispatch import Signal
 from django.db.models.signals import post_save
-from .models import NextcloudCollection, Collection
+from .models import NextcloudCollection
 from django.conf import settings
 from django.dispatch import receiver
 
@@ -20,13 +20,6 @@ def sync_nextcloud_collections_signal(sender, instance, **kwargs):
     same name.
     """
     sync_nextcloud_collections()
-    Collection.objects.update_or_create(
-        name=instance.name.lower().replace(' ', '-'),
-        title=instance.name.lower().replace(' ', '-'),
-        defaults=dict(
-            index=instance.name.lower().replace(' ', '-'),
-        )
-    )
 
 
 def sync_nextcloud_collections():
