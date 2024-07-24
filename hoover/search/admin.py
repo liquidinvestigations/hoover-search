@@ -2,7 +2,7 @@ import os
 from django import forms
 from django.db import transaction
 from django.contrib import admin
-from django.contrib.admin.widgets import FilteredSelectMultiple
+from django.contrib.admin.widgets import FilteredSelectMultiple, AutocompleteSelect
 from django.contrib.auth.admin import User, Group, UserAdmin, GroupAdmin
 from django.forms import ModelForm
 from django.urls import reverse
@@ -136,6 +136,13 @@ class NextcloudCollectionForm(ModelForm):
             's3_blobs_access_key',
             's3_blobs_secret_key',
         ]
+        widgets = {
+            'directory': AutocompleteSelect(
+                models.NextcloudCollection._meta.get_field('directory'),
+                admin.site,
+                attrs={'data-dropdown-auto-width': 'true'}
+            ),
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -163,7 +170,6 @@ class NextcloudCollectionForm(ModelForm):
 
 class NextcloudCollectionAdmin(admin.ModelAdmin):
     form = NextcloudCollectionForm
-    autocomplete_fields = ['directory']
     list_display = [
         'name',
         'username',
@@ -193,7 +199,7 @@ class NextcloudCollectionAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         with transaction.atomic():
-            collection, _ = models.Collection.objects.get_or_create(name=obj.name, index=obj.name)
+            collection, _ = models.Collection.objects.get_or_create(name=obj.name, index=obj.name, title=obj.name)
             obj.collection = collection
             super().save_model(request, obj, form, change)
 

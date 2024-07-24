@@ -22,6 +22,7 @@ def sync_nextcloud_collections_signal(sender, instance, **kwargs):
     sync_nextcloud_collections()
     Collection.objects.update_or_create(
         name=instance.name.lower().replace(' ', '-'),
+        title=instance.name.lower().replace(' ', '-'),
         defaults=dict(
             index=instance.name.lower().replace(' ', '-'),
         )
