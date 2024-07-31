@@ -26,8 +26,7 @@ class Command(BaseCommand):
 
         directory, _ = NextcloudDirectory.objects.get_or_create(
             # username and directory name
-            path=WEBDAV_LOCATION_SUFFIX +
-            f'/{DEMO_COLLECTION_USER}/{DEMO_COLLECTION_NAME}',
+            path=WEBDAV_LOCATION_SUFFIX + f'/{DEMO_COLLECTION_USER}/{DEMO_COLLECTION_NAME}',
             defaults={
                 'name': DEMO_COLLECTION_NAME,
                 'user': demo_user,
