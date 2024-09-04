@@ -1,6 +1,6 @@
 import requests
 from django.dispatch import Signal
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 from .models import NextcloudCollection, Collection
 from django.conf import settings
 from django.dispatch import receiver
@@ -26,6 +26,12 @@ def sync_nextcloud_collections_signal(sender, instance, **kwargs):
             index=instance.name.lower().replace(' ', '-'),
         )
     )
+
+
+@receiver(post_delete, sender=NextcloudCollection)
+def delete_collection(sender, instance, **kwargs):
+    """Signal that deletes a Collection that corresponds to the nextcloud collection."""
+    instance.collection.delete()
 
 
 def sync_nextcloud_collections():
