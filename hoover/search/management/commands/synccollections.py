@@ -46,11 +46,15 @@ class Command(BaseCommand):
 
             for conf in snoop_collections:
                 name = conf['name']
+                public = conf['public']
+                if public is None:
+                    public = False
                 print('Handling collection', name)
                 col, created = models.Collection.objects.update_or_create(
                     name=name,
                     defaults=dict(
                         index=name,
+                        public=public,
                     ),
                 )
                 if created or not col.title:
