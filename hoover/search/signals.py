@@ -1,7 +1,9 @@
 import requests
 from django.dispatch import Signal
-from django.db.models.signals import post_save
-from .models import NextcloudCollection
+
+from django.db.models.signals import post_save, post_delete
+from .models import NextcloudCollection, Collection
+
 from django.conf import settings
 from django.dispatch import receiver
 
@@ -22,6 +24,12 @@ def sync_nextcloud_collections_signal(sender, instance, **kwargs):
     sync_nextcloud_collections()
 
 
+@receiver(post_delete, sender=NextcloudCollection)
+def delete_collection(sender, instance, **kwargs):
+    """Signal that deletes a Collection that corresponds to the nextcloud collection."""
+    instance.collection.delete()
+
+
 def sync_nextcloud_collections():
     """Calls a snoop endpoint to sync nextcloud collections.
     """
@@ -33,7 +41,7 @@ def sync_nextcloud_collections():
             'name': col.name.lower().replace(' ', '-'),
             'process': col.process,
             'sync': col.sync,
-            'ocr_languages': col.ocr_languages,
+            'ocr_languages': col.ocr_languages.split(','),
             'max_result_window': col.max_result_window,
             'refresh_interval': '1s',
             'pdf_preview_enabled': col.pdf_preview_enabled,
