@@ -45,7 +45,7 @@ def sync_nextcloud_collections():
             'name': col.name.lower().replace(' ', '-'),
             'process': col.process,
             'sync': col.sync,
-            'ocr_languages': col.ocr_languages,
+            'ocr_languages': col.ocr_languages.split(','),
             'max_result_window': col.max_result_window,
             'refresh_interval': '1s',
             'pdf_preview_enabled': col.pdf_preview_enabled,
