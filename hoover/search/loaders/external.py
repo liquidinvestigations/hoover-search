@@ -16,7 +16,7 @@ def get_json(url, retries=3, retry_delay_sec=.5):
         resp = requests.get(url)
         if resp.status_code == 200:
             return resp.json()
-        log.warning(f'HTTP {resp.status_code} for {url} (retrying {i+1}/{retries})')
+        log.warning(f'HTTP {resp.status_code} for {url} (retrying {i + 1}/{retries})')
         time.sleep(retry_delay_sec)
     raise RuntimeError(f"""Unexpected HTTP {resp.status_code}
             from JSON route {url}

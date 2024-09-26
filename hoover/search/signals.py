@@ -2,7 +2,7 @@ import requests
 from django.dispatch import Signal
 
 from django.db.models.signals import post_save, post_delete
-from .models import NextcloudCollection, Collection
+from .models import NextcloudCollection
 
 from django.conf import settings
 from django.dispatch import receiver
